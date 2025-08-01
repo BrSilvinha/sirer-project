@@ -61,14 +61,23 @@ api.interceptors.response.use(
             }
         }
 
-        // Solo mostrar error si no es un error de autenticación
-        if (error.response?.status !== 401) {
+        // ✅ FILTRAR ERRORES ESPECÍFICOS: No mostrar toast para errores 400 de cuentas
+        const isAccountError = error.config?.url?.includes('/pedidos/cuenta/mesa/') && 
+                              error.response?.status === 400;
+        
+        // Solo mostrar error si no es un error de autenticación Y no es error de cuenta
+        if (error.response?.status !== 401 && !isAccountError) {
             const errorMessage = error.response?.data?.error || 
                                error.response?.data?.message || 
                                'Error de conexión';
             
             console.error('API Error:', errorMessage);
             toast.error(errorMessage);
+        }
+        
+        // ✅ SILENCIAR LOGS DE ERRORES DE CUENTA: Solo logear en desarrollo
+        if (isAccountError && process.env.NODE_ENV === 'development') {
+            // console.log('Mesa sin cuenta pendiente (normal)');
         }
         
         return Promise.reject(error);
@@ -150,7 +159,17 @@ export const pedidosService = {
     getCocina: () => api.get('/pedidos/cocina'),
     create: (pedido) => api.post('/pedidos', pedido),
     changeStatus: (id, estado) => api.patch(`/pedidos/${id}/estado`, { estado }),
-    getCuenta: (mesaId) => api.get(`/pedidos/cuenta/mesa/${mesaId}`),
+    
+    // ✅ MÉTODO ESPECIAL: getCuenta con manejo silencioso de errores
+    getCuenta: async (mesaId) => {
+        try {
+            return await api.get(`/pedidos/cuenta/mesa/${mesaId}`);
+        } catch (error) {
+            // Re-lanzar el error sin logs adicionales (ya manejado en interceptor)
+            throw error;
+        }
+    },
+    
     procesarPago: (mesaId, metodoPago) => api.post(`/pedidos/pago/mesa/${mesaId}`, { metodo_pago: metodoPago })
 };
 

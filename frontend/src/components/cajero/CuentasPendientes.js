@@ -23,6 +23,14 @@ const CuentasPendientes = () => {
         mesa_mayor: null
     });
 
+    // ✅ Definir resetFormularioPago ANTES de usarlo
+    const resetFormularioPago = useCallback(() => {
+        setCuentaSeleccionada(null);
+        setMetodoPago('efectivo');
+        setMontoRecibido('');
+        setObservacionesPago('');
+    }, []);
+
     const fetchMesasConCuentas = useCallback(async () => {
         try {
             // Obtener todas las mesas con estado 'cuenta_solicitada' o 'ocupada' con pedidos entregados
@@ -92,14 +100,6 @@ const CuentasPendientes = () => {
         }
     }, [filtroMonto]);
 
-    useEffect(() => {
-        fetchMesasConCuentas();
-        
-        // Auto-refresh cada 30 segundos
-        const interval = setInterval(fetchMesasConCuentas, 30000);
-        return () => clearInterval(interval);
-    }, [fetchMesasConCuentas]);
-
     const handleVerCuentaDetalle = useCallback((mesaConCuenta) => {
         setCuentaSeleccionada(mesaConCuenta);
         setShowPagoModal(true);
@@ -134,7 +134,7 @@ const CuentasPendientes = () => {
             );
 
             setShowPagoModal(false);
-            resetFormularioPago();
+            resetFormularioPago(); // ✅ Ahora ya está definido
             fetchMesasConCuentas();
 
         } catch (error) {
@@ -143,14 +143,7 @@ const CuentasPendientes = () => {
         } finally {
             setProcesandoPago(false);
         }
-    }, [cuentaSeleccionada, metodoPago, montoRecibido, fetchMesasConCuentas]);
-
-    const resetFormularioPago = useCallback(() => {
-        setCuentaSeleccionada(null);
-        setMetodoPago('efectivo');
-        setMontoRecibido('');
-        setObservacionesPago('');
-    }, []);
+    }, [cuentaSeleccionada, metodoPago, montoRecibido, observacionesPago, resetFormularioPago, fetchMesasConCuentas]);
 
     const calcularCambio = useCallback(() => {
         if (!cuentaSeleccionada || metodoPago !== 'efectivo') return 0;
@@ -158,6 +151,14 @@ const CuentasPendientes = () => {
         const recibido = parseFloat(montoRecibido) || 0;
         return Math.max(0, recibido - total);
     }, [cuentaSeleccionada, metodoPago, montoRecibido]);
+
+    useEffect(() => {
+        fetchMesasConCuentas();
+        
+        // Auto-refresh cada 30 segundos
+        const interval = setInterval(fetchMesasConCuentas, 30000);
+        return () => clearInterval(interval);
+    }, [fetchMesasConCuentas]);
 
     if (loading) {
         return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Container, Row, Col, Card, Badge, Button, Form, 
-    Spinner, Alert, InputGroup, ButtonGroup, Modal
+    Spinner, InputGroup, Modal
 } from 'react-bootstrap';
 import { productosService } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -24,17 +24,7 @@ const ProductosDisponibilidad = () => {
     const [showHistorialModal, setShowHistorialModal] = useState(false);
     const [actualizando, setActualizando] = useState(new Set());
 
-    useEffect(() => {
-        fetchProductos();
-        // Auto-refresh cada 30 segundos
-        const interval = setInterval(fetchProductos, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        aplicarFiltros();
-    }, [filtros, productosOriginales]);
-
+    // ✅ Definir funciones ANTES de los useEffect
     const fetchProductos = useCallback(async () => {
         try {
             setLoading(true);
@@ -86,6 +76,18 @@ const ProductosDisponibilidad = () => {
 
         setProductos(productosFiltrados);
     }, [filtros, productosOriginales]);
+
+    // ✅ useEffect DESPUÉS de definir las funciones
+    useEffect(() => {
+        fetchProductos();
+        // Auto-refresh cada 30 segundos
+        const interval = setInterval(fetchProductos, 30000);
+        return () => clearInterval(interval);
+    }, [fetchProductos]);
+
+    useEffect(() => {
+        aplicarFiltros();
+    }, [aplicarFiltros, productosOriginales]);
 
     const handleToggleDisponibilidad = useCallback(async (producto) => {
         const nuevoEstado = !producto.disponible;
