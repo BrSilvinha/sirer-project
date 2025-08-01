@@ -53,21 +53,24 @@ api.interceptors.response.use(
                     return api(originalRequest);
                 }
             } catch (refreshError) {
-                // Si no se puede renovar, redirigir al login
+                // Si no se puede renovar, limpiar storage
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('usuario');
-                window.location.href = '/login';
                 return Promise.reject(refreshError);
             }
         }
 
-        // Mostrar error al usuario
-        const errorMessage = error.response?.data?.error || 
-                           error.response?.data?.message || 
-                           'Error de conexión';
+        // Solo mostrar error si no es un error de autenticación
+        if (error.response?.status !== 401) {
+            const errorMessage = error.response?.data?.error || 
+                               error.response?.data?.message || 
+                               'Error de conexión';
+            
+            console.error('API Error:', errorMessage);
+            toast.error(errorMessage);
+        }
         
-        toast.error(errorMessage);
         return Promise.reject(error);
     }
 );
