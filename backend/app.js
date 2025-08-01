@@ -2,10 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const http = require('http'); // ✅ NUEVO: Para Socket.io
 require('dotenv').config();
 
 const { testConnection, sequelize } = require('./config/database');
 const associations = require('./models/associations');
+const socketManager = require('./config/socket'); // ✅ NUEVO: Socket manager
 
 // Importar todas las rutas
 const authRoutes = require('./routes/auth');
@@ -17,6 +19,9 @@ const pedidosRoutes = require('./routes/pedidos');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// ✅ NUEVO: Crear servidor HTTP para Socket.io
+const server = http.createServer(app);
 
 // Middlewares básicos
 app.use(helmet({
@@ -35,9 +40,10 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware temporal para io
+// ✅ NUEVO: Middleware para socket.io en las rutas
 app.use((req, res, next) => {
-    req.io = null;
+    req.io = socketManager.getIO();
+    req.socketManager = socketManager;
     next();
 });
 
@@ -46,6 +52,7 @@ app.get('/', (req, res) => {
     res.json({ 
         message: 'SIRER API funcionando correctamente',
         version: '1.0.0',
+        features: ['REST API', 'Socket.io', 'Real-time notifications'], // ✅ NUEVO
         timestamp: new Date().toISOString()
     });
 });
@@ -53,18 +60,49 @@ app.get('/', (req, res) => {
 app.get('/health', async (req, res) => {
     try {
         await sequelize.authenticate();
+        
+        // ✅ NUEVO: Verificar estado de Socket.io
+        const io = socketManager.getIO();
+        const connectedUsers = socketManager.getConnectedUsers();
+        
         res.json({
             status: 'OK',
             database: 'Connected',
+            socketio: {
+                status: io ? 'Active' : 'Inactive',
+                connectedUsers: connectedUsers.length,
+                usersByRole: connectedUsers.reduce((acc, user) => {
+                    acc[user.rol] = (acc[user.rol] || 0) + 1;
+                    return acc;
+                }, {})
+            },
             timestamp: new Date().toISOString()
         });
     } catch (error) {
         res.status(503).json({
             status: 'ERROR',
             database: 'Disconnected',
+            socketio: 'Unknown',
             error: error.message
         });
     }
+});
+
+// ✅ NUEVO: Endpoint para estadísticas de Socket.io
+app.get('/socket/stats', (req, res) => {
+    const connectedUsers = socketManager.getConnectedUsers();
+    
+    res.json({
+        success: true,
+        data: {
+            totalConnected: connectedUsers.length,
+            users: connectedUsers,
+            byRole: connectedUsers.reduce((acc, user) => {
+                acc[user.rol] = (acc[user.rol] || 0) + 1;
+                return acc;
+            }, {})
+        }
+    });
 });
 
 // Configurar todas las rutas
@@ -186,19 +224,42 @@ const initializeDatabase = async () => {
     }
 };
 
+// ✅ NUEVO: Función para inicializar Socket.io
+const initializeSocket = () => {
+    try {
+        console.log('🔄 Inicializando Socket.io...');
+        const io = socketManager.initialize(server);
+        console.log('✅ Socket.io inicializado correctamente');
+        return io;
+    } catch (error) {
+        console.error('❌ Error al inicializar Socket.io:', error);
+        throw error;
+    }
+};
+
 // Iniciar servidor
 const startServer = async () => {
     try {
         await initializeDatabase();
         
-        app.listen(PORT, () => {
+        // ✅ NUEVO: Inicializar Socket.io
+        initializeSocket();
+        
+        // ✅ MODIFICADO: Usar server en lugar de app
+        server.listen(PORT, () => {
             console.log(`🚀 Servidor SIRER ejecutándose en http://localhost:${PORT}`);
             console.log(`📊 Entorno: ${process.env.NODE_ENV}`);
+            console.log(`🔌 Socket.io habilitado en puerto ${PORT}`);
             console.log('👥 Usuarios disponibles:');
             console.log('   📧 admin@sirer.com / admin123');
             console.log('   📧 mozo@sirer.com / mozo123');
             console.log('   📧 cocina@sirer.com / cocina123');
             console.log('   📧 cajero@sirer.com / cajero123');
+            console.log('\n🔔 Funcionalidades en tiempo real:');
+            console.log('   • Notificaciones automáticas a cocina');
+            console.log('   • Alertas cuando pedidos están listos');
+            console.log('   • Sincronización de estados en tiempo real');
+            console.log('   • Dashboard con métricas live');
         });
         
     } catch (error) {
@@ -209,4 +270,5 @@ const startServer = async () => {
 
 startServer();
 
-module.exports = app;
+// ✅ NUEVO: Exportar server para testing
+module.exports = { app, server, socketManager };

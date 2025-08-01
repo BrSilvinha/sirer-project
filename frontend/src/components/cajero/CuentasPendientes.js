@@ -15,7 +15,7 @@ const CuentasPendientes = () => {
     const [montoRecibido, setMontoRecibido] = useState('');
     const [observacionesPago, setObservacionesPago] = useState('');
     const [procesandoPago, setProcesandoPago] = useState(false);
-    const [filtroMonto, setFiltroMonto] = useState('todos'); // 'todos', 'menores', 'mayores'
+    const [filtroMonto, setFiltroMonto] = useState('todos');
     const [estadisticas, setEstadisticas] = useState({
         total_mesas: 0,
         total_a_cobrar: 0,
@@ -23,7 +23,6 @@ const CuentasPendientes = () => {
         mesa_mayor: null
     });
 
-    // ✅ Definir resetFormularioPago ANTES de usarlo
     const resetFormularioPago = useCallback(() => {
         setCuentaSeleccionada(null);
         setMetodoPago('efectivo');
@@ -31,30 +30,85 @@ const CuentasPendientes = () => {
         setObservacionesPago('');
     }, []);
 
-    const fetchMesasConCuentas = useCallback(async () => {
-        try {
-            // Obtener todas las mesas con estado 'cuenta_solicitada' o 'ocupada' con pedidos entregados
-            const mesasResponse = await mesasService.getAll();
-            const mesasPendientes = mesasResponse.data.data.filter(mesa => 
-                mesa.estado === 'cuenta_solicitada' || mesa.estado === 'ocupada'
-            );
+    // ✅ NUEVA FUNCIÓN: Verificar cuentas de forma más inteligente
+    const verificarCuentasMesas = useCallback(async (mesas) => {
+        const mesasConCuentasData = [];
+        
+        // ✅ Procesar solo mesas que realmente podrían tener cuentas
+        const mesasCandidatas = mesas.filter(mesa => 
+            mesa.estado === 'cuenta_solicitada' || 
+            (mesa.estado === 'ocupada' && mesa.updated_at) // Solo mesas ocupadas con actividad reciente
+        );
 
-            const mesasConCuentasData = [];
+        console.log(`🔍 Verificando ${mesasCandidatas.length} mesas candidatas de ${mesas.length} total`);
 
-            for (const mesa of mesasPendientes) {
+        // ✅ Procesar en lotes pequeños para reducir carga
+        for (let i = 0; i < mesasCandidatas.length; i += 3) {
+            const lote = mesasCandidatas.slice(i, i + 3);
+            
+            // Procesar lote en paralelo
+            const promesasLote = lote.map(async (mesa) => {
                 try {
                     const cuentaResponse = await pedidosService.getCuenta(mesa.id);
-                    if (cuentaResponse.data.success) {
-                        mesasConCuentasData.push({
-                            mesa,
-                            cuenta: cuentaResponse.data.data
-                        });
-                    }
+                    return {
+                        mesa,
+                        cuenta: cuentaResponse.data.data
+                    };
                 } catch (error) {
-                    // Mesa sin pedidos pendientes, continuar
-                    console.log(`Mesa ${mesa.numero} sin cuenta pendiente`);
+                    // ✅ Solo loggear en desarrollo y sin toast
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log(`Mesa ${mesa.numero} sin cuenta (${error.response?.status})`);
+                    }
+                    return null;
                 }
+            });
+
+            const resultadosLote = await Promise.all(promesasLote);
+            
+            // Agregar solo las mesas con cuentas válidas
+            resultadosLote.forEach(resultado => {
+                if (resultado) {
+                    mesasConCuentasData.push(resultado);
+                }
+            });
+
+            // ✅ Pequeña pausa entre lotes para no sobrecargar
+            if (i + 3 < mesasCandidatas.length) {
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
+        }
+
+        return mesasConCuentasData;
+    }, []);
+
+    const fetchMesasConCuentas = useCallback(async () => {
+        try {
+            setLoading(true);
+            
+            // ✅ Obtener todas las mesas primero
+            const mesasResponse = await mesasService.getAll();
+            const todasLasMesas = mesasResponse.data.data;
+            
+            // ✅ Filtrar mesas que podrían tener cuentas ANTES de verificar
+            const mesasPotenciales = todasLasMesas.filter(mesa => 
+                mesa.activa && (mesa.estado === 'cuenta_solicitada' || mesa.estado === 'ocupada')
+            );
+
+            console.log(`📊 ${mesasPotenciales.length} mesas potenciales de ${todasLasMesas.length} total`);
+
+            if (mesasPotenciales.length === 0) {
+                setMesasConCuentas([]);
+                setEstadisticas({
+                    total_mesas: 0,
+                    total_a_cobrar: 0,
+                    promedio_cuenta: 0,
+                    mesa_mayor: null
+                });
+                return;
+            }
+
+            // ✅ Verificar cuentas de forma optimizada
+            const mesasConCuentasData = await verificarCuentasMesas(mesasPotenciales);
 
             // Aplicar filtros
             let mesasFiltradas = mesasConCuentasData;
@@ -92,13 +146,15 @@ const CuentasPendientes = () => {
                 });
             }
 
+            console.log(`✅ ${mesasConCuentasData.length} mesas con cuentas encontradas`);
+
         } catch (error) {
             console.error('Error fetching mesas con cuentas:', error);
             toast.error('Error al cargar las cuentas pendientes');
         } finally {
             setLoading(false);
         }
-    }, [filtroMonto]);
+    }, [filtroMonto, verificarCuentasMesas]);
 
     const handleVerCuentaDetalle = useCallback((mesaConCuenta) => {
         setCuentaSeleccionada(mesaConCuenta);
@@ -112,7 +168,6 @@ const CuentasPendientes = () => {
         const totalAPagar = parseFloat(cuentaSeleccionada.cuenta.resumen.total_general);
         const montoRecibidoNum = parseFloat(montoRecibido);
 
-        // Validaciones
         if (metodoPago === 'efectivo' && montoRecibidoNum < totalAPagar) {
             toast.error('El monto recibido es insuficiente');
             return;
@@ -134,7 +189,7 @@ const CuentasPendientes = () => {
             );
 
             setShowPagoModal(false);
-            resetFormularioPago(); // ✅ Ahora ya está definido
+            resetFormularioPago();
             fetchMesasConCuentas();
 
         } catch (error) {
@@ -155,8 +210,8 @@ const CuentasPendientes = () => {
     useEffect(() => {
         fetchMesasConCuentas();
         
-        // Auto-refresh cada 30 segundos
-        const interval = setInterval(fetchMesasConCuentas, 30000);
+        // ✅ Auto-refresh menos frecuente para reducir carga
+        const interval = setInterval(fetchMesasConCuentas, 45000); // 45 segundos en lugar de 30
         return () => clearInterval(interval);
     }, [fetchMesasConCuentas]);
 
@@ -166,6 +221,7 @@ const CuentasPendientes = () => {
                 <div className="text-center py-5">
                     <Spinner animation="border" variant="success" size="lg" />
                     <p className="mt-3 h5">Cargando cuentas pendientes...</p>
+                    <p className="text-muted">Verificando mesas con actividad...</p>
                 </div>
             </Container>
         );
@@ -282,6 +338,9 @@ const CuentasPendientes = () => {
                                 <p className="text-muted mb-0">
                                     No hay cuentas pendientes por cobrar.
                                 </p>
+                                <small className="text-muted d-block mt-2">
+                                    ✅ Sistema optimizado - Verificación inteligente de mesas
+                                </small>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -396,7 +455,6 @@ const CuentasPendientes = () => {
                 <Modal.Body>
                     {cuentaSeleccionada && (
                         <>
-                            {/* Resumen de la cuenta */}
                             <div className="bg-light p-3 rounded mb-4">
                                 <h6 className="mb-3">Resumen de la Cuenta:</h6>
                                 <Table size="sm" className="mb-0">
@@ -427,7 +485,6 @@ const CuentasPendientes = () => {
                                 </Table>
                             </div>
 
-                            {/* Formulario de pago */}
                             <Row>
                                 <Col md={6}>
                                     <Form.Group className="mb-3">
