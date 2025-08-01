@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Container, Row, Col, Card, Badge, Button, Spinner, 
     Modal, ListGroup, Alert, Dropdown, ButtonGroup 
@@ -20,20 +20,7 @@ const MesasView = () => {
     
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchMesas();
-        fetchEstadisticas();
-        
-        // Auto-refresh cada 15 segundos para mozos
-        const interval = setInterval(() => {
-            fetchMesas();
-            fetchEstadisticas();
-        }, 15000);
-        
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchMesas = async () => {
+    const fetchMesas = useCallback(async () => {
         try {
             const response = await mesasService.getAll();
             let mesasData = response.data.data;
@@ -50,18 +37,31 @@ const MesasView = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filtroEstado]);
 
-    const fetchEstadisticas = async () => {
+    const fetchEstadisticas = useCallback(async () => {
         try {
             const response = await mesasService.getStats();
             setEstadisticas(response.data.data);
         } catch (error) {
             console.error('Error fetching estadísticas:', error);
         }
-    };
+    }, []);
 
-    const fetchPedidosMesa = async (mesaId) => {
+    useEffect(() => {
+        fetchMesas();
+        fetchEstadisticas();
+        
+        // Auto-refresh cada 15 segundos para mozos
+        const interval = setInterval(() => {
+            fetchMesas();
+            fetchEstadisticas();
+        }, 15000);
+        
+        return () => clearInterval(interval);
+    }, [fetchMesas, fetchEstadisticas]);
+
+    const fetchPedidosMesa = useCallback(async (mesaId) => {
         try {
             setLoadingPedidos(true);
             const response = await pedidosService.getByMesa(mesaId);
@@ -73,15 +73,15 @@ const MesasView = () => {
         } finally {
             setLoadingPedidos(false);
         }
-    };
+    }, []);
 
-    const handleVerPedidos = async (mesa) => {
+    const handleVerPedidos = useCallback(async (mesa) => {
         setMesaSeleccionada(mesa);
         setShowPedidosModal(true);
         await fetchPedidosMesa(mesa.id);
-    };
+    }, [fetchPedidosMesa]);
 
-    const handleTomarPedido = (mesa) => {
+    const handleTomarPedido = useCallback((mesa) => {
         if (mesa.estado === 'libre') {
             // Cambiar estado a ocupada primero
             mesasService.changeStatus(mesa.id, 'ocupada')
@@ -89,52 +89,54 @@ const MesasView = () => {
                     navigate(`/dashboard/mozo/pedidos/${mesa.id}`);
                 })
                 .catch(error => {
+                    console.error('Error changing mesa status:', error);
                     toast.error('Error al ocupar la mesa');
                 });
         } else {
             navigate(`/dashboard/mozo/pedidos/${mesa.id}`);
         }
-    };
+    }, [navigate]);
 
-    const handleCambiarEstadoMesa = async (mesaId, nuevoEstado) => {
+    const handleCambiarEstadoMesa = useCallback(async (mesaId, nuevoEstado) => {
         try {
             await mesasService.changeStatus(mesaId, nuevoEstado);
             toast.success(`Mesa actualizada a ${getEstadoText(nuevoEstado)}`);
             fetchMesas();
             fetchEstadisticas();
         } catch (error) {
+            console.error('Error changing mesa status:', error);
             toast.error('Error al cambiar estado de mesa');
         }
-    };
+    }, [fetchMesas, fetchEstadisticas]);
 
-    const getEstadoColor = (estado) => {
+    const getEstadoColor = useCallback((estado) => {
         const colors = {
             libre: 'success',
             ocupada: 'danger',
             cuenta_solicitada: 'warning'
         };
         return colors[estado] || 'secondary';
-    };
+    }, []);
 
-    const getEstadoIcon = (estado) => {
+    const getEstadoIcon = useCallback((estado) => {
         const icons = {
             libre: 'fa-check-circle',
             ocupada: 'fa-users',
             cuenta_solicitada: 'fa-credit-card'
         };
         return icons[estado] || 'fa-question-circle';
-    };
+    }, []);
 
-    const getEstadoText = (estado) => {
+    const getEstadoText = useCallback((estado) => {
         const texts = {
             libre: 'Libre',
             ocupada: 'Ocupada',
             cuenta_solicitada: 'Cuenta Solicitada'
         };
         return texts[estado] || estado;
-    };
+    }, []);
 
-    const getActionButton = (mesa) => {
+    const getActionButton = useCallback((mesa) => {
         switch (mesa.estado) {
             case 'libre':
                 return (
@@ -197,9 +199,9 @@ const MesasView = () => {
             default:
                 return null;
         }
-    };
+    }, [handleTomarPedido, handleVerPedidos, handleCambiarEstadoMesa]);
 
-    const getEstadoBadgeVariant = (estado) => {
+    const getEstadoBadgeVariant = useCallback((estado) => {
         switch (estado) {
             case 'nuevo': return 'primary';
             case 'en_cocina': return 'warning';
@@ -208,9 +210,9 @@ const MesasView = () => {
             case 'pagado': return 'secondary';
             default: return 'secondary';
         }
-    };
+    }, []);
 
-    const getEstadoPedidoText = (estado) => {
+    const getEstadoPedidoText = useCallback((estado) => {
         const texts = {
             nuevo: 'Nuevo',
             en_cocina: 'En Cocina',
@@ -219,7 +221,7 @@ const MesasView = () => {
             pagado: 'Pagado'
         };
         return texts[estado] || estado;
-    };
+    }, []);
 
     if (loading) {
         return (

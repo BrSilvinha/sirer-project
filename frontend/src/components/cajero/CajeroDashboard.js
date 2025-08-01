@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Container, Row, Col, Card } from 'react-bootstrap';
+import CuentasPendientes from './CuentasPendientes';
 
 const CajeroHome = () => (
     <Container>
@@ -45,33 +46,12 @@ const CajeroHome = () => (
     </Container>
 );
 
-const CajeroCuentas = () => (
-    <div>
-        <h3>Cuentas por Cobrar</h3>
-        <p>Aquí verás todas las mesas con cuentas pendientes.</p>
-    </div>
-);
-
-const CajeroPagos = () => (
-    <div>
-        <h3>Procesar Pagos</h3>
-        <p>Registra el pago de los clientes y libera las mesas.</p>
-    </div>
-);
-
-const CajeroReportes = () => (
-    <div>
-        <h3>Reportes de Ventas</h3>
-        <p>Visualiza las estadísticas de ventas del día.</p>
-    </div>
-);
-
 const CajeroDashboard = () => {
     return (
         <Routes>
-            <Route path="/" element={<CajeroHome />} />
-            <Route path="/pagos" element={<CajeroPagos />} />
-            <Route path="/reportes" element={<CajeroReportes />} />
+            <Route path="/" element={<CuentasPendientes />} />
+            <Route path="/pagos" element={<CuentasPendientes />} />
+            <Route path="/reportes" element={<CajeroHome />} />
         </Routes>
     );
 };
