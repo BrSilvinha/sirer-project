@@ -13,6 +13,7 @@ const mesasRoutes = require('./routes/mesas');
 const categoriasRoutes = require('./routes/categorias');
 const productosRoutes = require('./routes/productos');
 const reportesRoutes = require('./routes/reportes');
+const pedidosRoutes = require('./routes/pedidos');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -72,6 +73,7 @@ app.use('/api/mesas', mesasRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/reportes', reportesRoutes);
+app.use('/api/pedidos', pedidosRoutes);
 
 // Función para crear datos iniciales completos
 const createInitialData = async () => {

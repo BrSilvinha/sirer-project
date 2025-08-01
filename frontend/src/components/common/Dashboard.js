@@ -31,8 +31,7 @@ const Dashboard = () => {
             );
         } else if (hasRole('mozo')) {
             items.push(
-                { path: '/dashboard/mozo', label: 'Mis Mesas', icon: 'fa-table' },
-                { path: '/dashboard/mozo/pedidos', label: 'Tomar Pedido', icon: 'fa-plus-circle' },
+                { path: '/dashboard/mozo', label: 'Mesas', icon: 'fa-table' },
                 { path: '/dashboard/mozo/historial', label: 'Historial', icon: 'fa-history' }
             );
         } else if (hasRole('cocina')) {
