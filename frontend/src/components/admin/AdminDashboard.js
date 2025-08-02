@@ -17,6 +17,8 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 import { reportesService, mesasService } from '../../services/api';
 import MesasManagement from './MesasManagement';
 import ProductosManagement from './ProductosManagement';
+import UsuariosManagement from './UsuariosManagement';
+import ReportesManagement from './ReportesManagement';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -422,156 +424,9 @@ const AdminHome = () => {
 
 // Componentes para las otras rutas - ACTUALIZADOS
 const AdminMesas = () => <MesasManagement />;
-const AdminProductos = () => <ProductosManagement />; // ✅ NUEVO COMPONENTE INTEGRADO
-
-const AdminReportes = () => (
-    <Container>
-        <Row className="mb-4">
-            <Col>
-                <div className="d-flex align-items-center">
-                    <div className="me-3">
-                        <div className="bg-primary rounded-circle p-3">
-                            <i className="fas fa-chart-bar text-white fa-lg"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="mb-1">Reportes Avanzados</h3>
-                        <p className="text-muted mb-0">Sistema completo de reportes y análisis</p>
-                    </div>
-                </div>
-            </Col>
-        </Row>
-
-        <Row>
-            <Col md={4} className="mb-4">
-                <Card className="border-0 shadow-sm h-100">
-                    <Card.Body className="text-center">
-                        <div className="bg-success bg-opacity-10 rounded-circle p-4 mx-auto mb-3" style={{ width: '80px', height: '80px' }}>
-                            <i className="fas fa-chart-line fa-2x text-success"></i>
-                        </div>
-                        <h5>Reportes de Ventas</h5>
-                        <p className="text-muted">Análisis detallado de ventas por período</p>
-                        <Badge bg="warning">Próximamente</Badge>
-                    </Card.Body>
-                </Card>
-            </Col>
-
-            <Col md={4} className="mb-4">
-                <Card className="border-0 shadow-sm h-100">
-                    <Card.Body className="text-center">
-                        <div className="bg-info bg-opacity-10 rounded-circle p-4 mx-auto mb-3" style={{ width: '80px', height: '80px' }}>
-                            <i className="fas fa-utensils fa-2x text-info"></i>
-                        </div>
-                        <h5>Productos Populares</h5>
-                        <p className="text-muted">Análisis de productos más vendidos</p>
-                        <Badge bg="warning">Próximamente</Badge>
-                    </Card.Body>
-                </Card>
-            </Col>
-
-            <Col md={4} className="mb-4">
-                <Card className="border-0 shadow-sm h-100">
-                    <Card.Body className="text-center">
-                        <div className="bg-primary bg-opacity-10 rounded-circle p-4 mx-auto mb-3" style={{ width: '80px', height: '80px' }}>
-                            <i className="fas fa-users fa-2x text-primary"></i>
-                        </div>
-                        <h5>Performance Mozos</h5>
-                        <p className="text-muted">Rendimiento del personal de servicio</p>
-                        <Badge bg="warning">Próximamente</Badge>
-                    </Card.Body>
-                </Card>
-            </Col>
-        </Row>
-    </Container>
-);
-
-const AdminUsuarios = () => (
-    <Container>
-        <Row className="mb-4">
-            <Col>
-                <div className="d-flex align-items-center">
-                    <div className="me-3">
-                        <div className="bg-success rounded-circle p-3">
-                            <i className="fas fa-users text-white fa-lg"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="mb-1">Gestión de Usuarios</h3>
-                        <p className="text-muted mb-0">Administra el personal del restaurante</p>
-                    </div>
-                </div>
-            </Col>
-        </Row>
-
-        <Row>
-            <Col md={3} className="mb-4">
-                <Card className="border-0 shadow-sm text-center">
-                    <Card.Body>
-                        <div className="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style={{ width: '60px', height: '60px' }}>
-                            <i className="fas fa-crown fa-lg text-primary"></i>
-                        </div>
-                        <h6>Administradores</h6>
-                        <div className="h4 text-primary">1</div>
-                    </Card.Body>
-                </Card>
-            </Col>
-
-            <Col md={3} className="mb-4">
-                <Card className="border-0 shadow-sm text-center">
-                    <Card.Body>
-                        <div className="bg-success bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style={{ width: '60px', height: '60px' }}>
-                            <i className="fas fa-user-tie fa-lg text-success"></i>
-                        </div>
-                        <h6>Mozos</h6>
-                        <div className="h4 text-success">3</div>
-                    </Card.Body>
-                </Card>
-            </Col>
-
-            <Col md={3} className="mb-4">
-                <Card className="border-0 shadow-sm text-center">
-                    <Card.Body>
-                        <div className="bg-warning bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style={{ width: '60px', height: '60px' }}>
-                            <i className="fas fa-hat-chef fa-lg text-warning"></i>
-                        </div>
-                        <h6>Cocina</h6>
-                        <div className="h4 text-warning">2</div>
-                    </Card.Body>
-                </Card>
-            </Col>
-
-            <Col md={3} className="mb-4">
-                <Card className="border-0 shadow-sm text-center">
-                    <Card.Body>
-                        <div className="bg-info bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style={{ width: '60px', height: '60px' }}>
-                            <i className="fas fa-calculator fa-lg text-info"></i>
-                        </div>
-                        <h6>Cajeros</h6>
-                        <div className="h4 text-info">2</div>
-                    </Card.Body>
-                </Card>
-            </Col>
-        </Row>
-
-        <Row>
-            <Col>
-                <Card className="border-0 shadow-sm">
-                    <Card.Body className="text-center py-5">
-                        <i className="fas fa-tools fa-3x text-muted mb-4"></i>
-                        <h4>Módulo en Desarrollo</h4>
-                        <p className="text-muted mb-3">
-                            El sistema completo de gestión de usuarios estará disponible próximamente.
-                        </p>
-                        <Badge bg="info" className="px-3 py-2">
-                            <i className="fas fa-code me-2"></i>
-                            En Construcción
-                        </Badge>
-                    </Card.Body>
-                </Card>
-            </Col>
-        </Row>
-    </Container>
-);
+const AdminProductos = () => <ProductosManagement />;
+const AdminUsuarios = () => <UsuariosManagement />; // ✅ NUEVO COMPONENTE COMPLETO
+const AdminReportes = () => <ReportesManagement />; // ✅ NUEVO SISTEMA COMPLETO DE REPORTES
 
 // Router principal actualizado
 const AdminDashboard = () => {
@@ -579,9 +434,9 @@ const AdminDashboard = () => {
         <Routes>
             <Route path="/" element={<AdminHome />} />
             <Route path="/mesas" element={<AdminMesas />} />
-            <Route path="/productos" element={<AdminProductos />} /> {/* ✅ RUTA ACTUALIZADA */}
+            <Route path="/productos" element={<AdminProductos />} />
             <Route path="/reportes" element={<AdminReportes />} />
-            <Route path="/usuarios" element={<AdminUsuarios />} />
+            <Route path="/usuarios" element={<AdminUsuarios />} /> {/* ✅ RUTA ACTUALIZADA */}
         </Routes>
     );
 };
