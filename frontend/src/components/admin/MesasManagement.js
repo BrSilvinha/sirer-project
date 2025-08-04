@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Container, Row, Col, Card, Button, Modal, Form, Badge, 
-    Spinner, Alert, Table, Dropdown, ButtonGroup 
+    Spinner, Table, Dropdown, ButtonGroup 
 } from 'react-bootstrap';
 import { mesasService } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -200,36 +200,6 @@ const MesasManagement = () => {
             {/* Estadísticas */}
             {estadisticas && (
                 <Row className="mb-4">
-                    <Col md={3}>
-                        <Card className="border-0 shadow-sm">
-                            <Card.Body>
-                                <div className="d-flex align-items-center">
-                                    <div className="bg-primary rounded-circle p-3 me-3">
-                                        <i className="fas fa-table text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div className="text-muted small">Total Mesas</div>
-                                        <div className="h4 mb-0">{estadisticas.total}</div>
-                                    </div>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3}>
-                        <Card className="border-0 shadow-sm">
-                            <Card.Body>
-                                <div className="d-flex align-items-center">
-                                    <div className="bg-success rounded-circle p-3 me-3">
-                                        <i className="fas fa-check-circle text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div className="text-muted small">Libres</div>
-                                        <div className="h4 mb-0">{estadisticas.libres}</div>
-                                    </div>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
                     <Col md={3}>
                         <Card className="border-0 shadow-sm">
                             <Card.Body>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Container, Row, Col, Card, Spinner, Alert, Badge } from 'react-bootstrap';
 import {
@@ -39,14 +39,8 @@ const AdminHome = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        fetchDashboardData();
-        // Actualizar cada 30 segundos
-        const interval = setInterval(fetchDashboardData, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchDashboardData = async () => {
+    // ✅ CORREGIDO: Mover fetchDashboardData fuera del useEffect para usar en dependency
+    const fetchDashboardData = useCallback(async () => {
         try {
             setError(null);
             
@@ -80,7 +74,15 @@ const AdminHome = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []); // Sin dependencias porque no usa variables externas
+
+    // ✅ CORREGIDO: Agregar fetchDashboardData a las dependencias
+    useEffect(() => {
+        fetchDashboardData();
+        // Actualizar cada 30 segundos
+        const interval = setInterval(fetchDashboardData, 30000);
+        return () => clearInterval(interval);
+    }, [fetchDashboardData]);
 
     // Función para generar datos de fallback del dashboard
     const generateFallbackDashboard = () => {
