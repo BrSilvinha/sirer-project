@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Container, Row, Col, Card, Badge, Button, Form, 
-    Spinner, Modal, Tab, Tabs, Table, ButtonGroup,
-    ProgressBar, Alert
+    Spinner, Modal, Tab, Tabs, Table, ButtonGroup, Alert
 } from 'react-bootstrap';
 import {
     Chart as ChartJS,
@@ -17,7 +16,7 @@ import {
     ArcElement,
     Filler
 } from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 import { reportesService } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -321,6 +320,17 @@ const ReportesManagement = () => {
                                     type="date"
                                     size="sm"
                                     value={filtros.fechaInicio}
+                                    onChange={(e) => handleFiltroChange('fechaInicio', e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={3}>
+                            <Form.Group>
+                                <Form.Label className="small fw-bold">Fecha Fin</Form.Label>
+                                <Form.Control
+                                    type="date"
+                                    size="sm"
+                                    value={filtros.fechaFin}
                                     onChange={(e) => handleFiltroChange('fechaFin', e.target.value)}
                                 />
                             </Form.Group>
@@ -651,9 +661,7 @@ const ReportesManagement = () => {
                                         <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
                                             <Card.Body className="text-center">
                                                 <i className="fas fa-users fa-2x text-primary mb-2"></i>
-                                                <div className="h4 mb-0 text-primary">
-                                                    {reporteMozos.mozos?.length || 0}
-                                                </div>
+                                                <div className="h4 mb-0">{reporteMozos.mozos?.length || 0}</div>
                                                 <div className="text-muted small">Mozos Activos</div>
                                             </Card.Body>
                                         </Card>
@@ -799,9 +807,7 @@ const ReportesManagement = () => {
                                         <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
                                             <Card.Body className="text-center">
                                                 <i className="fas fa-table fa-2x text-primary mb-2"></i>
-                                                <div className="h4 mb-0 text-primary">
-                                                    {reporteMesas.mesas?.length || 0}
-                                                </div>
+                                                <div className="h4 mb-0">{reporteMesas.mesas?.length || 0}</div>
                                                 <div className="text-muted small">Mesas Analizadas</div>
                                             </Card.Body>
                                         </Card>

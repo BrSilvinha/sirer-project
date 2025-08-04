@@ -41,17 +41,13 @@ const ResumenVentas = () => {
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
     const [rangoHoras, setRangoHoras] = useState('completo'); // 'completo', 'turno_manana', 'turno_tarde'
 
-    useEffect(() => {
-        fetchResumenVentas();
-    }, [fechaSeleccionada, rangoHoras]);
-
+    // ✅ CORREGIDO: Mover fetchResumenVentas fuera del useEffect para poder usarlo en dependency
     const fetchResumenVentas = useCallback(async () => {
         try {
             setLoading(true);
             
             // Obtener datos del dashboard principal
             const dashboardResponse = await reportesService.getDashboard();
-            const dashboardData = dashboardResponse.data.data;
             
             // Obtener reporte de ventas con filtros
             const ventasParams = {
@@ -138,10 +134,10 @@ const ResumenVentas = () => {
         }
     }, [fechaSeleccionada, rangoHoras, user.nombre]);
 
-    const handleVerDetallePedido = useCallback((pedido) => {
-        setPedidoSeleccionado(pedido);
-        setShowDetalleModal(true);
-    }, []);
+    // ✅ CORREGIDO: Agregar fetchResumenVentas a las dependencias
+    useEffect(() => {
+        fetchResumenVentas();
+    }, [fetchResumenVentas]);
 
     const handleCerrarTurno = useCallback(async () => {
         if (window.confirm('¿Estás seguro de que quieres cerrar el turno? Esta acción no se puede deshacer.')) {

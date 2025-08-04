@@ -1,9 +1,9 @@
 import React from 'react';
-import { Container, Row, Col, Navbar, Nav, Button, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, Navbar, Nav, Dropdown } from 'react-bootstrap';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-// Importar componentes por rol (los crearemos después)
+// Importar componentes por rol
 import AdminDashboard from '../admin/AdminDashboard';
 import MozoDashboard from '../mozo/MozoDashboard';
 import CocinaDashboard from '../cocina/CocinaDashboard';

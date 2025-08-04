@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Container, Row, Col, Card, Badge, Button, 
-    Spinner, Alert, Modal, Form, ButtonGroup, Dropdown
+    Spinner, Modal, ButtonGroup, Dropdown
 } from 'react-bootstrap';
 import { pedidosService, productosService } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -13,7 +13,6 @@ const PedidosCocina = () => {
     const [filtroEstado, setFiltroEstado] = useState('activos'); // 'activos', 'todos'
     const [ordenamiento, setOrdenamiento] = useState('mas_antiguos'); // 'mas_antiguos', 'mas_recientes'
     const [showDisponibilidadModal, setShowDisponibilidadModal] = useState(false);
-    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
     const [actualizandoEstado, setActualizandoEstado] = useState(null);
     const [estadisticas, setEstadisticas] = useState({
         nuevos: 0,
@@ -537,17 +536,19 @@ const PedidosCocina = () => {
             </Modal>
 
             {/* Estilos CSS para animaciones */}
-            <style jsx>{`
-                @keyframes pulse {
-                    0% { opacity: 1; }
-                    50% { opacity: 0.5; }
-                    100% { opacity: 1; }
-                }
-                
-                .border-3 {
-                    border-width: 3px !important;
-                }
-            `}</style>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    @keyframes pulse {
+                        0% { opacity: 1; }
+                        50% { opacity: 0.5; }
+                        100% { opacity: 1; }
+                    }
+                    
+                    .border-3 {
+                        border-width: 3px !important;
+                    }
+                `
+            }} />
         </Container>
     );
 };
