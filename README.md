@@ -341,11 +341,9 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detal
 
 ## 👨‍💻 Autor
 
-**Bruno Silva** - [@BrSilvinha](https://github.com/BrSilvinha)
+**Jhamir Silva** - [@BrSilvinha](https://github.com/BrSilvinha)
 
-- 📧 Email: bruno@example.com
-- 💼 LinkedIn: [Bruno Silva](https://linkedin.com/in/brunosilva)
-- 🐦 Twitter: [@BrSilvinha](https://twitter.com/BrSilvinha)
+- 📧 Email: jhamirsilva@gmail.com
 
 ## 🙏 Agradecimientos
 
