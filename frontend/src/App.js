@@ -1,3 +1,5 @@
+// 🍽️ ARCHIVO: frontend/src/App.js - VERSIÓN ACTUALIZADA
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -7,51 +9,66 @@ import Login from './components/Login';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Dashboard from './components/common/Dashboard';
 
-// Importar estilos
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import './App.css';
+// ✅ IMPORTAR ESTILOS EN EL ORDEN CORRECTO
+import 'bootstrap/dist/css/bootstrap.min.css';        // 1. Bootstrap base
+import '@fortawesome/fontawesome-free/css/all.min.css'; // 2. FontAwesome
+import './index.css';                                  // 3. Variables globales
+import './App.css';                                    // 4. Estilos personalizados del menú
 
 function App() {
     return (
         <div className="App">
-            {/* Configuración de notificaciones con tema del restaurante */}
+            {/* 🍽️ Configuración de notificaciones con colores del menú */}
             <Toaster
                 position="top-right"
                 toastOptions={{
                     duration: 4000,
                     style: {
                         background: '#fff',
-                        color: '#333',
+                        color: '#2C1810', // --menu-dark
                         fontSize: '14px',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(218, 165, 32, 0.15)',
-                        border: '1px solid rgba(218, 165, 32, 0.2)'
+                        borderRadius: '12px',
+                        boxShadow: '0 6px 20px rgba(218, 165, 32, 0.15)',
+                        border: '2px solid rgba(218, 165, 32, 0.2)'
                     },
                     success: {
                         style: {
-                            background: 'linear-gradient(135deg, #28a745, #20c997)',
+                            background: 'linear-gradient(135deg, #32CD32, #228B22)', // Verde del menú
                             color: 'white',
+                            border: '2px solid #32CD32'
                         },
                         iconTheme: {
                             primary: 'white',
-                            secondary: '#28a745',
+                            secondary: '#32CD32',
                         },
                     },
                     error: {
                         style: {
-                            background: 'linear-gradient(135deg, #dc3545, #e83e8c)',
+                            background: 'linear-gradient(135deg, #C2185B, #880E4F)', // Purple del menú
                             color: 'white',
+                            border: '2px solid #C2185B'
                         },
                         iconTheme: {
                             primary: 'white',
-                            secondary: '#dc3545',
+                            secondary: '#C2185B',
                         },
                     },
                     loading: {
                         style: {
-                            background: 'linear-gradient(135deg, #DAA520, #C2185B)',
+                            background: 'linear-gradient(135deg, #DAA520, #C2185B)', // Gradiente dorado-purple
                             color: 'white',
+                            border: '2px solid #DAA520'
+                        },
+                    },
+                    warning: {
+                        style: {
+                            background: 'linear-gradient(135deg, #FF8C00, #DAA520)', // Naranja-dorado
+                            color: 'white',
+                            border: '2px solid #FF8C00'
+                        },
+                        iconTheme: {
+                            primary: 'white',
+                            secondary: '#FF8C00',
                         },
                     },
                 }}
