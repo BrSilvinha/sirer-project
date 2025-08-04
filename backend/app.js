@@ -1,274 +1,117 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const http = require('http'); // ✅ NUEVO: Para Socket.io
-require('dotenv').config();
+const { sequelize, testConnection } = require('./config/database');
+const socketManager = require('./config/socket');
+const { createServer } = require('http');
 
-const { testConnection, sequelize } = require('./config/database');
-const associations = require('./models/associations');
-const socketManager = require('./config/socket'); // ✅ NUEVO: Socket manager
-
-// Importar todas las rutas
+// Importar rutas
 const authRoutes = require('./routes/auth');
 const mesasRoutes = require('./routes/mesas');
 const categoriasRoutes = require('./routes/categorias');
 const productosRoutes = require('./routes/productos');
-const reportesRoutes = require('./routes/reportes');
 const pedidosRoutes = require('./routes/pedidos');
+const reportesRoutes = require('./routes/reportes');
 
+// Crear aplicación Express
 const app = express();
-const PORT = process.env.PORT || 5000;
+const server = createServer(app);
 
-// ✅ NUEVO: Crear servidor HTTP para Socket.io
-const server = http.createServer(app);
+// Configurar Socket.io
+const io = socketManager.initialize(server);
 
-// Middlewares básicos
-app.use(helmet({
-    crossOriginEmbedderPolicy: false,
-    contentSecurityPolicy: false
-}));
-
+// Middleware
 app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true
 }));
 
-app.use(morgan('combined'));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ NUEVO: Middleware para socket.io en las rutas
+// Middleware para pasar io a las rutas
 app.use((req, res, next) => {
-    req.io = socketManager.getIO();
-    req.socketManager = socketManager;
+    req.io = io;
     next();
 });
 
-// Rutas principales
-app.get('/', (req, res) => {
-    res.json({ 
-        message: 'SIRER API funcionando correctamente',
-        version: '1.0.0',
-        features: ['REST API', 'Socket.io', 'Real-time notifications'], // ✅ NUEVO
-        timestamp: new Date().toISOString()
-    });
-});
-
-app.get('/health', async (req, res) => {
-    try {
-        await sequelize.authenticate();
-        
-        // ✅ NUEVO: Verificar estado de Socket.io
-        const io = socketManager.getIO();
-        const connectedUsers = socketManager.getConnectedUsers();
-        
-        res.json({
-            status: 'OK',
-            database: 'Connected',
-            socketio: {
-                status: io ? 'Active' : 'Inactive',
-                connectedUsers: connectedUsers.length,
-                usersByRole: connectedUsers.reduce((acc, user) => {
-                    acc[user.rol] = (acc[user.rol] || 0) + 1;
-                    return acc;
-                }, {})
-            },
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        res.status(503).json({
-            status: 'ERROR',
-            database: 'Disconnected',
-            socketio: 'Unknown',
-            error: error.message
-        });
-    }
-});
-
-// ✅ NUEVO: Endpoint para estadísticas de Socket.io
-app.get('/socket/stats', (req, res) => {
-    const connectedUsers = socketManager.getConnectedUsers();
-    
-    res.json({
-        success: true,
-        data: {
-            totalConnected: connectedUsers.length,
-            users: connectedUsers,
-            byRole: connectedUsers.reduce((acc, user) => {
-                acc[user.rol] = (acc[user.rol] || 0) + 1;
-                return acc;
-            }, {})
-        }
-    });
-});
-
-// Configurar todas las rutas
+// Rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/mesas', mesasRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/productos', productosRoutes);
-app.use('/api/reportes', reportesRoutes);
 app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/reportes', reportesRoutes);
 
-// Función para crear datos iniciales completos
-const createInitialData = async () => {
-    try {
-        const { Usuario, Categoria, Mesa, Producto } = associations;
-        
-        // Crear usuarios
-        const usuarios = [
-            { nombre: 'Administrador', email: 'admin@sirer.com', password: 'admin123', rol: 'administrador' },
-            { nombre: 'Juan Pérez', email: 'mozo@sirer.com', password: 'mozo123', rol: 'mozo' },
-            { nombre: 'Chef García', email: 'cocina@sirer.com', password: 'cocina123', rol: 'cocina' },
-            { nombre: 'Ana López', email: 'cajero@sirer.com', password: 'cajero123', rol: 'cajero' }
-        ];
-        
-        for (const userData of usuarios) {
-            const [usuario, created] = await Usuario.findOrCreate({
-                where: { email: userData.email },
-                defaults: userData
-            });
-            if (created) {
-                console.log(`✅ Usuario ${userData.rol} creado: ${userData.email}`);
-            }
-        }
+// Ruta para gestión de usuarios
+app.use('/api/users', require('./routes/users'));
 
-        // Crear categorías
-        const categorias = [
-            { nombre: 'Bebidas', descripcion: 'Bebidas calientes y frías' },
-            { nombre: 'Entradas', descripcion: 'Aperitivos y entradas' },
-            { nombre: 'Platos Principales', descripcion: 'Platos principales del menú' },
-            { nombre: 'Postres', descripcion: 'Postres y dulces' }
-        ];
-        
-        for (const cat of categorias) {
-            const [categoria, created] = await Categoria.findOrCreate({
-                where: { nombre: cat.nombre },
-                defaults: cat
-            });
-            if (created) {
-                console.log(`✅ Categoría creada: ${cat.nombre}`);
-            }
-        }
+// Ruta de prueba
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'SIRER API funcionando correctamente',
+        timestamp: new Date().toISOString()
+    });
+});
 
-        // Crear mesas
-        const mesasCount = await Mesa.count();
-        if (mesasCount === 0) {
-            const mesas = [];
-            for (let i = 1; i <= 10; i++) {
-                mesas.push({
-                    numero: i,
-                    capacidad: i <= 6 ? 4 : 6
-                });
-            }
-            await Mesa.bulkCreate(mesas);
-            console.log('✅ Mesas creadas (1-10)');
-        }
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+    console.error('Error:', err.stack);
+    res.status(500).json({ 
+        error: 'Error interno del servidor',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Algo salió mal'
+    });
+});
 
-        // Crear productos de ejemplo
-        const productosCount = await Producto.count();
-        if (productosCount === 0) {
-            const bebidas = await Categoria.findOne({ where: { nombre: 'Bebidas' } });
-            const principales = await Categoria.findOne({ where: { nombre: 'Platos Principales' } });
-            const postres = await Categoria.findOne({ where: { nombre: 'Postres' } });
-            const entradas = await Categoria.findOne({ where: { nombre: 'Entradas' } });
-            
-            const productos = [
-                // Bebidas
-                { nombre: 'Coca Cola', precio: 3.50, categoria_id: bebidas?.id },
-                { nombre: 'Agua Mineral', precio: 2.00, categoria_id: bebidas?.id },
-                { nombre: 'Café', precio: 4.00, categoria_id: bebidas?.id },
-                
-                // Entradas
-                { nombre: 'Pan con Ajo', precio: 6.50, categoria_id: entradas?.id },
-                { nombre: 'Ensalada César', precio: 12.00, categoria_id: entradas?.id },
-                
-                // Principales
-                { nombre: 'Pizza Margarita', precio: 25.90, categoria_id: principales?.id },
-                { nombre: 'Hamburguesa', precio: 18.50, categoria_id: principales?.id },
-                { nombre: 'Pasta Carbonara', precio: 22.00, categoria_id: principales?.id },
-                
-                // Postres
-                { nombre: 'Tiramisú', precio: 8.50, categoria_id: postres?.id },
-                { nombre: 'Helado', precio: 6.50, categoria_id: postres?.id }
-            ].filter(p => p.categoria_id);
-            
-            if (productos.length > 0) {
-                await Producto.bulkCreate(productos);
-                console.log(`✅ Productos creados (${productos.length})`);
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Error creando datos iniciales:', error);
-    }
-};
+// Ruta no encontrada
+app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Endpoint no encontrado' });
+});
 
-// Función para inicializar la base de datos
-const initializeDatabase = async () => {
-    try {
-        console.log('🔄 Conectando a la base de datos...');
-        await testConnection();
-        
-        console.log('🔄 Sincronizando modelos...');
-        await sequelize.sync({ force: false });
-        console.log('✅ Modelos sincronizados correctamente');
-        
-        await createInitialData();
-        
-    } catch (error) {
-        console.error('❌ Error al inicializar la base de datos:', error);
-    }
-};
-
-// ✅ NUEVO: Función para inicializar Socket.io
-const initializeSocket = () => {
-    try {
-        console.log('🔄 Inicializando Socket.io...');
-        const io = socketManager.initialize(server);
-        console.log('✅ Socket.io inicializado correctamente');
-        return io;
-    } catch (error) {
-        console.error('❌ Error al inicializar Socket.io:', error);
-        throw error;
-    }
-};
-
-// Iniciar servidor
+// Función para iniciar el servidor
 const startServer = async () => {
     try {
-        await initializeDatabase();
+        // Probar conexión a la base de datos
+        await testConnection();
         
-        // ✅ NUEVO: Inicializar Socket.io
-        initializeSocket();
+        // Sincronizar modelos (solo en desarrollo)
+        if (process.env.NODE_ENV === 'development') {
+            await sequelize.sync({ alter: false });
+            console.log('📊 Modelos sincronizados con la base de datos');
+        }
+
+        const PORT = process.env.PORT || 5000;
         
-        // ✅ MODIFICADO: Usar server en lugar de app
         server.listen(PORT, () => {
-            console.log(`🚀 Servidor SIRER ejecutándose en http://localhost:${PORT}`);
-            console.log(`📊 Entorno: ${process.env.NODE_ENV}`);
-            console.log(`🔌 Socket.io habilitado en puerto ${PORT}`);
-            console.log('👥 Usuarios disponibles:');
-            console.log('   📧 admin@sirer.com / admin123');
-            console.log('   📧 mozo@sirer.com / mozo123');
-            console.log('   📧 cocina@sirer.com / cocina123');
-            console.log('   📧 cajero@sirer.com / cajero123');
-            console.log('\n🔔 Funcionalidades en tiempo real:');
-            console.log('   • Notificaciones automáticas a cocina');
-            console.log('   • Alertas cuando pedidos están listos');
-            console.log('   • Sincronización de estados en tiempo real');
-            console.log('   • Dashboard con métricas live');
+            console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
+            console.log(`📡 Socket.io configurado y listo`);
+            console.log(`🌐 API disponible en http://localhost:${PORT}/api`);
         });
-        
+
     } catch (error) {
-        console.error('❌ Error al iniciar el servidor:', error);
+        console.error('❌ Error al iniciar servidor:', error);
         process.exit(1);
     }
 };
 
+// Manejar cierre graceful
+process.on('SIGTERM', () => {
+    console.log('🔄 Cerrando servidor...');
+    server.close(() => {
+        console.log('✅ Servidor cerrado correctamente');
+        sequelize.close();
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('🔄 Cerrando servidor...');
+    server.close(() => {
+        console.log('✅ Servidor cerrado correctamente');
+        sequelize.close();
+    });
+});
+
+// Iniciar servidor
 startServer();
 
-// ✅ NUEVO: Exportar server para testing
-module.exports = { app, server, socketManager };
+module.exports = app;

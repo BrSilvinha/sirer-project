@@ -86,61 +86,24 @@ const AdminHome = () => {
     const generateFallbackDashboard = () => {
         return {
             resumen: {
-                ventas_hoy: "450.75",
-                pedidos_hoy: 12,
-                promedio_por_pedido: "37.56"
+                ventas_hoy: "0.00",
+                pedidos_hoy: 0,
+                promedio_por_pedido: "0.00"
             },
-            pedidos_por_estado: [
-                { estado: 'nuevo', cantidad: 3 },
-                { estado: 'en_cocina', cantidad: 2 },
-                { estado: 'preparado', cantidad: 1 },
-                { estado: 'entregado', cantidad: 6 }
-            ],
-            productos_mas_vendidos: [
-                {
-                    producto: { nombre: 'Pizza Margarita' },
-                    total_vendido: 8,
-                    ingresos: "120.00"
-                },
-                {
-                    producto: { nombre: 'Hamburguesa Clásica' },
-                    total_vendido: 6,
-                    ingresos: "90.00"
-                },
-                {
-                    producto: { nombre: 'Coca Cola' },
-                    total_vendido: 15,
-                    ingresos: "45.00"
-                }
-            ],
-            mozos_activos: [
-                {
-                    mozo: { nombre: 'Carlos Rodríguez' },
-                    total_pedidos: 5,
-                    total_ventas: "180.25"
-                },
-                {
-                    mozo: { nombre: 'Ana García' },
-                    total_pedidos: 4,
-                    total_ventas: "150.50"
-                },
-                {
-                    mozo: { nombre: 'Luis Martínez' },
-                    total_pedidos: 3,
-                    total_ventas: "120.00"
-                }
-            ]
+            pedidos_por_estado: [],
+            productos_mas_vendidos: [],
+            mozos_activos: []
         };
     };
 
     // Función para generar datos de fallback de mesas
     const generateFallbackMesasStats = () => {
         return {
-            total: 12,
-            libres: 8,
-            ocupadas: 3,
-            cuenta_solicitada: 1,
-            porcentaje_ocupacion: 33
+            total: 0,
+            libres: 0,
+            ocupadas: 0,
+            cuenta_solicitada: 0,
+            porcentaje_ocupacion: 0
         };
     };
 
@@ -423,7 +386,7 @@ const AdminHome = () => {
                         </Card.Header>
                         <Card.Body>
                             <div style={{ height: '300px' }}>
-                                {dashboardData?.resumen?.ventas_hoy > 0 ? (
+                                {parseFloat(dashboardData?.resumen?.ventas_hoy || 0) > 0 ? (
                                     <Bar data={ventasChartData} options={chartOptions} />
                                 ) : (
                                     <div className="d-flex align-items-center justify-content-center h-100">

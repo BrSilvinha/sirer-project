@@ -1,3 +1,5 @@
+/* App.css - Tema completo del restaurante */
+
 .App {
   text-align: center;
 }
@@ -35,4 +37,455 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 🍽️ TEMA DEL RESTAURANTE - COLORES PERSONALIZADOS */
+:root {
+  --menu-gold: #DAA520;
+  --menu-purple: #C2185B;
+  --menu-dark-gold: #B8860B;
+  --menu-light-gold: #F5DEB3;
+  --menu-dark-purple: #880E4F;
+  --menu-light-purple: #F8BBD9;
+  --menu-orange: #FF8C00;
+  --menu-green: #32CD32;
+}
+
+/* Clases de colores personalizadas */
+.bg-menu-gold { 
+  background-color: var(--menu-gold) !important; 
+}
+
+.bg-menu-purple { 
+  background-color: var(--menu-purple) !important; 
+}
+
+.bg-menu-light-gold { 
+  background-color: var(--menu-light-gold) !important; 
+}
+
+.bg-menu-light-purple { 
+  background-color: var(--menu-light-purple) !important; 
+}
+
+.text-menu-gold { 
+  color: var(--menu-gold) !important; 
+}
+
+.text-menu-purple { 
+  color: var(--menu-purple) !important; 
+}
+
+.text-menu-dark-gold { 
+  color: var(--menu-dark-gold) !important; 
+}
+
+.text-menu-dark-purple { 
+  color: var(--menu-dark-purple) !important; 
+}
+
+.border-menu-gold { 
+  border-color: var(--menu-gold) !important; 
+}
+
+.border-menu-purple { 
+  border-color: var(--menu-purple) !important; 
+}
+
+/* Gradientes del tema */
+.gradient-menu {
+  background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%) !important;
+}
+
+.gradient-menu-reverse {
+  background: linear-gradient(135deg, var(--menu-purple) 0%, var(--menu-gold) 100%) !important;
+}
+
+.gradient-menu-light {
+  background: linear-gradient(135deg, var(--menu-light-gold) 0%, var(--menu-light-purple) 100%) !important;
+}
+
+/* Botones personalizados del tema */
+.btn-menu-primary {
+  background: linear-gradient(135deg, var(--menu-purple), var(--menu-dark-purple)) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(194, 24, 91, 0.3) !important;
+}
+
+.btn-menu-primary:hover {
+  background: linear-gradient(135deg, var(--menu-dark-purple), var(--menu-purple)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(194, 24, 91, 0.4) !important;
+}
+
+.btn-menu-secondary {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-dark-gold)) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3) !important;
+}
+
+.btn-menu-secondary:hover {
+  background: linear-gradient(135deg, var(--menu-dark-gold), var(--menu-gold)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.4) !important;
+}
+
+.btn-menu-success {
+  background: linear-gradient(135deg, var(--menu-green), #228B22) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-menu-success:hover {
+  background: linear-gradient(135deg, #228B22, var(--menu-green)) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Cards con tema del restaurante */
+.card-menu {
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden !important;
+}
+
+.card-menu:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-menu-gold {
+  border: 2px solid var(--menu-gold) !important;
+  background: linear-gradient(135deg, rgba(245, 222, 179, 0.1), rgba(255, 255, 255, 0.9)) !important;
+}
+
+.card-menu-purple {
+  border: 2px solid var(--menu-purple) !important;
+  background: linear-gradient(135deg, rgba(248, 187, 217, 0.1), rgba(255, 255, 255, 0.9)) !important;
+}
+
+/* Badges del tema */
+.badge-menu-gold {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-dark-gold)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+}
+
+.badge-menu-purple {
+  background: linear-gradient(135deg, var(--menu-purple), var(--menu-dark-purple)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+}
+
+/* Navbar personalizada */
+.navbar-menu {
+  background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.navbar-menu .navbar-brand {
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 1.5rem !important;
+}
+
+.navbar-menu .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.navbar-menu .nav-link:hover {
+  color: white !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Sidebar personalizado */
+.sidebar-menu {
+  background: linear-gradient(180deg, #ffffff 0%, rgba(245, 222, 179, 0.1) 100%) !important;
+  border-right: 3px solid var(--menu-gold) !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.sidebar-menu .nav-link {
+  color: #333 !important;
+  border-radius: 8px !important;
+  margin-bottom: 0.25rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.sidebar-menu .nav-link:hover {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(194, 24, 91, 0.1)) !important;
+  transform: translateX(5px) !important;
+  color: var(--menu-purple) !important;
+}
+
+.sidebar-menu .nav-link.active {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  color: white !important;
+  box-shadow: 0 2px 10px rgba(218, 165, 32, 0.3) !important;
+}
+
+/* Inputs con tema */
+.form-control-menu {
+  border: 2px solid transparent !important;
+  border-radius: 8px !important;
+  background: rgba(245, 222, 179, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.form-control-menu:focus {
+  border-color: var(--menu-gold) !important;
+  box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.25) !important;
+  background: white !important;
+}
+
+/* Modales con tema */
+.modal-menu .modal-content {
+  border: none !important;
+  border-radius: 15px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal-menu .modal-header {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  color: white !important;
+  border-bottom: none !important;
+  border-radius: 15px 15px 0 0 !important;
+}
+
+.modal-menu .modal-header .btn-close {
+  filter: invert(1) !important;
+}
+
+/* Tablas con tema */
+.table-menu {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.table-menu thead th {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.5px !important;
+}
+
+.table-menu tbody tr:hover {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.05), rgba(194, 24, 91, 0.05)) !important;
+  transform: scale(1.01) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Alertas con tema */
+.alert-menu-success {
+  background: linear-gradient(135deg, rgba(50, 205, 50, 0.1), rgba(40, 167, 69, 0.1)) !important;
+  border: 1px solid var(--menu-green) !important;
+  color: #155724 !important;
+  border-radius: 10px !important;
+}
+
+.alert-menu-warning {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(255, 193, 7, 0.1)) !important;
+  border: 1px solid var(--menu-gold) !important;
+  color: #856404 !important;
+  border-radius: 10px !important;
+}
+
+.alert-menu-danger {
+  background: linear-gradient(135deg, rgba(194, 24, 91, 0.1), rgba(220, 53, 69, 0.1)) !important;
+  border: 1px solid var(--menu-purple) !important;
+  color: #721c24 !important;
+  border-radius: 10px !important;
+}
+
+/* Spinner personalizado */
+.spinner-menu {
+  color: var(--menu-purple) !important;
+}
+
+/* Efectos de hover para elementos interactivos */
+.hover-menu {
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.hover-menu:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Texto con gradiente */
+.text-gradient-menu {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: bold !important;
+}
+
+/* Líneas divisorias con tema */
+.divider-menu {
+  height: 3px !important;
+  background: linear-gradient(to right, var(--menu-gold), var(--menu-purple)) !important;
+  border: none !important;
+  border-radius: 2px !important;
+  margin: 2rem 0 !important;
+}
+
+/* Iconos con colores del tema */
+.icon-menu-gold {
+  color: var(--menu-gold) !important;
+}
+
+.icon-menu-purple {
+  color: var(--menu-purple) !important;
+}
+
+/* Footer con tema */
+.footer-menu {
+  background: linear-gradient(135deg, var(--menu-dark-purple), var(--menu-purple)) !important;
+  color: white !important;
+  padding: 2rem 0 !important;
+}
+
+/* Breadcrumb personalizado */
+.breadcrumb-menu {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(194, 24, 91, 0.1)) !important;
+  border-radius: 10px !important;
+  padding: 1rem !important;
+}
+
+.breadcrumb-menu .breadcrumb-item.active {
+  color: var(--menu-purple) !important;
+  font-weight: 600 !important;
+}
+
+/* Paginación con tema */
+.pagination-menu .page-link {
+  border: 1px solid var(--menu-gold) !important;
+  color: var(--menu-purple) !important;
+  margin: 0 2px !important;
+  border-radius: 6px !important;
+}
+
+.pagination-menu .page-link:hover {
+  background: var(--menu-gold) !important;
+  color: white !important;
+}
+
+.pagination-menu .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  border-color: var(--menu-purple) !important;
+}
+
+/* Dropdown personalizado */
+.dropdown-menu-custom {
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(218, 165, 32, 0.2) !important;
+}
+
+.dropdown-item-custom {
+  transition: all 0.2s ease !important;
+}
+
+.dropdown-item-custom:hover {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(194, 24, 91, 0.1)) !important;
+  color: var(--menu-purple) !important;
+}
+
+/* Progress bar con tema */
+.progress-menu {
+  height: 8px !important;
+  border-radius: 10px !important;
+  background: rgba(218, 165, 32, 0.2) !important;
+}
+
+.progress-menu .progress-bar {
+  background: linear-gradient(to right, var(--menu-gold), var(--menu-purple)) !important;
+  border-radius: 10px !important;
+}
+
+/* Animaciones personalizadas */
+@keyframes pulse-menu {
+  0% {
+    box-shadow: 0 0 0 0 rgba(218, 165, 32, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(218, 165, 32, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(218, 165, 32, 0);
+  }
+}
+
+.pulse-menu {
+  animation: pulse-menu 2s infinite !important;
+}
+
+@keyframes bounce-menu {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.bounce-menu {
+  animation: bounce-menu 2s infinite !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gradient-menu {
+    background: var(--menu-purple) !important;
+  }
+  
+  .card-menu {
+    margin-bottom: 1rem !important;
+  }
+  
+  .btn-menu-primary,
+  .btn-menu-secondary {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+/* Utilidades adicionales */
+.shadow-menu {
+  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.2) !important;
+}
+
+.shadow-menu-purple {
+  box-shadow: 0 4px 20px rgba(194, 24, 91, 0.2) !important;
+}
+
+.rounded-menu {
+  border-radius: 15px !important;
 }

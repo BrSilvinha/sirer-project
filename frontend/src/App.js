@@ -10,10 +10,12 @@ import Dashboard from './components/common/Dashboard';
 // Importar estilos
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import './App.css';
 
 function App() {
     return (
         <div className="App">
+            {/* Configuración de notificaciones con tema del restaurante */}
             <Toaster
                 position="top-right"
                 toastOptions={{
@@ -21,8 +23,37 @@ function App() {
                     style: {
                         background: '#fff',
                         color: '#333',
-                        fontSize: '14px'
-                    }
+                        fontSize: '14px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(218, 165, 32, 0.15)',
+                        border: '1px solid rgba(218, 165, 32, 0.2)'
+                    },
+                    success: {
+                        style: {
+                            background: 'linear-gradient(135deg, #28a745, #20c997)',
+                            color: 'white',
+                        },
+                        iconTheme: {
+                            primary: 'white',
+                            secondary: '#28a745',
+                        },
+                    },
+                    error: {
+                        style: {
+                            background: 'linear-gradient(135deg, #dc3545, #e83e8c)',
+                            color: 'white',
+                        },
+                        iconTheme: {
+                            primary: 'white',
+                            secondary: '#dc3545',
+                        },
+                    },
+                    loading: {
+                        style: {
+                            background: 'linear-gradient(135deg, #DAA520, #C2185B)',
+                            color: 'white',
+                        },
+                    },
                 }}
             />
             

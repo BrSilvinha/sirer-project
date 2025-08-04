@@ -29,37 +29,45 @@ const obtenerDashboard = async (req, res) => {
         });
 
         // Pedidos por estado
-        const pedidosPorEstado = await Pedido.findAll({
-            attributes: [
-                'estado',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']
-            ],
+        const pedidosRaw = await Pedido.findAll({
+            attributes: ['estado'],
             where: {
                 created_at: {
                     [Op.between]: [inicioHoy, finHoy]
                 }
             },
-            group: ['estado'],
             raw: true
         });
+
+        const pedidosPorEstado = pedidosRaw.reduce((acc, pedido) => {
+            const existente = acc.find(p => p.estado === pedido.estado);
+            if (existente) {
+                existente.cantidad += 1;
+            } else {
+                acc.push({ estado: pedido.estado, cantidad: 1 });
+            }
+            return acc;
+        }, []);
 
         // Estado de mesas
-        const estadoMesas = await Mesa.findAll({
-            attributes: [
-                'estado',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']
-            ],
+        const mesasRaw = await Mesa.findAll({
+            attributes: ['estado'],
             where: { activa: true },
-            group: ['estado'],
             raw: true
         });
 
+        const estadoMesas = mesasRaw.reduce((acc, mesa) => {
+            const existente = acc.find(m => m.estado === mesa.estado);
+            if (existente) {
+                existente.cantidad += 1;
+            } else {
+                acc.push({ estado: mesa.estado, cantidad: 1 });
+            }
+            return acc;
+        }, []);
+
         // Productos más vendidos hoy
-        const productosMasVendidos = await DetallePedido.findAll({
-            attributes: [
-                [sequelize.fn('SUM', sequelize.col('cantidad')), 'total_vendido'],
-                [sequelize.fn('SUM', sequelize.col('subtotal')), 'ingresos']
-            ],
+        const detallesHoy = await DetallePedido.findAll({
             include: [
                 {
                     model: Producto,
@@ -78,31 +86,68 @@ const obtenerDashboard = async (req, res) => {
                     }
                 }
             ],
-            group: ['producto.id', 'producto.nombre', 'producto.precio'],
-            order: [[sequelize.fn('SUM', sequelize.col('cantidad')), 'DESC']],
-            limit: 10
+            attributes: ['producto_id', 'cantidad', 'subtotal'],
+            raw: true
         });
 
+        const productosAgrupados = detallesHoy.reduce((acc, detalle) => {
+            const key = detalle.producto_id;
+            if (!acc[key]) {
+                acc[key] = {
+                    producto: {
+                        id: detalle['producto.id'],
+                        nombre: detalle['producto.nombre'],
+                        precio: detalle['producto.precio']
+                    },
+                    total_vendido: 0,
+                    ingresos: 0
+                };
+            }
+            acc[key].total_vendido += detalle.cantidad;
+            acc[key].ingresos += parseFloat(detalle.subtotal);
+            return acc;
+        }, {});
+
+        const productosMasVendidos = Object.values(productosAgrupados)
+            .sort((a, b) => b.total_vendido - a.total_vendido)
+            .slice(0, 10);
+
         // Mozos más activos
-        const mozosActivos = await Pedido.findAll({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('Pedido.id')), 'total_pedidos'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'total_ventas']
-            ],
+        const pedidosMozos = await Pedido.findAll({
             include: [{
                 model: Usuario,
                 as: 'mozo',
                 attributes: ['id', 'nombre']
             }],
+            attributes: ['usuario_id', 'total'],
             where: {
                 created_at: {
                     [Op.between]: [inicioHoy, finHoy]
                 }
             },
-            group: ['mozo.id', 'mozo.nombre'],
-            order: [[sequelize.fn('COUNT', sequelize.col('Pedido.id')), 'DESC']],
-            limit: 5
+            raw: true
         });
+
+        const mozosAgrupados = pedidosMozos.reduce((acc, pedido) => {
+            const key = pedido.usuario_id;
+            if (!acc[key]) {
+                acc[key] = {
+                    mozo: {
+                        id: pedido['mozo.id'],
+                        nombre: pedido['mozo.nombre']
+                    },
+                    total_pedidos: 0,
+                    total_ventas: 0
+                };
+            }
+            acc[key].total_pedidos += 1;
+            acc[key].total_ventas += parseFloat(pedido.total);
+            return acc;
+        }, {});
+
+        const mozosActivos = Object.values(mozosAgrupados)
+            .sort((a, b) => b.total_pedidos - a.total_pedidos)
+            .slice(0, 5);
 
         res.json({
             success: true,
@@ -123,7 +168,8 @@ const obtenerDashboard = async (req, res) => {
         console.error('Error obteniendo dashboard:', error);
         res.status(500).json({
             success: false,
-            error: 'Error interno del servidor'
+            error: 'Error interno del servidor',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
@@ -144,55 +190,71 @@ const obtenerReporteVentas = async (req, res) => {
             fechaInicio = new Date(fechaFin.getTime() - 7 * 24 * 60 * 60 * 1000);
         }
 
-        // Formato de agrupación según el parámetro
-        let formatoFecha;
-        switch (agrupar_por) {
-            case 'hora':
-                formatoFecha = sequelize.fn('DATE_FORMAT', sequelize.col('created_at'), '%Y-%m-%d %H:00:00');
-                break;
-            case 'dia':
-                formatoFecha = sequelize.fn('DATE_FORMAT', sequelize.col('created_at'), '%Y-%m-%d');
-                break;
-            case 'mes':
-                formatoFecha = sequelize.fn('DATE_FORMAT', sequelize.col('created_at'), '%Y-%m');
-                break;
-            default:
-                formatoFecha = sequelize.fn('DATE_FORMAT', sequelize.col('created_at'), '%Y-%m-%d');
+        // Validar fechas
+        if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
+            return res.status(400).json({
+                success: false,
+                error: 'Fechas inválidas'
+            });
         }
 
-        const ventasPorPeriodo = await Pedido.findAll({
-            attributes: [
-                [formatoFecha, 'periodo'],
-                [sequelize.fn('COUNT', sequelize.col('id')), 'total_pedidos'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'total_ventas'],
-                [sequelize.fn('AVG', sequelize.col('total')), 'promedio_pedido']
-            ],
+        // Obtener pedidos del período
+        const pedidos = await Pedido.findAll({
             where: {
                 estado: 'pagado',
                 created_at: {
                     [Op.between]: [fechaInicio, fechaFin]
                 }
             },
-            group: [formatoFecha],
-            order: [[formatoFecha, 'ASC']],
+            attributes: ['id', 'total', 'created_at'],
             raw: true
         });
 
-        // Resumen total del período
-        const resumenTotal = await Pedido.findOne({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('id')), 'total_pedidos'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'total_ventas'],
-                [sequelize.fn('AVG', sequelize.col('total')), 'promedio_pedido']
-            ],
-            where: {
-                estado: 'pagado',
-                created_at: {
-                    [Op.between]: [fechaInicio, fechaFin]
-                }
-            },
-            raw: true
+        // Procesar ventas por período
+        const ventasPorPeriodo = {};
+        
+        pedidos.forEach(pedido => {
+            const fecha = new Date(pedido.created_at);
+            let clave;
+            
+            switch (agrupar_por) {
+                case 'hora':
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')} ${String(fecha.getHours()).padStart(2, '0')}:00:00`;
+                    break;
+                case 'dia':
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+                    break;
+                case 'mes':
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+                    break;
+                default:
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+            }
+            
+            if (!ventasPorPeriodo[clave]) {
+                ventasPorPeriodo[clave] = {
+                    periodo: clave,
+                    total_pedidos: 0,
+                    total_ventas: 0
+                };
+            }
+            
+            ventasPorPeriodo[clave].total_pedidos += 1;
+            ventasPorPeriodo[clave].total_ventas += parseFloat(pedido.total);
         });
+
+        // Convertir a array y agregar promedio
+        const ventasArray = Object.values(ventasPorPeriodo).map(venta => ({
+            ...venta,
+            total_ventas: parseFloat(venta.total_ventas).toFixed(2),
+            promedio_pedido: venta.total_pedidos > 0 ? 
+                (venta.total_ventas / venta.total_pedidos).toFixed(2) : '0.00'
+        }));
+
+        // Calcular resumen total
+        const totalPedidos = pedidos.length;
+        const totalVentas = pedidos.reduce((sum, p) => sum + parseFloat(p.total), 0);
+        const promedioGeneral = totalPedidos > 0 ? totalVentas / totalPedidos : 0;
 
         res.json({
             success: true,
@@ -203,23 +265,19 @@ const obtenerReporteVentas = async (req, res) => {
                     agrupar_por
                 },
                 resumen_total: {
-                    total_pedidos: parseInt(resumenTotal.total_pedidos) || 0,
-                    total_ventas: parseFloat(resumenTotal.total_ventas || 0).toFixed(2),
-                    promedio_pedido: parseFloat(resumenTotal.promedio_pedido || 0).toFixed(2)
+                    total_pedidos: totalPedidos,
+                    total_ventas: totalVentas.toFixed(2),
+                    promedio_pedido: promedioGeneral.toFixed(2)
                 },
-                ventas_por_periodo: ventasPorPeriodo.map(venta => ({
-                    periodo: venta.periodo,
-                    total_pedidos: parseInt(venta.total_pedidos),
-                    total_ventas: parseFloat(venta.total_ventas).toFixed(2),
-                    promedio_pedido: parseFloat(venta.promedio_pedido).toFixed(2)
-                }))
+                ventas_por_periodo: ventasArray.sort((a, b) => a.periodo.localeCompare(b.periodo))
             }
         });
     } catch (error) {
         console.error('Error obteniendo reporte de ventas:', error);
         res.status(500).json({
             success: false,
-            error: 'Error interno del servidor'
+            error: 'Error interno del servidor',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
@@ -240,12 +298,7 @@ const obtenerProductosMasVendidos = async (req, res) => {
             fechaInicio = new Date(fechaFin.getTime() - 30 * 24 * 60 * 60 * 1000);
         }
 
-        const productosMasVendidos = await DetallePedido.findAll({
-            attributes: [
-                [sequelize.fn('SUM', sequelize.col('cantidad')), 'total_vendido'],
-                [sequelize.fn('SUM', sequelize.col('subtotal')), 'ingresos_totales'],
-                [sequelize.fn('COUNT', sequelize.col('DetallePedido.id')), 'veces_pedido']
-            ],
+        const detalles = await DetallePedido.findAll({
             include: [
                 {
                     model: Producto,
@@ -269,10 +322,42 @@ const obtenerProductosMasVendidos = async (req, res) => {
                     }
                 }
             ],
-            group: ['producto.id', 'producto.nombre', 'producto.precio', 'producto.categoria.id', 'producto.categoria.nombre'],
-            order: [[sequelize.fn('SUM', sequelize.col('cantidad')), 'DESC']],
-            limit: parseInt(limite)
+            attributes: ['producto_id', 'cantidad', 'subtotal'],
+            raw: true
         });
+
+        const productosAgrupados = detalles.reduce((acc, detalle) => {
+            const key = detalle.producto_id;
+            if (!acc[key]) {
+                acc[key] = {
+                    producto: {
+                        id: detalle['producto.id'],
+                        nombre: detalle['producto.nombre'],
+                        precio: detalle['producto.precio'],
+                        categoria: {
+                            id: detalle['producto.categoria.id'],
+                            nombre: detalle['producto.categoria.nombre']
+                        }
+                    },
+                    total_vendido: 0,
+                    ingresos_totales: 0,
+                    veces_pedido: 0
+                };
+            }
+            acc[key].total_vendido += detalle.cantidad;
+            acc[key].ingresos_totales += parseFloat(detalle.subtotal);
+            acc[key].veces_pedido += 1;
+            return acc;
+        }, {});
+
+        const productos = Object.values(productosAgrupados)
+            .map(item => ({
+                ...item,
+                ingresos_totales: parseFloat(item.ingresos_totales).toFixed(2),
+                promedio_por_pedido: (item.total_vendido / item.veces_pedido).toFixed(2)
+            }))
+            .sort((a, b) => b.total_vendido - a.total_vendido)
+            .slice(0, parseInt(limite));
 
         res.json({
             success: true,
@@ -281,13 +366,7 @@ const obtenerProductosMasVendidos = async (req, res) => {
                     desde: fechaInicio.toISOString().split('T')[0],
                     hasta: fechaFin.toISOString().split('T')[0]
                 },
-                productos: productosMasVendidos.map(item => ({
-                    producto: item.producto,
-                    total_vendido: parseInt(item.get('total_vendido')),
-                    ingresos_totales: parseFloat(item.get('ingresos_totales')).toFixed(2),
-                    veces_pedido: parseInt(item.get('veces_pedido')),
-                    promedio_por_pedido: (parseInt(item.get('total_vendido')) / parseInt(item.get('veces_pedido'))).toFixed(2)
-                }))
+                productos
             }
         });
     } catch (error) {
@@ -315,26 +394,48 @@ const obtenerReporteMesas = async (req, res) => {
             fechaInicio = new Date(fechaFin.getTime() - 7 * 24 * 60 * 60 * 1000);
         }
 
-        const rendimientoMesas = await Pedido.findAll({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('Pedido.id')), 'total_pedidos'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'ingresos_totales'],
-                [sequelize.fn('AVG', sequelize.col('total')), 'promedio_por_pedido']
-            ],
+        const pedidosMesas = await Pedido.findAll({
             include: [{
                 model: Mesa,
                 as: 'mesa',
                 attributes: ['id', 'numero', 'capacidad']
             }],
+            attributes: ['mesa_id', 'total'],
             where: {
                 estado: 'pagado',
                 created_at: {
                     [Op.between]: [fechaInicio, fechaFin]
                 }
             },
-            group: ['mesa.id', 'mesa.numero', 'mesa.capacidad'],
-            order: [[sequelize.fn('SUM', sequelize.col('total')), 'DESC']]
+            raw: true
         });
+
+        const mesasAgrupadas = pedidosMesas.reduce((acc, pedido) => {
+            const key = pedido.mesa_id;
+            if (!acc[key]) {
+                acc[key] = {
+                    mesa: {
+                        id: pedido['mesa.id'],
+                        numero: pedido['mesa.numero'],
+                        capacidad: pedido['mesa.capacidad']
+                    },
+                    total_pedidos: 0,
+                    ingresos_totales: 0
+                };
+            }
+            acc[key].total_pedidos += 1;
+            acc[key].ingresos_totales += parseFloat(pedido.total);
+            return acc;
+        }, {});
+
+        const mesas = Object.values(mesasAgrupadas)
+            .map(item => ({
+                ...item,
+                ingresos_totales: parseFloat(item.ingresos_totales).toFixed(2),
+                promedio_por_pedido: (item.ingresos_totales / item.total_pedidos).toFixed(2),
+                ingresos_por_capacidad: (item.ingresos_totales / item.mesa.capacidad).toFixed(2)
+            }))
+            .sort((a, b) => b.ingresos_totales - a.ingresos_totales);
 
         res.json({
             success: true,
@@ -343,13 +444,7 @@ const obtenerReporteMesas = async (req, res) => {
                     desde: fechaInicio.toISOString().split('T')[0],
                     hasta: fechaFin.toISOString().split('T')[0]
                 },
-                mesas: rendimientoMesas.map(item => ({
-                    mesa: item.mesa,
-                    total_pedidos: parseInt(item.get('total_pedidos')),
-                    ingresos_totales: parseFloat(item.get('ingresos_totales')).toFixed(2),
-                    promedio_por_pedido: parseFloat(item.get('promedio_por_pedido')).toFixed(2),
-                    ingresos_por_capacidad: (parseFloat(item.get('ingresos_totales')) / item.mesa.capacidad).toFixed(2)
-                }))
+                mesas
             }
         });
     } catch (error) {
@@ -377,12 +472,7 @@ const obtenerReporteMozos = async (req, res) => {
             fechaInicio = new Date(fechaFin.getTime() - 7 * 24 * 60 * 60 * 1000);
         }
 
-        const rendimientoMozos = await Pedido.findAll({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('Pedido.id')), 'total_pedidos'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'total_ventas'],
-                [sequelize.fn('AVG', sequelize.col('total')), 'promedio_por_pedido']
-            ],
+        const pedidosMozos = await Pedido.findAll({
             include: [{
                 model: Usuario,
                 as: 'mozo',
@@ -392,14 +482,40 @@ const obtenerReporteMozos = async (req, res) => {
                     activo: true
                 }
             }],
+            attributes: ['usuario_id', 'total'],
             where: {
                 created_at: {
                     [Op.between]: [fechaInicio, fechaFin]
                 }
             },
-            group: ['mozo.id', 'mozo.nombre', 'mozo.email'],
-            order: [[sequelize.fn('SUM', sequelize.col('total')), 'DESC']]
+            raw: true
         });
+
+        const mozosAgrupados = pedidosMozos.reduce((acc, pedido) => {
+            const key = pedido.usuario_id;
+            if (!acc[key]) {
+                acc[key] = {
+                    mozo: {
+                        id: pedido['mozo.id'],
+                        nombre: pedido['mozo.nombre'],
+                        email: pedido['mozo.email']
+                    },
+                    total_pedidos: 0,
+                    total_ventas: 0
+                };
+            }
+            acc[key].total_pedidos += 1;
+            acc[key].total_ventas += parseFloat(pedido.total);
+            return acc;
+        }, {});
+
+        const mozos = Object.values(mozosAgrupados)
+            .map(item => ({
+                ...item,
+                total_ventas: parseFloat(item.total_ventas).toFixed(2),
+                promedio_por_pedido: (item.total_ventas / item.total_pedidos).toFixed(2)
+            }))
+            .sort((a, b) => b.total_ventas - a.total_ventas);
 
         res.json({
             success: true,
@@ -408,12 +524,7 @@ const obtenerReporteMozos = async (req, res) => {
                     desde: fechaInicio.toISOString().split('T')[0],
                     hasta: fechaFin.toISOString().split('T')[0]
                 },
-                mozos: rendimientoMozos.map(item => ({
-                    mozo: item.mozo,
-                    total_pedidos: parseInt(item.get('total_pedidos')),
-                    total_ventas: parseFloat(item.get('total_ventas')).toFixed(2),
-                    promedio_por_pedido: parseFloat(item.get('promedio_por_pedido')).toFixed(2)
-                }))
+                mozos
             }
         });
     } catch (error) {
@@ -441,11 +552,7 @@ const obtenerVentasPorCategoria = async (req, res) => {
             fechaInicio = new Date(fechaFin.getTime() - 30 * 24 * 60 * 60 * 1000);
         }
 
-        const ventasPorCategoria = await DetallePedido.findAll({
-            attributes: [
-                [sequelize.fn('SUM', sequelize.col('cantidad')), 'total_vendido'],
-                [sequelize.fn('SUM', sequelize.col('subtotal')), 'ingresos_totales']
-            ],
+        const detalles = await DetallePedido.findAll({
             include: [
                 {
                     model: Producto,
@@ -469,9 +576,35 @@ const obtenerVentasPorCategoria = async (req, res) => {
                     }
                 }
             ],
-            group: ['producto.categoria.id', 'producto.categoria.nombre'],
-            order: [[sequelize.fn('SUM', sequelize.col('subtotal')), 'DESC']]
+            attributes: ['cantidad', 'subtotal'],
+            raw: true
         });
+
+        const categoriasAgrupadas = detalles.reduce((acc, detalle) => {
+            const key = detalle['producto.categoria.id'];
+            const nombre = detalle['producto.categoria.nombre'];
+            
+            if (!acc[key]) {
+                acc[key] = {
+                    categoria: {
+                        id: key,
+                        nombre: nombre
+                    },
+                    total_vendido: 0,
+                    ingresos_totales: 0
+                };
+            }
+            acc[key].total_vendido += detalle.cantidad;
+            acc[key].ingresos_totales += parseFloat(detalle.subtotal);
+            return acc;
+        }, {});
+
+        const categorias = Object.values(categoriasAgrupadas)
+            .map(item => ({
+                ...item,
+                ingresos_totales: parseFloat(item.ingresos_totales).toFixed(2)
+            }))
+            .sort((a, b) => b.ingresos_totales - a.ingresos_totales);
 
         res.json({
             success: true,
@@ -480,11 +613,7 @@ const obtenerVentasPorCategoria = async (req, res) => {
                     desde: fechaInicio.toISOString().split('T')[0],
                     hasta: fechaFin.toISOString().split('T')[0]
                 },
-                categorias: ventasPorCategoria.map(item => ({
-                    categoria: item.producto.categoria,
-                    total_vendido: parseInt(item.get('total_vendido')),
-                    ingresos_totales: parseFloat(item.get('ingresos_totales')).toFixed(2)
-                }))
+                categorias
             }
         });
     } catch (error) {

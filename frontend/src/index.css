@@ -11,3 +11,52 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* 🍽️ AGREGAR AQUÍ LOS COLORES DEL MENÚ */
+:root {
+  --menu-gold: #DAA520;
+  --menu-purple: #C2185B;
+  --menu-dark-gold: #B8860B;
+  --menu-light-gold: #F5DEB3;
+  --menu-dark-purple: #880E4F;
+  --menu-light-purple: #F8BBD9;
+}
+
+.bg-menu-gold { background-color: var(--menu-gold) !important; }
+.bg-menu-purple { background-color: var(--menu-purple) !important; }
+.bg-menu-light-gold { background-color: var(--menu-light-gold) !important; }
+.bg-menu-light-purple { background-color: var(--menu-light-purple) !important; }
+
+.text-menu-gold { color: var(--menu-gold) !important; }
+.text-menu-purple { color: var(--menu-purple) !important; }
+.text-menu-dark-gold { color: var(--menu-dark-gold) !important; }
+.text-menu-dark-purple { color: var(--menu-dark-purple) !important; }
+
+.border-menu-gold { border-color: var(--menu-gold) !important; }
+.border-menu-purple { border-color: var(--menu-purple) !important; }
+
+.gradient-menu {
+  background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%);
+}
+
+.btn-menu-primary {
+  background: var(--menu-purple);
+  border-color: var(--menu-purple);
+  color: white;
+}
+
+.btn-menu-primary:hover {
+  background: var(--menu-dark-purple);
+  border-color: var(--menu-dark-purple);
+}
+
+.btn-menu-secondary {
+  background: var(--menu-gold);
+  border-color: var(--menu-gold);
+  color: white;
+}
+
+.btn-menu-secondary:hover {
+  background: var(--menu-dark-gold);
+  border-color: var(--menu-dark-gold);
+}
