@@ -1,0 +1,432 @@
+/* 🍽️ ARCHIVO: frontend/src/styles/restaurant-theme.css */
+
+/* ===============================================
+   COLORES BASADOS EN EL MENÚ DEL RESTAURANTE
+   =============================================== */
+
+:root {
+  /* Colores principales del menú */
+  --restaurant-gold: #DAA520;           /* Dorado del menú */
+  --restaurant-purple: #C2185B;         /* Rosa/purple del diseño */
+  --restaurant-orange: #FF8C00;         /* Naranja de elementos destacados */
+  --restaurant-cream: #F5DEB3;          /* Crema/beige de fondo */
+  
+  /* Variaciones de dorado */
+  --restaurant-gold-light: #F4E4BC;     /* Dorado claro */
+  --restaurant-gold-dark: #B8860B;      /* Dorado oscuro */
+  
+  /* Variaciones de purple/rosa */
+  --restaurant-purple-light: #F8BBD9;   /* Rosa claro */
+  --restaurant-purple-dark: #880E4F;    /* Rosa oscuro */
+  
+  /* Colores de estado inspirados en el menú */
+  --restaurant-success: #32CD32;        /* Verde para éxito */
+  --restaurant-warning: var(--restaurant-orange); /* Naranja para alertas */
+  --restaurant-danger: #DC3545;         /* Rojo para errores */
+  --restaurant-info: #17A2B8;          /* Azul para información */
+  
+  /* Neutros inspirados en el menú */
+  --restaurant-dark: #2C1810;          /* Marrón oscuro */
+  --restaurant-light: #FFF8F0;         /* Crema muy claro */
+  --restaurant-muted: #8B7355;         /* Marrón medio */
+}
+
+/* ===============================================
+   BOOTSTRAP CUSTOM CLASSES - COLORES DEL MENÚ
+   =============================================== */
+
+/* Backgrounds */
+.bg-restaurant-gold { background-color: var(--restaurant-gold) !important; }
+.bg-restaurant-purple { background-color: var(--restaurant-purple) !important; }
+.bg-restaurant-orange { background-color: var(--restaurant-orange) !important; }
+.bg-restaurant-cream { background-color: var(--restaurant-cream) !important; }
+.bg-restaurant-gold-light { background-color: var(--restaurant-gold-light) !important; }
+.bg-restaurant-purple-light { background-color: var(--restaurant-purple-light) !important; }
+.bg-restaurant-dark { background-color: var(--restaurant-dark) !important; }
+.bg-restaurant-light { background-color: var(--restaurant-light) !important; }
+
+/* Text Colors */
+.text-restaurant-gold { color: var(--restaurant-gold) !important; }
+.text-restaurant-purple { color: var(--restaurant-purple) !important; }
+.text-restaurant-orange { color: var(--restaurant-orange) !important; }
+.text-restaurant-cream { color: var(--restaurant-cream) !important; }
+.text-restaurant-dark { color: var(--restaurant-dark) !important; }
+.text-restaurant-muted { color: var(--restaurant-muted) !important; }
+
+/* Border Colors */
+.border-restaurant-gold { border-color: var(--restaurant-gold) !important; }
+.border-restaurant-purple { border-color: var(--restaurant-purple) !important; }
+.border-restaurant-orange { border-color: var(--restaurant-orange) !important; }
+
+/* ===============================================
+   BOTONES PERSONALIZADOS DEL RESTAURANTE
+   =============================================== */
+
+/* Botón principal dorado */
+.btn-restaurant-primary {
+  background: linear-gradient(135deg, var(--restaurant-gold), var(--restaurant-gold-dark)) !important;
+  border: 2px solid var(--restaurant-gold) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 4px 8px rgba(218, 165, 32, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-restaurant-primary:hover {
+  background: linear-gradient(135deg, var(--restaurant-gold-dark), var(--restaurant-gold)) !important;
+  border-color: var(--restaurant-gold-dark) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(218, 165, 32, 0.4) !important;
+  color: white !important;
+}
+
+/* Botón secundario púrpura */
+.btn-restaurant-secondary {
+  background: linear-gradient(135deg, var(--restaurant-purple), var(--restaurant-purple-dark)) !important;
+  border: 2px solid var(--restaurant-purple) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 4px 8px rgba(194, 24, 91, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-restaurant-secondary:hover {
+  background: linear-gradient(135deg, var(--restaurant-purple-dark), var(--restaurant-purple)) !important;
+  border-color: var(--restaurant-purple-dark) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(194, 24, 91, 0.4) !important;
+  color: white !important;
+}
+
+/* Botón naranja */
+.btn-restaurant-orange {
+  background: linear-gradient(135deg, var(--restaurant-orange), #E67E00) !important;
+  border: 2px solid var(--restaurant-orange) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-restaurant-orange:hover {
+  background: linear-gradient(135deg, #E67E00, var(--restaurant-orange)) !important;
+  transform: translateY(-2px) !important;
+  color: white !important;
+}
+
+/* Botones outline */
+.btn-outline-restaurant-gold {
+  border: 2px solid var(--restaurant-gold) !important;
+  color: var(--restaurant-gold) !important;
+  background: transparent !important;
+}
+
+.btn-outline-restaurant-gold:hover {
+  background: var(--restaurant-gold) !important;
+  border-color: var(--restaurant-gold) !important;
+  color: white !important;
+}
+
+.btn-outline-restaurant-purple {
+  border: 2px solid var(--restaurant-purple) !important;
+  color: var(--restaurant-purple) !important;
+  background: transparent !important;
+}
+
+.btn-outline-restaurant-purple:hover {
+  background: var(--restaurant-purple) !important;
+  border-color: var(--restaurant-purple) !important;
+  color: white !important;
+}
+
+/* ===============================================
+   CARDS Y COMPONENTES PERSONALIZADOS
+   =============================================== */
+
+/* Card con tema del restaurante */
+.card-restaurant {
+  border: none !important;
+  border-radius: 15px !important;
+  box-shadow: 0 8px 25px rgba(218, 165, 32, 0.15) !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+}
+
+.card-restaurant:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 15px 35px rgba(218, 165, 32, 0.25) !important;
+}
+
+.card-restaurant-header {
+  background: linear-gradient(135deg, var(--restaurant-gold), var(--restaurant-purple)) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+/* Badges del restaurante */
+.badge-restaurant-gold {
+  background: linear-gradient(135deg, var(--restaurant-gold), var(--restaurant-gold-dark)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+}
+
+.badge-restaurant-purple {
+  background: linear-gradient(135deg, var(--restaurant-purple), var(--restaurant-purple-dark)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+}
+
+.badge-restaurant-orange {
+  background: var(--restaurant-orange) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+}
+
+/* ===============================================
+   ALERTAS PERSONALIZADAS
+   =============================================== */
+
+.alert-restaurant-success {
+  background: linear-gradient(135deg, rgba(50, 205, 50, 0.1), rgba(40, 167, 69, 0.1)) !important;
+  border: 2px solid var(--restaurant-success) !important;
+  border-radius: 12px !important;
+  color: #155724 !important;
+}
+
+.alert-restaurant-warning {
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 193, 7, 0.1)) !important;
+  border: 2px solid var(--restaurant-orange) !important;
+  border-radius: 12px !important;
+  color: #856404 !important;
+}
+
+.alert-restaurant-info {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(245, 222, 179, 0.2)) !important;
+  border: 2px solid var(--restaurant-gold) !important;
+  border-radius: 12px !important;
+  color: var(--restaurant-dark) !important;
+}
+
+/* ===============================================
+   GRADIENTES DEL RESTAURANTE
+   =============================================== */
+
+.gradient-restaurant-main {
+  background: linear-gradient(135deg, var(--restaurant-gold) 0%, var(--restaurant-purple) 100%) !important;
+}
+
+.gradient-restaurant-warm {
+  background: linear-gradient(135deg, var(--restaurant-orange) 0%, var(--restaurant-gold) 100%) !important;
+}
+
+.gradient-restaurant-subtle {
+  background: linear-gradient(135deg, var(--restaurant-cream) 0%, var(--restaurant-light) 100%) !important;
+}
+
+/* ===============================================
+   NAVBAR PERSONALIZADA
+   =============================================== */
+
+.navbar-restaurant {
+  background: linear-gradient(135deg, var(--restaurant-gold) 0%, var(--restaurant-purple) 100%) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.2) !important;
+  border-bottom: 3px solid var(--restaurant-orange) !important;
+}
+
+.navbar-restaurant .navbar-brand {
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 1.8rem !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.navbar-restaurant .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  margin: 0 0.2rem !important;
+}
+
+.navbar-restaurant .nav-link:hover {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ===============================================
+   FORMULARIOS PERSONALIZADOS
+   =============================================== */
+
+.form-control-restaurant {
+  border: 2px solid var(--restaurant-cream) !important;
+  border-radius: 10px !important;
+  background: var(--restaurant-light) !important;
+  transition: all 0.3s ease !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.form-control-restaurant:focus {
+  border-color: var(--restaurant-gold) !important;
+  box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25) !important;
+  background: white !important;
+}
+
+/* Select personalizado */
+.form-select-restaurant {
+  border: 2px solid var(--restaurant-cream) !important;
+  border-radius: 10px !important;
+  background: var(--restaurant-light) !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23DAA520' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e") !important;
+}
+
+.form-select-restaurant:focus {
+  border-color: var(--restaurant-gold) !important;
+  box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25) !important;
+}
+
+/* ===============================================
+   TABLAS PERSONALIZADAS
+   =============================================== */
+
+.table-restaurant {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.1) !important;
+}
+
+.table-restaurant thead th {
+  background: linear-gradient(135deg, var(--restaurant-gold), var(--restaurant-purple)) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.5px !important;
+  padding: 1rem !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+}
+
+.table-restaurant tbody tr:hover {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.05), rgba(194, 24, 91, 0.05)) !important;
+  transform: scale(1.01) !important;
+  transition: all 0.2s ease !important;
+}
+
+.table-restaurant tbody td {
+  padding: 1rem !important;
+  vertical-align: middle !important;
+}
+
+/* ===============================================
+   UTILIDADES ADICIONALES
+   =============================================== */
+
+/* Sombras personalizadas */
+.shadow-restaurant {
+  box-shadow: 0 8px 25px rgba(218, 165, 32, 0.2) !important;
+}
+
+.shadow-restaurant-purple {
+  box-shadow: 0 8px 25px rgba(194, 24, 91, 0.2) !important;
+}
+
+.shadow-restaurant-lg {
+  box-shadow: 0 15px 35px rgba(218, 165, 32, 0.25) !important;
+}
+
+/* Texto con gradiente */
+.text-gradient-restaurant {
+  background: linear-gradient(135deg, var(--restaurant-gold), var(--restaurant-purple)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: bold !important;
+}
+
+/* Bordes redondeados personalizados */
+.rounded-restaurant {
+  border-radius: 15px !important;
+}
+
+.rounded-restaurant-lg {
+  border-radius: 20px !important;
+}
+
+/* Espaciado inspirado en el menú */
+.p-restaurant {
+  padding: 1.5rem !important;
+}
+
+.m-restaurant {
+  margin: 1.5rem !important;
+}
+
+/* ===============================================
+   ANIMACIONES SUAVES
+   =============================================== */
+
+.hover-restaurant {
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.hover-restaurant:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(218, 165, 32, 0.2) !important;
+}
+
+/* Pulse animation para elementos importantes */
+@keyframes pulse-restaurant {
+  0% {
+    box-shadow: 0 0 0 0 rgba(218, 165, 32, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(218, 165, 32, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(218, 165, 32, 0);
+  }
+}
+
+.pulse-restaurant {
+  animation: pulse-restaurant 2s infinite !important;
+}
+
+/* ===============================================
+   RESPONSIVE DESIGN
+   =============================================== */
+
+@media (max-width: 768px) {
+  .gradient-restaurant-main {
+    background: var(--restaurant-purple) !important;
+  }
+  
+  .card-restaurant {
+    margin-bottom: 1rem !important;
+  }
+  
+  .btn-restaurant-primary,
+  .btn-restaurant-secondary,
+  .btn-restaurant-orange {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .navbar-restaurant .navbar-brand {
+    font-size: 1.5rem !important;
+  }
+}

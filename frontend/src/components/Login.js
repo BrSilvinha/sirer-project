@@ -1,3 +1,5 @@
+// 🍽️ ARCHIVO: frontend/src/components/Login.js - VERSIÓN CLÁSICA
+
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
@@ -37,7 +39,6 @@ const Login = () => {
             const result = await login(email, password);
             
             if (result.success) {
-                // El useEffect se encargará de la redirección
                 console.log('Login exitoso');
             }
         } catch (err) {
@@ -47,49 +48,52 @@ const Login = () => {
         }
     };
 
-    const fillCredentials = (userEmail, userPassword) => {
-        setEmail(userEmail);
-        setPassword(userPassword);
-        clearError();
-    };
-
     // Mostrar spinner mientras verifica autenticación inicial
     if (isLoading) {
         return (
             <div className="min-vh-100 d-flex align-items-center justify-content-center">
-                <Spinner animation="border" variant="primary" />
+                <Spinner animation="border" className="spinner-menu" />
             </div>
         );
     }
 
     return (
-        <div className="min-vh-100 d-flex align-items-center" style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-        }}>
+        <div className="min-vh-100 d-flex align-items-center gradient-menu">
             <Container>
                 <Row className="justify-content-center">
-                    <Col md={8} lg={6} xl={5}>
-                        <Card className="shadow-lg border-0">
+                    <Col md={6} lg={5} xl={4}>
+                        <Card className="card-menu shadow-menu-lg border-0">
                             <Card.Body className="p-5">
+                                {/* Header */}
                                 <div className="text-center mb-4">
-                                    <h1 className="h3 mb-3 fw-bold text-primary">
+                                    <div className="mb-3">
+                                        <div 
+                                            className="rounded-circle mx-auto d-flex align-items-center justify-content-center bg-menu-gold"
+                                            style={{ width: '70px', height: '70px' }}
+                                        >
+                                            <i className="fas fa-utensils fa-2x text-white"></i>
+                                        </div>
+                                    </div>
+                                    <h1 className="h3 mb-2 fw-bold text-gradient-menu">
                                         🍽️ SIRER
                                     </h1>
-                                    <p className="text-muted">
+                                    <p className="text-menu-muted mb-0">
                                         Sistema Integral para Restaurantes
                                     </p>
                                 </div>
 
+                                {/* Error Alert */}
                                 {error && (
-                                    <Alert variant="danger" className="mb-4">
+                                    <Alert className="alert-menu-danger mb-4">
                                         <i className="fas fa-exclamation-triangle me-2"></i>
                                         {error}
                                     </Alert>
                                 )}
 
+                                {/* Login Form */}
                                 <Form onSubmit={handleSubmit}>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>
+                                        <Form.Label className="fw-bold text-menu-gold">
                                             <i className="fas fa-envelope me-2"></i>
                                             Email
                                         </Form.Label>
@@ -100,11 +104,12 @@ const Login = () => {
                                             placeholder="Ingresa tu email"
                                             required
                                             disabled={isSubmitting}
+                                            className="form-control-menu"
                                         />
                                     </Form.Group>
 
                                     <Form.Group className="mb-4">
-                                        <Form.Label>
+                                        <Form.Label className="fw-bold text-menu-purple">
                                             <i className="fas fa-lock me-2"></i>
                                             Contraseña
                                         </Form.Label>
@@ -116,24 +121,26 @@ const Login = () => {
                                                 placeholder="Ingresa tu contraseña"
                                                 required
                                                 disabled={isSubmitting}
+                                                className="form-control-menu"
                                             />
                                             <Button
                                                 variant="link"
-                                                className="position-absolute top-50 end-0 translate-middle-y pe-3 text-muted"
+                                                className="position-absolute top-50 end-0 translate-middle-y pe-3 text-menu-muted"
                                                 onClick={() => setShowPassword(!showPassword)}
                                                 style={{ border: 'none', background: 'none' }}
                                                 type="button"
+                                                disabled={isSubmitting}
                                             >
                                                 <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                                             </Button>
                                         </div>
                                     </Form.Group>
 
+                                    {/* Login Button */}
                                     <Button
                                         type="submit"
-                                        variant="primary"
                                         size="lg"
-                                        className="w-100 mb-3"
+                                        className="w-100 mb-4 btn-menu-primary"
                                         disabled={isSubmitting || !email || !password}
                                     >
                                         {isSubmitting ? (
@@ -150,62 +157,10 @@ const Login = () => {
                                     </Button>
                                 </Form>
 
-                                <div className="mt-4">
-                                    <hr />
-                                    <p className="text-center text-muted mb-3">
-                                        <small>Usuarios de prueba:</small>
-                                    </p>
-                                    <Row className="g-2">
-                                        <Col xs={6}>
-                                            <Button
-                                                variant="outline-secondary"
-                                                size="sm"
-                                                className="w-100"
-                                                onClick={() => fillCredentials('admin@sirer.com', 'admin123')}
-                                                disabled={isSubmitting}
-                                            >
-                                                Administrador
-                                            </Button>
-                                        </Col>
-                                        <Col xs={6}>
-                                            <Button
-                                                variant="outline-secondary"
-                                                size="sm"
-                                                className="w-100"
-                                                onClick={() => fillCredentials('mozo@sirer.com', 'mozo123')}
-                                                disabled={isSubmitting}
-                                            >
-                                                Mozo
-                                            </Button>
-                                        </Col>
-                                        <Col xs={6}>
-                                            <Button
-                                                variant="outline-secondary"
-                                                size="sm"
-                                                className="w-100"
-                                                onClick={() => fillCredentials('cocina@sirer.com', 'cocina123')}
-                                                disabled={isSubmitting}
-                                            >
-                                                Cocina
-                                            </Button>
-                                        </Col>
-                                        <Col xs={6}>
-                                            <Button
-                                                variant="outline-secondary"
-                                                size="sm"
-                                                className="w-100"
-                                                onClick={() => fillCredentials('cajero@sirer.com', 'cajero123')}
-                                                disabled={isSubmitting}
-                                            >
-                                                Cajero
-                                            </Button>
-                                        </Col>
-                                    </Row>
-                                </div>
-
-                                <div className="text-center mt-4">
-                                    <small className="text-muted">
-                                        © 2025 SIRER - Sistema de Gestión de Restaurantes
+                                {/* Footer */}
+                                <div className="text-center">
+                                    <small className="text-menu-muted">
+                                        © 2025 <span className="text-menu-gold fw-bold">SIRER</span> - Sistema de Gestión de Restaurantes
                                     </small>
                                 </div>
                             </Card.Body>

@@ -1,4 +1,4 @@
-/* App.css - Tema completo del restaurante */
+/* 🍽️ ARCHIVO: frontend/src/App.css - VERSIÓN ACTUALIZADA */
 
 .App {
   text-align: center;
@@ -39,25 +39,48 @@
   }
 }
 
-/* 🍽️ TEMA DEL RESTAURANTE - COLORES PERSONALIZADOS */
+/* ===============================================
+   🍽️ COLORES INSPIRADOS EN EL MENÚ DEL RESTAURANTE
+   =============================================== */
 :root {
-  --menu-gold: #DAA520;
-  --menu-purple: #C2185B;
+  /* Colores principales basados en la imagen del menú */
+  --menu-gold: #DAA520;           /* Dorado principal del menú */
+  --menu-purple: #C2185B;         /* Rosa/purple del diseño */
+  --menu-orange: #FF8C00;         /* Naranja vibrante */
+  --menu-cream: #F5DEB3;          /* Crema/beige de fondo */
+  
+  /* Variaciones y tonos */
   --menu-dark-gold: #B8860B;
-  --menu-light-gold: #F5DEB3;
+  --menu-light-gold: #F4E4BC;
   --menu-dark-purple: #880E4F;
   --menu-light-purple: #F8BBD9;
-  --menu-orange: #FF8C00;
+  
+  /* Colores complementarios */
   --menu-green: #32CD32;
+  --menu-dark: #2C1810;
+  --menu-light: #FFF8F0;
+  --menu-muted: #8B7355;
 }
 
-/* Clases de colores personalizadas */
+/* ===============================================
+   CLASES DE COLORES PERSONALIZADAS
+   =============================================== */
+
+/* Backgrounds inspirados en el menú */
 .bg-menu-gold { 
   background-color: var(--menu-gold) !important; 
 }
 
 .bg-menu-purple { 
   background-color: var(--menu-purple) !important; 
+}
+
+.bg-menu-orange { 
+  background-color: var(--menu-orange) !important; 
+}
+
+.bg-menu-cream { 
+  background-color: var(--menu-cream) !important; 
 }
 
 .bg-menu-light-gold { 
@@ -68,12 +91,17 @@
   background-color: var(--menu-light-purple) !important; 
 }
 
+/* Textos con colores del menú */
 .text-menu-gold { 
   color: var(--menu-gold) !important; 
 }
 
 .text-menu-purple { 
   color: var(--menu-purple) !important; 
+}
+
+.text-menu-orange { 
+  color: var(--menu-orange) !important; 
 }
 
 .text-menu-dark-gold { 
@@ -84,6 +112,15 @@
   color: var(--menu-dark-purple) !important; 
 }
 
+.text-menu-dark { 
+  color: var(--menu-dark) !important; 
+}
+
+.text-menu-muted { 
+  color: var(--menu-muted) !important; 
+}
+
+/* Bordes con colores del menú */
 .border-menu-gold { 
   border-color: var(--menu-gold) !important; 
 }
@@ -92,7 +129,14 @@
   border-color: var(--menu-purple) !important; 
 }
 
-/* Gradientes del tema */
+.border-menu-orange { 
+  border-color: var(--menu-orange) !important; 
+}
+
+/* ===============================================
+   GRADIENTES INSPIRADOS EN EL MENÚ
+   =============================================== */
+
 .gradient-menu {
   background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%) !important;
 }
@@ -101,39 +145,70 @@
   background: linear-gradient(135deg, var(--menu-purple) 0%, var(--menu-gold) 100%) !important;
 }
 
+.gradient-menu-warm {
+  background: linear-gradient(135deg, var(--menu-orange) 0%, var(--menu-gold) 100%) !important;
+}
+
 .gradient-menu-light {
   background: linear-gradient(135deg, var(--menu-light-gold) 0%, var(--menu-light-purple) 100%) !important;
 }
 
-/* Botones personalizados del tema */
+/* ===============================================
+   BOTONES PERSONALIZADOS DEL MENÚ
+   =============================================== */
+
+/* Botón principal dorado (inspirado en el menú) */
 .btn-menu-primary {
-  background: linear-gradient(135deg, var(--menu-purple), var(--menu-dark-purple)) !important;
-  border: none !important;
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-dark-gold)) !important;
+  border: 2px solid var(--menu-gold) !important;
   color: white !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 2px 8px rgba(194, 24, 91, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
 }
 
 .btn-menu-primary:hover {
-  background: linear-gradient(135deg, var(--menu-dark-purple), var(--menu-purple)) !important;
+  background: linear-gradient(135deg, var(--menu-dark-gold), var(--menu-gold)) !important;
+  border-color: var(--menu-dark-gold) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 15px rgba(194, 24, 91, 0.4) !important;
+  box-shadow: 0 6px 18px rgba(218, 165, 32, 0.4) !important;
+  color: white !important;
 }
 
+/* Botón secundario púrpura */
 .btn-menu-secondary {
-  background: linear-gradient(135deg, var(--menu-gold), var(--menu-dark-gold)) !important;
-  border: none !important;
+  background: linear-gradient(135deg, var(--menu-purple), var(--menu-dark-purple)) !important;
+  border: 2px solid var(--menu-purple) !important;
   color: white !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
 }
 
 .btn-menu-secondary:hover {
-  background: linear-gradient(135deg, var(--menu-dark-gold), var(--menu-gold)) !important;
+  background: linear-gradient(135deg, var(--menu-dark-purple), var(--menu-purple)) !important;
+  border-color: var(--menu-dark-purple) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.4) !important;
+  box-shadow: 0 6px 18px rgba(194, 24, 91, 0.4) !important;
+  color: white !important;
+}
+
+/* Botón naranja */
+.btn-menu-orange {
+  background: linear-gradient(135deg, var(--menu-orange), #E67E00) !important;
+  border: 2px solid var(--menu-orange) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3) !important;
+}
+
+.btn-menu-orange:hover {
+  background: linear-gradient(135deg, #E67E00, var(--menu-orange)) !important;
+  transform: translateY(-2px) !important;
+  color: white !important;
 }
 
 .btn-menu-success {
@@ -147,25 +222,56 @@
 .btn-menu-success:hover {
   background: linear-gradient(135deg, #228B22, var(--menu-green)) !important;
   transform: translateY(-2px) !important;
+  color: white !important;
 }
 
-/* Cards con tema del restaurante */
+/* Botones outline */
+.btn-outline-menu-gold {
+  border: 2px solid var(--menu-gold) !important;
+  color: var(--menu-gold) !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+}
+
+.btn-outline-menu-gold:hover {
+  background: var(--menu-gold) !important;
+  border-color: var(--menu-gold) !important;
+  color: white !important;
+}
+
+.btn-outline-menu-purple {
+  border: 2px solid var(--menu-purple) !important;
+  color: var(--menu-purple) !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+}
+
+.btn-outline-menu-purple:hover {
+  background: var(--menu-purple) !important;
+  border-color: var(--menu-purple) !important;
+  color: white !important;
+}
+
+/* ===============================================
+   CARDS CON TEMA DEL MENÚ
+   =============================================== */
+
 .card-menu {
   border: none !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 15px !important;
+  box-shadow: 0 6px 20px rgba(218, 165, 32, 0.12) !important;
   transition: all 0.3s ease !important;
   overflow: hidden !important;
 }
 
 .card-menu:hover {
   transform: translateY(-5px) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 12px 30px rgba(218, 165, 32, 0.2) !important;
 }
 
 .card-menu-gold {
   border: 2px solid var(--menu-gold) !important;
-  background: linear-gradient(135deg, rgba(245, 222, 179, 0.1), rgba(255, 255, 255, 0.9)) !important;
+  background: linear-gradient(135deg, rgba(244, 228, 188, 0.1), rgba(255, 255, 255, 0.9)) !important;
 }
 
 .card-menu-purple {
@@ -173,13 +279,25 @@
   background: linear-gradient(135deg, rgba(248, 187, 217, 0.1), rgba(255, 255, 255, 0.9)) !important;
 }
 
-/* Badges del tema */
+.card-menu-header {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+}
+
+/* ===============================================
+   BADGES DEL MENÚ
+   =============================================== */
+
 .badge-menu-gold {
   background: linear-gradient(135deg, var(--menu-gold), var(--menu-dark-gold)) !important;
   color: white !important;
   font-weight: 600 !important;
   padding: 0.5rem 1rem !important;
   border-radius: 20px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
 }
 
 .badge-menu-purple {
@@ -188,45 +306,74 @@
   font-weight: 600 !important;
   padding: 0.5rem 1rem !important;
   border-radius: 20px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
 }
 
-/* Navbar personalizada */
+.badge-menu-orange {
+  background: var(--menu-orange) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+}
+
+/* ===============================================
+   NAVBAR PERSONALIZADA DEL MENÚ
+   =============================================== */
+
 .navbar-menu {
   background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%) !important;
   backdrop-filter: blur(10px) !important;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.2) !important;
+  border-bottom: 3px solid var(--menu-orange) !important;
 }
 
 .navbar-menu .navbar-brand {
   color: white !important;
   font-weight: bold !important;
-  font-size: 1.5rem !important;
+  font-size: 1.8rem !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
 }
 
 .navbar-menu .nav-link {
   color: rgba(255, 255, 255, 0.9) !important;
   font-weight: 500 !important;
   transition: all 0.3s ease !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  margin: 0 0.2rem !important;
 }
 
 .navbar-menu .nav-link:hover {
   color: white !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   transform: translateY(-1px) !important;
 }
 
-/* Sidebar personalizado */
+.navbar-menu .nav-link.active {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* ===============================================
+   SIDEBAR PERSONALIZADO
+   =============================================== */
+
 .sidebar-menu {
   background: linear-gradient(180deg, #ffffff 0%, rgba(245, 222, 179, 0.1) 100%) !important;
   border-right: 3px solid var(--menu-gold) !important;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 4px 0 20px rgba(218, 165, 32, 0.1) !important;
 }
 
 .sidebar-menu .nav-link {
-  color: #333 !important;
-  border-radius: 8px !important;
+  color: var(--menu-dark) !important;
+  border-radius: 10px !important;
   margin-bottom: 0.25rem !important;
   font-weight: 500 !important;
   transition: all 0.3s ease !important;
+  padding: 0.75rem 1rem !important;
 }
 
 .sidebar-menu .nav-link:hover {
@@ -238,28 +385,50 @@
 .sidebar-menu .nav-link.active {
   background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
   color: white !important;
-  box-shadow: 0 2px 10px rgba(218, 165, 32, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3) !important;
+  font-weight: 600 !important;
 }
 
-/* Inputs con tema */
+/* ===============================================
+   FORMULARIOS CON TEMA DEL MENÚ
+   =============================================== */
+
 .form-control-menu {
-  border: 2px solid transparent !important;
-  border-radius: 8px !important;
-  background: rgba(245, 222, 179, 0.1) !important;
+  border: 2px solid var(--menu-cream) !important;
+  border-radius: 10px !important;
+  background: rgba(245, 222, 179, 0.05) !important;
   transition: all 0.3s ease !important;
+  padding: 0.75rem 1rem !important;
 }
 
 .form-control-menu:focus {
   border-color: var(--menu-gold) !important;
-  box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.25) !important;
+  box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25) !important;
   background: white !important;
 }
 
-/* Modales con tema */
+.form-select-menu {
+  border: 2px solid var(--menu-cream) !important;
+  border-radius: 10px !important;
+  background: rgba(245, 222, 179, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+.form-select-menu:focus {
+  border-color: var(--menu-gold) !important;
+  box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25) !important;
+  background: white !important;
+}
+
+/* ===============================================
+   MODALES CON TEMA
+   =============================================== */
+
 .modal-menu .modal-content {
   border: none !important;
   border-radius: 15px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 15px 40px rgba(218, 165, 32, 0.2) !important;
+  overflow: hidden !important;
 }
 
 .modal-menu .modal-header {
@@ -273,11 +442,19 @@
   filter: invert(1) !important;
 }
 
-/* Tablas con tema */
+.modal-menu .modal-footer {
+  border-top: 1px solid rgba(218, 165, 32, 0.1) !important;
+  background: rgba(245, 222, 179, 0.05) !important;
+}
+
+/* ===============================================
+   TABLAS CON TEMA DEL MENÚ
+   =============================================== */
+
 .table-menu {
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   overflow: hidden !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 6px 20px rgba(218, 165, 32, 0.1) !important;
 }
 
 .table-menu thead th {
@@ -288,42 +465,74 @@
   text-transform: uppercase !important;
   font-size: 0.85rem !important;
   letter-spacing: 0.5px !important;
+  padding: 1rem !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+}
+
+.table-menu tbody tr {
+  transition: all 0.2s ease !important;
 }
 
 .table-menu tbody tr:hover {
   background: linear-gradient(135deg, rgba(218, 165, 32, 0.05), rgba(194, 24, 91, 0.05)) !important;
   transform: scale(1.01) !important;
-  transition: all 0.2s ease !important;
 }
 
-/* Alertas con tema */
+.table-menu tbody td {
+  padding: 1rem !important;
+  vertical-align: middle !important;
+  border-color: rgba(218, 165, 32, 0.1) !important;
+}
+
+/* ===============================================
+   ALERTAS CON TEMA DEL MENÚ
+   =============================================== */
+
 .alert-menu-success {
   background: linear-gradient(135deg, rgba(50, 205, 50, 0.1), rgba(40, 167, 69, 0.1)) !important;
-  border: 1px solid var(--menu-green) !important;
+  border: 2px solid var(--menu-green) !important;
   color: #155724 !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
 }
 
 .alert-menu-warning {
-  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(255, 193, 7, 0.1)) !important;
-  border: 1px solid var(--menu-gold) !important;
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 193, 7, 0.1)) !important;
+  border: 2px solid var(--menu-orange) !important;
   color: #856404 !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
 }
 
 .alert-menu-danger {
   background: linear-gradient(135deg, rgba(194, 24, 91, 0.1), rgba(220, 53, 69, 0.1)) !important;
-  border: 1px solid var(--menu-purple) !important;
+  border: 2px solid var(--menu-purple) !important;
   color: #721c24 !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
 }
 
-/* Spinner personalizado */
+.alert-menu-info {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(245, 222, 179, 0.2)) !important;
+  border: 2px solid var(--menu-gold) !important;
+  color: var(--menu-dark) !important;
+  border-radius: 12px !important;
+}
+
+/* ===============================================
+   SPINNER PERSONALIZADO
+   =============================================== */
+
 .spinner-menu {
   color: var(--menu-purple) !important;
 }
 
-/* Efectos de hover para elementos interactivos */
+.spinner-border-menu {
+  border-color: var(--menu-gold) !important;
+  border-right-color: transparent !important;
+}
+
+/* ===============================================
+   EFECTOS DE HOVER PARA ELEMENTOS INTERACTIVOS
+   =============================================== */
+
 .hover-menu {
   transition: all 0.3s ease !important;
   cursor: pointer !important;
@@ -331,10 +540,17 @@
 
 .hover-menu:hover {
   transform: translateY(-3px) !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 25px rgba(218, 165, 32, 0.2) !important;
 }
 
-/* Texto con gradiente */
+.hover-menu-purple:hover {
+  box-shadow: 0 8px 25px rgba(194, 24, 91, 0.2) !important;
+}
+
+/* ===============================================
+   TEXTO CON GRADIENTE
+   =============================================== */
+
 .text-gradient-menu {
   background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
   -webkit-background-clip: text !important;
@@ -343,7 +559,18 @@
   font-weight: bold !important;
 }
 
-/* Líneas divisorias con tema */
+.text-gradient-menu-warm {
+  background: linear-gradient(135deg, var(--menu-orange), var(--menu-gold)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: bold !important;
+}
+
+/* ===============================================
+   LÍNEAS DIVISORIAS CON TEMA
+   =============================================== */
+
 .divider-menu {
   height: 3px !important;
   background: linear-gradient(to right, var(--menu-gold), var(--menu-purple)) !important;
@@ -352,7 +579,17 @@
   margin: 2rem 0 !important;
 }
 
-/* Iconos con colores del tema */
+.divider-menu-light {
+  height: 1px !important;
+  background: linear-gradient(to right, rgba(218, 165, 32, 0.3), rgba(194, 24, 91, 0.3)) !important;
+  border: none !important;
+  margin: 1rem 0 !important;
+}
+
+/* ===============================================
+   ICONOS CON COLORES DEL TEMA
+   =============================================== */
+
 .icon-menu-gold {
   color: var(--menu-gold) !important;
 }
@@ -361,18 +598,33 @@
   color: var(--menu-purple) !important;
 }
 
-/* Footer con tema */
+.icon-menu-orange {
+  color: var(--menu-orange) !important;
+}
+
+.icon-menu-green {
+  color: var(--menu-green) !important;
+}
+
+/* ===============================================
+   FOOTER CON TEMA
+   =============================================== */
+
 .footer-menu {
   background: linear-gradient(135deg, var(--menu-dark-purple), var(--menu-purple)) !important;
   color: white !important;
   padding: 2rem 0 !important;
 }
 
-/* Breadcrumb personalizado */
+/* ===============================================
+   BREADCRUMB PERSONALIZADO
+   =============================================== */
+
 .breadcrumb-menu {
   background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(194, 24, 91, 0.1)) !important;
   border-radius: 10px !important;
   padding: 1rem !important;
+  border: 1px solid rgba(218, 165, 32, 0.2) !important;
 }
 
 .breadcrumb-menu .breadcrumb-item.active {
@@ -380,34 +632,55 @@
   font-weight: 600 !important;
 }
 
-/* Paginación con tema */
+.breadcrumb-menu .breadcrumb-item a {
+  color: var(--menu-gold) !important;
+  text-decoration: none !important;
+}
+
+.breadcrumb-menu .breadcrumb-item a:hover {
+  color: var(--menu-dark-gold) !important;
+}
+
+/* ===============================================
+   PAGINACIÓN CON TEMA
+   =============================================== */
+
 .pagination-menu .page-link {
-  border: 1px solid var(--menu-gold) !important;
+  border: 2px solid var(--menu-gold) !important;
   color: var(--menu-purple) !important;
   margin: 0 2px !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
 }
 
 .pagination-menu .page-link:hover {
   background: var(--menu-gold) !important;
   color: white !important;
+  transform: translateY(-1px) !important;
 }
 
 .pagination-menu .page-item.active .page-link {
   background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
   border-color: var(--menu-purple) !important;
+  color: white !important;
 }
 
-/* Dropdown personalizado */
+/* ===============================================
+   DROPDOWN PERSONALIZADO
+   =============================================== */
+
 .dropdown-menu-custom {
   border: none !important;
-  border-radius: 10px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 30px rgba(218, 165, 32, 0.2) !important;
   border: 1px solid rgba(218, 165, 32, 0.2) !important;
+  overflow: hidden !important;
 }
 
 .dropdown-item-custom {
   transition: all 0.2s ease !important;
+  padding: 0.75rem 1.25rem !important;
 }
 
 .dropdown-item-custom:hover {
@@ -415,25 +688,52 @@
   color: var(--menu-purple) !important;
 }
 
-/* Progress bar con tema */
+.dropdown-item-custom.active {
+  background: linear-gradient(135deg, var(--menu-gold), var(--menu-purple)) !important;
+  color: white !important;
+}
+
+/* ===============================================
+   PROGRESS BAR CON TEMA
+   =============================================== */
+
 .progress-menu {
-  height: 8px !important;
+  height: 10px !important;
   border-radius: 10px !important;
   background: rgba(218, 165, 32, 0.2) !important;
+  overflow: hidden !important;
 }
 
 .progress-menu .progress-bar {
   background: linear-gradient(to right, var(--menu-gold), var(--menu-purple)) !important;
   border-radius: 10px !important;
+  transition: width 0.6s ease !important;
 }
 
-/* Animaciones personalizadas */
+.progress-menu-striped .progress-bar {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  ) !important;
+  background-size: 1rem 1rem !important;
+}
+
+/* ===============================================
+   ANIMACIONES PERSONALIZADAS
+   =============================================== */
+
 @keyframes pulse-menu {
   0% {
     box-shadow: 0 0 0 0 rgba(218, 165, 32, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(218, 165, 32, 0);
+    box-shadow: 0 0 0 15px rgba(218, 165, 32, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(218, 165, 32, 0);
@@ -460,7 +760,97 @@
   animation: bounce-menu 2s infinite !important;
 }
 
-/* Responsive adjustments */
+@keyframes fade-in-menu {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-menu {
+  animation: fade-in-menu 0.6s ease-out !important;
+}
+
+@keyframes slide-in-menu {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.slide-in-menu {
+  animation: slide-in-menu 0.5s ease-out !important;
+}
+
+/* ===============================================
+   UTILIDADES ADICIONALES
+   =============================================== */
+
+/* Sombras personalizadas */
+.shadow-menu {
+  box-shadow: 0 6px 20px rgba(218, 165, 32, 0.2) !important;
+}
+
+.shadow-menu-purple {
+  box-shadow: 0 6px 20px rgba(194, 24, 91, 0.2) !important;
+}
+
+.shadow-menu-lg {
+  box-shadow: 0 15px 35px rgba(218, 165, 32, 0.25) !important;
+}
+
+.shadow-menu-sm {
+  box-shadow: 0 2px 8px rgba(218, 165, 32, 0.15) !important;
+}
+
+/* Bordes redondeados personalizados */
+.rounded-menu {
+  border-radius: 15px !important;
+}
+
+.rounded-menu-lg {
+  border-radius: 20px !important;
+}
+
+.rounded-menu-sm {
+  border-radius: 8px !important;
+}
+
+/* Espaciado inspirado en el menú */
+.p-menu {
+  padding: 1.5rem !important;
+}
+
+.p-menu-sm {
+  padding: 1rem !important;
+}
+
+.p-menu-lg {
+  padding: 2rem !important;
+}
+
+.m-menu {
+  margin: 1.5rem !important;
+}
+
+.m-menu-sm {
+  margin: 1rem !important;
+}
+
+.m-menu-lg {
+  margin: 2rem !important;
+}
+
+/* ===============================================
+   RESPONSIVE DESIGN
+   =============================================== */
+
 @media (max-width: 768px) {
   .gradient-menu {
     background: var(--menu-purple) !important;
@@ -471,21 +861,95 @@
   }
   
   .btn-menu-primary,
-  .btn-menu-secondary {
+  .btn-menu-secondary,
+  .btn-menu-orange {
     width: 100% !important;
     margin-bottom: 0.5rem !important;
   }
+  
+  .navbar-menu .navbar-brand {
+    font-size: 1.5rem !important;
+  }
+  
+  .sidebar-menu .nav-link {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .table-menu {
+    font-size: 0.85rem !important;
+  }
+  
+  .table-menu thead th,
+  .table-menu tbody td {
+    padding: 0.75rem 0.5rem !important;
+  }
+  
+  .modal-menu .modal-dialog {
+    margin: 1rem !important;
+  }
+  
+  .badge-menu-gold,
+  .badge-menu-purple,
+  .badge-menu-orange {
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
 }
 
-/* Utilidades adicionales */
-.shadow-menu {
-  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.2) !important;
+@media (max-width: 576px) {
+  .gradient-menu {
+    background: var(--menu-gold) !important;
+  }
+  
+  .btn-menu-primary,
+  .btn-menu-secondary,
+  .btn-menu-orange {
+    font-size: 0.9rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .card-menu {
+    border-radius: 10px !important;
+  }
+  
+  .table-menu thead th {
+    font-size: 0.75rem !important;
+    padding: 0.75rem 0.25rem !important;
+  }
+  
+  .navbar-menu .navbar-brand {
+    font-size: 1.3rem !important;
+  }
 }
 
-.shadow-menu-purple {
-  box-shadow: 0 4px 20px rgba(194, 24, 91, 0.2) !important;
-}
+/* ===============================================
+   MODO OSCURO (OPCIONAL)
+   =============================================== */
 
-.rounded-menu {
-  border-radius: 15px !important;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --menu-dark: #1a1a1a;
+    --menu-light: #2d2d2d;
+    --menu-muted: #cccccc;
+  }
+  
+  .card-menu {
+    background: var(--menu-light) !important;
+    color: var(--menu-muted) !important;
+  }
+  
+  .sidebar-menu {
+    background: linear-gradient(180deg, var(--menu-light) 0%, rgba(45, 45, 45, 0.9) 100%) !important;
+  }
+  
+  .form-control-menu {
+    background: var(--menu-light) !important;
+    color: var(--menu-muted) !important;
+    border-color: rgba(218, 165, 32, 0.3) !important;
+  }
+  
+  .table-menu tbody tr {
+    color: var(--menu-muted) !important;
+  }
 }

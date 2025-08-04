@@ -1,3 +1,28 @@
+/* 🍽️ ARCHIVO: frontend/src/index.css - VERSIÓN ACTUALIZADA */
+
+/* ===============================================
+   VARIABLES GLOBALES DEL MENÚ DEL RESTAURANTE
+   =============================================== */
+:root {
+  /* Colores principales inspirados en el menú */
+  --menu-gold: #DAA520;           /* Dorado principal del menú */
+  --menu-purple: #C2185B;         /* Rosa/purple del diseño */
+  --menu-orange: #FF8C00;         /* Naranja vibrante */
+  --menu-cream: #F5DEB3;          /* Crema/beige de fondo */
+  
+  /* Variaciones y tonos */
+  --menu-dark-gold: #B8860B;
+  --menu-light-gold: #F4E4BC;
+  --menu-dark-purple: #880E4F;
+  --menu-light-purple: #F8BBD9;
+  
+  /* Colores complementarios */
+  --menu-green: #32CD32;
+  --menu-dark: #2C1810;
+  --menu-light: #FFF8F0;
+  --menu-muted: #8B7355;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,6 +30,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--menu-light);
+  color: var(--menu-dark);
 }
 
 code {
@@ -12,51 +39,60 @@ code {
     monospace;
 }
 
-/* 🍽️ AGREGAR AQUÍ LOS COLORES DEL MENÚ */
-:root {
-  --menu-gold: #DAA520;
-  --menu-purple: #C2185B;
-  --menu-dark-gold: #B8860B;
-  --menu-light-gold: #F5DEB3;
-  --menu-dark-purple: #880E4F;
-  --menu-light-purple: #F8BBD9;
-}
+/* ===============================================
+   CLASES BÁSICAS DE BOOTSTRAP PERSONALIZADAS
+   =============================================== */
 
+/* Backgrounds rápidos */
 .bg-menu-gold { background-color: var(--menu-gold) !important; }
 .bg-menu-purple { background-color: var(--menu-purple) !important; }
+.bg-menu-orange { background-color: var(--menu-orange) !important; }
+.bg-menu-cream { background-color: var(--menu-cream) !important; }
 .bg-menu-light-gold { background-color: var(--menu-light-gold) !important; }
 .bg-menu-light-purple { background-color: var(--menu-light-purple) !important; }
 
+/* Textos rápidos */
 .text-menu-gold { color: var(--menu-gold) !important; }
 .text-menu-purple { color: var(--menu-purple) !important; }
+.text-menu-orange { color: var(--menu-orange) !important; }
 .text-menu-dark-gold { color: var(--menu-dark-gold) !important; }
 .text-menu-dark-purple { color: var(--menu-dark-purple) !important; }
+.text-menu-dark { color: var(--menu-dark) !important; }
+.text-menu-muted { color: var(--menu-muted) !important; }
 
+/* Bordes rápidos */
 .border-menu-gold { border-color: var(--menu-gold) !important; }
 .border-menu-purple { border-color: var(--menu-purple) !important; }
+.border-menu-orange { border-color: var(--menu-orange) !important; }
 
+/* Gradiente principal */
 .gradient-menu {
-  background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%);
+  background: linear-gradient(135deg, var(--menu-gold) 0%, var(--menu-purple) 100%) !important;
 }
 
+/* Botones rápidos */
 .btn-menu-primary {
-  background: var(--menu-purple);
-  border-color: var(--menu-purple);
-  color: white;
+  background: var(--menu-gold) !important;
+  border-color: var(--menu-gold) !important;
+  color: white !important;
+  font-weight: 600 !important;
 }
 
 .btn-menu-primary:hover {
-  background: var(--menu-dark-purple);
-  border-color: var(--menu-dark-purple);
+  background: var(--menu-dark-gold) !important;
+  border-color: var(--menu-dark-gold) !important;
+  color: white !important;
 }
 
 .btn-menu-secondary {
-  background: var(--menu-gold);
-  border-color: var(--menu-gold);
-  color: white;
+  background: var(--menu-purple) !important;
+  border-color: var(--menu-purple) !important;
+  color: white !important;
+  font-weight: 600 !important;
 }
 
 .btn-menu-secondary:hover {
-  background: var(--menu-dark-gold);
-  border-color: var(--menu-dark-gold);
+  background: var(--menu-dark-purple) !important;
+  border-color: var(--menu-dark-purple) !important;
+  color: white !important;
 }
