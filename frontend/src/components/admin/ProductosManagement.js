@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-    Container, Row, Col, Card, Button, Modal, Form, Badge, 
+    Container, Row, Col, Card, Badge, Button, Modal, Form, 
     Spinner, Alert, Table, ButtonGroup, InputGroup,
     OverlayTrigger, Tooltip
 } from 'react-bootstrap';
@@ -39,6 +39,7 @@ const ProductosManagement = () => {
     });
     const [error, setError] = useState(null);
 
+    // ✅ Función para cargar productos
     const fetchProductos = useCallback(async () => {
         try {
             setLoading(true);
@@ -53,11 +54,13 @@ const ProductosManagement = () => {
             console.error('Error fetching productos:', error);
             setError('Error al cargar productos. Verifique la conexión.');
             toast.error('Error al cargar productos');
+            setProductos([]); // ✅ Asegurar array vacío en error
         } finally {
             setLoading(false);
         }
     }, []);
 
+    // ✅ Función para cargar categorías
     const fetchCategorias = useCallback(async () => {
         try {
             const response = await categoriasService.getAll();
@@ -65,9 +68,11 @@ const ProductosManagement = () => {
         } catch (error) {
             console.error('Error fetching categorías:', error);
             toast.error('Error al cargar categorías');
+            setCategorias([]); // ✅ Asegurar array vacío en error
         }
     }, []);
 
+    // ✅ Función para calcular estadísticas
     const calcularEstadisticas = useCallback((productosData, categoriasData) => {
         const stats = {
             total: productosData.length,
@@ -75,34 +80,37 @@ const ProductosManagement = () => {
             agotados: productosData.filter(p => !p.disponible).length,
             por_categoria: categoriasData.map(cat => ({
                 categoria: cat.nombre,
-                cantidad: productosData.filter(p => p.categoria_id === cat.id).length
+                cantidad: productosData.filter(p => p.categoria?.id === cat.id).length
             })).filter(stat => stat.cantidad > 0)
         };
         setEstadisticas(stats);
     }, []);
 
-    // Efecto para cargar datos iniciales
+    // ✅ Efecto principal para cargar datos
     useEffect(() => {
-        fetchProductos();
-        fetchCategorias();
+        const loadData = async () => {
+            await Promise.all([fetchProductos(), fetchCategorias()]);
+        };
+        loadData();
     }, [fetchProductos, fetchCategorias]);
 
-    // Efecto para calcular estadísticas cuando cambian productos o categorías
+    // ✅ Efecto para recalcular estadísticas
     useEffect(() => {
-        if (productos.length > 0 || categorias.length > 0) {
+        if (productos.length >= 0 && categorias.length >= 0) {
             calcularEstadisticas(productos, categorias);
         }
     }, [productos, categorias, calcularEstadisticas]);
 
+    // ✅ Función para mostrar modal
     const handleShowModal = useCallback((producto = null) => {
         if (producto) {
             setEditingProducto(producto);
             setFormData({
-                nombre: producto.nombre,
+                nombre: producto.nombre || '',
                 descripcion: producto.descripcion || '',
-                precio: producto.precio.toString(),
-                categoria_id: producto.categoria_id.toString(),
-                disponible: producto.disponible
+                precio: producto.precio?.toString() || '',
+                categoria_id: producto.categoria_id?.toString() || '',
+                disponible: Boolean(producto.disponible)
             });
         } else {
             setEditingProducto(null);
@@ -117,6 +125,7 @@ const ProductosManagement = () => {
         setShowModal(true);
     }, []);
 
+    // ✅ Función para cerrar modal
     const handleCloseModal = useCallback(() => {
         setShowModal(false);
         setEditingProducto(null);
@@ -129,18 +138,22 @@ const ProductosManagement = () => {
         });
     }, []);
 
+    // ✅ Función para guardar producto
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         
-        // Validaciones
-        if (!formData.nombre.trim()) {
+        // Validaciones mejoradas
+        if (!formData.nombre?.trim()) {
             toast.error('El nombre es requerido');
             return;
         }
-        if (!formData.precio || parseFloat(formData.precio) <= 0) {
-            toast.error('El precio debe ser mayor a 0');
+        
+        const precio = parseFloat(formData.precio);
+        if (!formData.precio || isNaN(precio) || precio <= 0) {
+            toast.error('El precio debe ser un número mayor a 0');
             return;
         }
+        
         if (!formData.categoria_id) {
             toast.error('Selecciona una categoría');
             return;
@@ -148,9 +161,11 @@ const ProductosManagement = () => {
 
         try {
             const productoData = {
-                ...formData,
-                precio: parseFloat(formData.precio),
-                categoria_id: parseInt(formData.categoria_id)
+                nombre: formData.nombre.trim(),
+                descripcion: formData.descripcion?.trim() || '',
+                precio: precio,
+                categoria_id: parseInt(formData.categoria_id),
+                disponible: Boolean(formData.disponible)
             };
 
             if (editingProducto) {
@@ -162,63 +177,83 @@ const ProductosManagement = () => {
             }
             
             handleCloseModal();
-            fetchProductos();
+            await fetchProductos(); // ✅ Recargar productos después de modificar
         } catch (error) {
+            console.error('Error saving producto:', error);
             const errorMessage = error.response?.data?.error || 'Error al guardar producto';
             toast.error(errorMessage);
         }
     }, [formData, editingProducto, handleCloseModal, fetchProductos]);
 
+    // ✅ Función para eliminar producto
     const handleDelete = useCallback(async (producto) => {
-        if (window.confirm(`¿Estás seguro de eliminar el producto "${producto.nombre}"?`)) {
-            try {
-                await productosService.delete(producto.id);
-                toast.success('Producto eliminado exitosamente');
-                fetchProductos();
-            } catch (error) {
-                const errorMessage = error.response?.data?.error || 'Error al eliminar producto';
-                toast.error(errorMessage);
-            }
+        if (!window.confirm(`¿Estás seguro de eliminar el producto "${producto.nombre}"?`)) {
+            return;
+        }
+
+        try {
+            await productosService.delete(producto.id);
+            toast.success('Producto eliminado exitosamente');
+            await fetchProductos(); // ✅ Recargar productos después de eliminar
+        } catch (error) {
+            console.error('Error deleting producto:', error);
+            const errorMessage = error.response?.data?.error || 'Error al eliminar producto';
+            toast.error(errorMessage);
         }
     }, [fetchProductos]);
 
+    // ✅ Función para cambiar disponibilidad
     const handleToggleDisponibilidad = useCallback(async (producto) => {
         try {
-            await productosService.changeAvailability(producto.id, !producto.disponible);
+            const nuevoEstado = !producto.disponible;
+            await productosService.changeAvailability(producto.id, nuevoEstado);
+            
             toast.success(
-                `${producto.nombre} marcado como ${!producto.disponible ? 'disponible' : 'agotado'}`
+                `${producto.nombre} marcado como ${nuevoEstado ? 'disponible' : 'agotado'}`
             );
-            fetchProductos();
+            
+            await fetchProductos(); // ✅ Recargar productos después de cambiar estado
         } catch (error) {
+            console.error('Error updating availability:', error);
             const errorMessage = error.response?.data?.error || 'Error al cambiar disponibilidad';
             toast.error(errorMessage);
         }
     }, [fetchProductos]);
 
+    // ✅ Función para crear categoría
     const handleCrearCategoria = useCallback(async (e) => {
         e.preventDefault();
         
-        if (!categoriaForm.nombre.trim()) {
+        if (!categoriaForm.nombre?.trim()) {
             toast.error('El nombre de la categoría es requerido');
             return;
         }
 
         try {
-            await categoriasService.create(categoriaForm);
+            const categoriaData = {
+                nombre: categoriaForm.nombre.trim(),
+                descripcion: categoriaForm.descripcion?.trim() || ''
+            };
+            
+            await categoriasService.create(categoriaData);
             toast.success('Categoría creada exitosamente');
+            
             setCategoriaForm({ nombre: '', descripcion: '' });
             setShowCategoriaModal(false);
-            fetchCategorias();
+            await fetchCategorias(); // ✅ Recargar categorías después de crear
         } catch (error) {
+            console.error('Error creating categoria:', error);
             const errorMessage = error.response?.data?.error || 'Error al crear categoría';
             toast.error(errorMessage);
         }
     }, [categoriaForm, fetchCategorias]);
 
+    // ✅ Función para cambiar filtros
     const handleFiltroChange = useCallback((campo, valor) => {
         setFiltros(prev => ({ ...prev, [campo]: valor }));
     }, []);
 
+    // ✅ Función para limpiar filtros
     const handleLimpiarFiltros = useCallback(() => {
         setFiltros({
             categoria: 'todas',
@@ -227,19 +262,21 @@ const ProductosManagement = () => {
         });
     }, []);
 
+    // ✅ Función para obtener color de categoría
     const getCategoriaColor = useCallback((categoriaId) => {
         const colors = ['primary', 'success', 'warning', 'info', 'secondary', 'dark'];
-        return colors[categoriaId % colors.length];
+        const index = categoriaId ? (categoriaId % colors.length) : 0;
+        return colors[index];
     }, []);
 
-    // Filtrar productos según los filtros actuales
+    // ✅ Función para filtrar productos (Memoizada)
     const productosFiltrados = React.useMemo(() => {
         let resultado = [...productos];
 
         // Filtro por categoría
         if (filtros.categoria !== 'todas') {
             resultado = resultado.filter(p => 
-                p.categoria_id === parseInt(filtros.categoria)
+                p.categoria?.id === parseInt(filtros.categoria)
             );
         }
 
@@ -251,16 +288,19 @@ const ProductosManagement = () => {
         }
 
         // Filtro de búsqueda
-        if (filtros.busqueda) {
+        if (filtros.busqueda?.trim()) {
+            const busqueda = filtros.busqueda.toLowerCase();
             resultado = resultado.filter(producto => 
-                producto.nombre.toLowerCase().includes(filtros.busqueda.toLowerCase()) ||
-                (producto.categoria?.nombre && producto.categoria.nombre.toLowerCase().includes(filtros.busqueda.toLowerCase()))
+                producto.nombre?.toLowerCase().includes(busqueda) ||
+                producto.categoria?.nombre?.toLowerCase().includes(busqueda) ||
+                producto.descripcion?.toLowerCase().includes(busqueda)
             );
         }
 
         return resultado;
     }, [productos, filtros]);
 
+    // ✅ Manejo de errores en el render
     if (loading && productos.length === 0) {
         return (
             <Container>
@@ -272,7 +312,7 @@ const ProductosManagement = () => {
         );
     }
 
-    if (error) {
+    if (error && productos.length === 0) {
         return (
             <Container>
                 <Alert variant="danger" className="mt-3">
@@ -475,7 +515,7 @@ const ProductosManagement = () => {
                                 <Card.Body>
                                     <div className="d-flex justify-content-between align-items-start mb-3">
                                         <Badge 
-                                            bg={getCategoriaColor(producto.categoria_id)}
+                                            bg={getCategoriaColor(producto.categoria?.id)}
                                             className="mb-2"
                                         >
                                             {producto.categoria?.nombre || 'Sin categoría'}
@@ -497,7 +537,7 @@ const ProductosManagement = () => {
                                     
                                     <div className="mb-3">
                                         <span className="h4 text-success mb-0">
-                                            ${parseFloat(producto.precio).toFixed(2)}
+                                            ${parseFloat(producto.precio || 0).toFixed(2)}
                                         </span>
                                     </div>
 
@@ -567,13 +607,13 @@ const ProductosManagement = () => {
                                             </div>
                                         </td>
                                         <td>
-                                            <Badge bg={getCategoriaColor(producto.categoria_id)}>
+                                            <Badge bg={getCategoriaColor(producto.categoria?.id)}>
                                                 {producto.categoria?.nombre || 'Sin categoría'}
                                             </Badge>
                                         </td>
                                         <td>
                                             <strong className="text-success">
-                                                ${parseFloat(producto.precio).toFixed(2)}
+                                                ${parseFloat(producto.precio || 0).toFixed(2)}
                                             </strong>
                                         </td>
                                         <td>
@@ -645,116 +685,6 @@ const ProductosManagement = () => {
                     </Card.Body>
                 </Card>
             )}
-
-            {/* Modal para Crear/Editar Producto */}
-            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        {editingProducto ? 'Editar Producto' : 'Nuevo Producto'}
-                    </Modal.Title>
-                </Modal.Header>
-                <Form onSubmit={handleSubmit}>
-                    <Modal.Body>
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Nombre del Producto *</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={formData.nombre}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            nombre: e.target.value
-                                        })}
-                                        required
-                                        placeholder="Ej: Pizza Margarita"
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Precio *</Form.Label>
-                                    <InputGroup>
-                                        <InputGroup.Text>$</InputGroup.Text>
-                                        <Form.Control
-                                            type="number"
-                                            step="0.01"
-                                            min="0.01"
-                                            value={formData.precio}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                precio: e.target.value
-                                            })}
-                                            required
-                                            placeholder="0.00"
-                                        />
-                                    </InputGroup>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Categoría *</Form.Label>
-                                    <Form.Select
-                                        value={formData.categoria_id}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            categoria_id: e.target.value
-                                        })}
-                                        required
-                                    >
-                                        <option value="">Selecciona una categoría</option>
-                                        {categorias.map(categoria => (
-                                            <option key={categoria.id} value={categoria.id}>
-                                                {categoria.nombre}
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Estado</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="disponible-switch"
-                                        label={formData.disponible ? "Disponible" : "Agotado"}
-                                        checked={formData.disponible}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            disponible: e.target.checked
-                                        })}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Descripción</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={3}
-                                value={formData.descripcion}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    descripcion: e.target.value
-                                })}
-                                placeholder="Descripción opcional del producto..."
-                            />
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleCloseModal}>
-                            Cancelar
-                        </Button>
-                        <Button variant="primary" type="submit">
-                            {editingProducto ? 'Actualizar' : 'Crear'} Producto
-                        </Button>
-                    </Modal.Footer>
-                </Form>
-            </Modal>
 
             {/* Modal para Crear Categoría */}
             <Modal show={showCategoriaModal} onHide={() => setShowCategoriaModal(false)} centered>
