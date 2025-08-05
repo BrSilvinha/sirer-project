@@ -3,13 +3,16 @@ const router = express.Router();
 const { Usuario } = require('../models/associations');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
-// Obtener todos los usuarios (solo admins)
+// ✅ CORREGIDO: Obtener todos los usuarios (solo los reales de la DB)
 router.get('/', authenticateToken, authorizeRoles('administrador'), async (req, res) => {
     try {
+        // ✅ Solo obtener usuarios reales de la base de datos
         const usuarios = await Usuario.findAll({
             attributes: { exclude: ['password'] },
             order: [['created_at', 'DESC']]
         });
+
+        console.log(`✅ Encontrados ${usuarios.length} usuarios reales en la base de datos`);
 
         res.json({
             success: true,
