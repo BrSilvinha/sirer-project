@@ -42,6 +42,21 @@ const UsuariosManagement = () => {
     });
     const [error, setError] = useState(null);
 
+    // ✅ CORREGIDO: Definir calcularEstadisticas ANTES de fetchUsuarios
+    const calcularEstadisticas = useCallback((usuariosData) => {
+        const stats = {
+            total: usuariosData.length,
+            administradores: usuariosData.filter(u => u.rol === 'administrador').length,
+            mozos: usuariosData.filter(u => u.rol === 'mozo').length,
+            cocina: usuariosData.filter(u => u.rol === 'cocina').length,
+            cajeros: usuariosData.filter(u => u.rol === 'cajero').length,
+            activos: usuariosData.filter(u => u.activo).length,
+            inactivos: usuariosData.filter(u => !u.activo).length
+        };
+        setEstadisticas(stats);
+    }, []);
+
+    // ✅ CORREGIDO: Agregar calcularEstadisticas a las dependencias
     const fetchUsuarios = useCallback(async () => {
         try {
             setLoading(true);
@@ -60,20 +75,7 @@ const UsuariosManagement = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
-
-    const calcularEstadisticas = useCallback((usuariosData) => {
-        const stats = {
-            total: usuariosData.length,
-            administradores: usuariosData.filter(u => u.rol === 'administrador').length,
-            mozos: usuariosData.filter(u => u.rol === 'mozo').length,
-            cocina: usuariosData.filter(u => u.rol === 'cocina').length,
-            cajeros: usuariosData.filter(u => u.rol === 'cajero').length,
-            activos: usuariosData.filter(u => u.activo).length,
-            inactivos: usuariosData.filter(u => !u.activo).length
-        };
-        setEstadisticas(stats);
-    }, []);
+    }, [calcularEstadisticas]);
 
     const aplicarFiltros = useCallback((usuariosData) => {
         let usuariosFiltrados = [...usuariosData];
@@ -704,6 +706,21 @@ const UsuariosManagement = () => {
                                     <Form.Control
                                         type="text"
                                         value={formData.nombre}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            nombre: e.target.value
+                                        })}
+                                        required
+                                        placeholder="Nombre completo"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Email *</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        value={formData.email}
                                         onChange={(e) => setFormData({
                                             ...formData,
                                             email: e.target.value
