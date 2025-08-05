@@ -1,3 +1,5 @@
+// 🍽️ ARCHIVO: backend/controllers/pedidosController.js - VERSIÓN COMPLETA CORREGIDA
+
 const { Pedido, DetallePedido, Mesa, Usuario, Producto, Categoria } = require('../models/associations');
 const { Op } = require('sequelize');
 
@@ -224,13 +226,13 @@ const obtenerPedidosCocina = async (req, res) => {
     }
 };
 
-// Crear nuevo pedido
+// ✅ CORREGIDO: Crear nuevo pedido con notificaciones Socket.io mejoradas
 const crearPedido = async (req, res) => {
     try {
         const { mesa_id, productos, observaciones } = req.body;
         const usuario_id = req.user.id;
 
-        console.log('Datos recibidos:', { mesa_id, productos, observaciones, usuario_id });
+        console.log('🍽️ Creando pedido:', { mesa_id, productos, observaciones, usuario_id });
 
         // Verificar que la mesa existe
         const mesa = await Mesa.findByPk(mesa_id);
@@ -342,12 +344,45 @@ const crearPedido = async (req, res) => {
             ]
         });
 
-        // Emitir evento de socket (si está disponible)
+        // ✅ CORREGIDO: Emitir eventos de socket correctamente
         if (req.io) {
+            console.log('📡 Emitiendo eventos Socket.io para nuevo pedido...');
+            
+            // 1. Notificar a COCINA - NUEVO PEDIDO (Principal)
             req.io.to('cocina').emit('nuevo-pedido', {
+                pedido: pedidoCompleto,
+                sonido: true,
+                timestamp: new Date().toISOString()
+            });
+
+            // 2. ✅ AGREGADO: Notificar a CAJEROS sobre nueva actividad en mesa
+            req.io.to('cajero').emit('actividad-mesa', {
+                mesa: pedidoCompleto.mesa,
+                accion: 'nuevo_pedido',
+                total: pedidoCompleto.total,
+                mozo: pedidoCompleto.mozo.nombre,
+                pedido_id: pedidoCompleto.id,
+                productos: pedidoCompleto.detalles.length,
+                timestamp: new Date().toISOString()
+            });
+
+            // 3. ✅ AGREGADO: Notificar a ADMINISTRADORES
+            req.io.to('administrador').emit('pedido-creado', {
                 pedido: pedidoCompleto,
                 timestamp: new Date().toISOString()
             });
+
+            // 4. ✅ AGREGADO: Notificar cambio de estado de mesa
+            req.io.emit('mesa-estado-actualizada', {
+                mesa_id: mesa.id,
+                mesa_numero: mesa.numero,
+                nuevo_estado: 'ocupada',
+                timestamp: new Date().toISOString()
+            });
+
+            console.log('✅ Eventos Socket.io emitidos correctamente');
+        } else {
+            console.warn('⚠️ req.io no disponible, eventos no emitidos');
         }
 
         res.status(201).json({
@@ -357,7 +392,7 @@ const crearPedido = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creando pedido:', error);
+        console.error('❌ Error creando pedido:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor'
@@ -365,7 +400,7 @@ const crearPedido = async (req, res) => {
     }
 };
 
-// Cambiar estado de pedido
+// ✅ CORREGIDO: Cambiar estado de pedido con notificaciones mejoradas
 const cambiarEstadoPedido = async (req, res) => {
     try {
         const { id } = req.params;
@@ -389,6 +424,14 @@ const cambiarEstadoPedido = async (req, res) => {
                 {
                     model: Usuario,
                     as: 'mozo'
+                },
+                {
+                    model: DetallePedido,
+                    as: 'detalles',
+                    include: [{
+                        model: Producto,
+                        as: 'producto'
+                    }]
                 }
             ]
         });
@@ -403,21 +446,95 @@ const cambiarEstadoPedido = async (req, res) => {
         const estadoAnterior = pedido.estado;
         await pedido.update({ estado });
 
-        // Emitir eventos de socket según el estado
+        // ✅ CORREGIDO: Emitir eventos específicos según el cambio de estado
         if (req.io) {
-            if (estado === 'preparado') {
-                req.io.to('mozo').emit('pedido-preparado', {
-                    pedido: pedido.toJSON(),
-                    estadoAnterior,
-                    timestamp: new Date().toISOString()
-                });
-            } else if (estado === 'entregado') {
-                req.io.to('cajero').emit('pedido-entregado', {
-                    pedido: pedido.toJSON(),
-                    estadoAnterior,
-                    timestamp: new Date().toISOString()
-                });
+            console.log(`📡 Emitiendo evento por cambio de estado: ${estadoAnterior} → ${estado}`);
+
+            switch (estado) {
+                case 'en_cocina':
+                    // Notificar que pedido fue tomado por cocina
+                    req.io.to('mozo').emit('pedido-tomado-cocina', {
+                        pedido_id: pedido.id,
+                        mesa: pedido.mesa.numero,
+                        timestamp: new Date().toISOString()
+                    });
+                    break;
+
+                case 'preparado':
+                    // Notificar a mozos que pedido está listo
+                    req.io.to('mozo').emit('pedido-preparado', {
+                        pedido: pedido.toJSON(),
+                        estadoAnterior,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // También notificar pedido listo
+                    req.io.to('mozo').emit('pedido-listo', {
+                        pedidoId: pedido.id,
+                        mesa: pedido.mesa.numero,
+                        productos: pedido.detalles.map(d => d.producto.nombre).join(', '),
+                        timestamp: new Date().toISOString()
+                    });
+                    break;
+
+                case 'entregado':
+                    // ✅ AGREGADO: Notificar a cajeros que pedido fue entregado - EVENTO PRINCIPAL
+                    req.io.to('cajero').emit('pedido-entregado', {
+                        pedido: pedido.toJSON(),
+                        mesa: pedido.mesa.numero,
+                        total: pedido.total,
+                        listo_para_cobrar: true,
+                        mozo: pedido.mozo.nombre,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // ✅ AGREGADO: También emitir evento específico de "listo para cobrar"
+                    req.io.to('cajero').emit('pedido-listo-para-cobrar', {
+                        pedidoId: pedido.id,
+                        mesa: pedido.mesa.numero,
+                        total: pedido.total,
+                        mozo: pedido.mozo.nombre,
+                        productos: pedido.detalles.length,
+                        listo_para_cobrar: true,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // ✅ AGREGADO: Actualizar contador de cuentas pendientes
+                    req.io.to('cajero').emit('actualizar-cuentas-pendientes', {
+                        accion: 'nuevo',
+                        mesa: pedido.mesa.numero,
+                        timestamp: new Date().toISOString()
+                    });
+                    break;
+
+                case 'pagado':
+                    // Notificar pago completado
+                    req.io.emit('pedido-pagado', {
+                        pedido_id: pedido.id,
+                        mesa: pedido.mesa.numero,
+                        total: pedido.total,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // ✅ AGREGADO: Notificar a cajeros que una cuenta fue pagada
+                    req.io.to('cajero').emit('cuenta-pagada', {
+                        mesa: pedido.mesa.numero,
+                        total: pedido.total,
+                        timestamp: new Date().toISOString()
+                    });
+                    break;
             }
+
+            // Evento genérico para todos
+            req.io.emit('pedido-estado-actualizado', {
+                pedidoId: pedido.id,
+                nuevoEstado: estado,
+                estadoAnterior,
+                mesa: pedido.mesa.numero,
+                timestamp: new Date().toISOString()
+            });
+
+            console.log('✅ Eventos de cambio de estado emitidos');
         }
 
         res.json({
@@ -426,7 +543,7 @@ const cambiarEstadoPedido = async (req, res) => {
             data: pedido
         });
     } catch (error) {
-        console.error('Error cambiando estado de pedido:', error);
+        console.error('❌ Error cambiando estado de pedido:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor'
@@ -593,7 +710,7 @@ const obtenerCuentaMesa = async (req, res) => {
     }
 };
 
-// Procesar pago de mesa
+// ✅ CORREGIDO: Procesar pago de mesa con notificaciones Socket.io
 const procesarPagoMesa = async (req, res) => {
     try {
         const { mesa_id } = req.params;
@@ -676,12 +793,51 @@ const procesarPagoMesa = async (req, res) => {
             cajero: req.user.nombre
         };
 
-        // Emitir evento de socket
+        // ✅ CORREGIDO: Emitir eventos de socket para pago procesado
         if (req.io) {
-            req.io.emit('pago-procesado', {
-                pago: resultadoPago,
+            console.log('📡 Emitiendo eventos de pago procesado...');
+            
+            // 1. Notificar a TODOS sobre mesa liberada
+            req.io.emit('mesa-liberada', {
+                mesa: mesa.numero,
+                total: totalAPagar,
+                metodoPago: metodo_pago,
+                cajero: req.user.nombre,
                 timestamp: new Date().toISOString()
             });
+
+            // 2. Notificar cambio de estado de mesa
+            req.io.emit('mesa-estado-actualizada', {
+                mesa_id: mesa.id,
+                mesa_numero: mesa.numero,
+                nuevo_estado: 'libre',
+                timestamp: new Date().toISOString()
+            });
+
+            // 3. ✅ AGREGADO: Notificar a otros cajeros sobre actualización
+            req.io.to('cajero').emit('pago-procesado', {
+                pago: resultadoPago,
+                accion: 'cuenta_cerrada',
+                timestamp: new Date().toISOString()
+            });
+
+            // 4. ✅ AGREGADO: Notificar a administradores sobre venta
+            req.io.to('administrador').emit('venta-realizada', {
+                mesa: mesa.numero,
+                total: totalAPagar,
+                metodoPago: metodo_pago,
+                cajero: req.user.nombre,
+                timestamp: new Date().toISOString()
+            });
+
+            // 5. ✅ AGREGADO: Actualizar estadísticas en tiempo real
+            req.io.to('administrador').emit('estadisticas-actualizadas', {
+                tipo: 'venta',
+                data: resultadoPago,
+                timestamp: new Date().toISOString()
+            });
+
+            console.log('✅ Eventos de pago emitidos correctamente');
         }
 
         res.json({
@@ -690,7 +846,7 @@ const procesarPagoMesa = async (req, res) => {
             data: resultadoPago
         });
     } catch (error) {
-        console.error('Error procesando pago:', error);
+        console.error('❌ Error procesando pago:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor'
@@ -776,14 +932,26 @@ const obtenerEstadisticasPedidos = async (req, res) => {
     }
 };
 
-// Agregar productos a un pedido existente
+// ✅ CORREGIDO: Agregar productos a un pedido existente con notificaciones
 const agregarProductosPedido = async (req, res) => {
     try {
         const { id } = req.params;
         const { productos } = req.body;
 
         // Verificar que el pedido existe y no está pagado
-        const pedido = await Pedido.findByPk(id);
+        const pedido = await Pedido.findByPk(id, {
+            include: [
+                {
+                    model: Mesa,
+                    as: 'mesa'
+                },
+                {
+                    model: Usuario,
+                    as: 'mozo'
+                }
+            ]
+        });
+
         if (!pedido) {
             return res.status(404).json({
                 success: false,
@@ -889,13 +1057,46 @@ const agregarProductosPedido = async (req, res) => {
             ]
         });
 
-        // Emitir evento de socket
+        // ✅ CORREGIDO: Emitir eventos de socket para productos agregados
         if (req.io) {
+            console.log('📡 Emitiendo eventos por productos agregados...');
+            
+            // 1. Notificar a COCINA sobre actualización de pedido
             req.io.to('cocina').emit('pedido-actualizado', {
                 pedido: pedidoActualizado,
                 productos_agregados: productosValidados.length,
+                total_adicional: totalAdicional,
                 timestamp: new Date().toISOString()
             });
+
+            // 2. ✅ AGREGADO: Notificar a CAJEROS sobre actualización de cuenta
+            req.io.to('cajero').emit('cuenta-actualizada', {
+                mesa: pedidoActualizado.mesa,
+                pedido_id: pedidoActualizado.id,
+                nuevo_total: nuevoTotal,
+                productos_agregados: productosValidados.length,
+                total_adicional: totalAdicional,
+                timestamp: new Date().toISOString()
+            });
+
+            // 3. ✅ AGREGADO: Actualizar lista de cuentas pendientes
+            req.io.to('cajero').emit('actualizar-cuentas-pendientes', {
+                accion: 'actualizado',
+                mesa: pedidoActualizado.mesa.numero,
+                nuevo_total: nuevoTotal,
+                timestamp: new Date().toISOString()
+            });
+
+            // 4. Notificar a administradores
+            req.io.to('administrador').emit('pedido-modificado', {
+                pedido: pedidoActualizado,
+                accion: 'productos_agregados',
+                cantidad: productosValidados.length,
+                total_adicional: totalAdicional,
+                timestamp: new Date().toISOString()
+            });
+
+            console.log('✅ Eventos de actualización emitidos');
         }
 
         res.json({
@@ -905,7 +1106,7 @@ const agregarProductosPedido = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error agregando productos al pedido:', error);
+        console.error('❌ Error agregando productos al pedido:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor'
@@ -913,7 +1114,7 @@ const agregarProductosPedido = async (req, res) => {
     }
 };
 
-// Cancelar pedido
+// ✅ CORREGIDO: Cancelar pedido con notificaciones
 const cancelarPedido = async (req, res) => {
     try {
         const { id } = req.params;
@@ -971,13 +1172,38 @@ const cancelarPedido = async (req, res) => {
             await pedido.mesa.update({ estado: 'libre' });
         }
 
-        // Emitir evento de socket
+        // ✅ CORREGIDO: Emitir eventos de socket para cancelación
         if (req.io) {
+            console.log('📡 Emitiendo eventos de cancelación de pedido...');
+            
+            // 1. Notificar a TODOS sobre pedido cancelado
             req.io.emit('pedido-cancelado', {
                 pedido: pedido.toJSON(),
                 motivo,
                 timestamp: new Date().toISOString()
             });
+
+            // 2. ✅ AGREGADO: Notificar a CAJEROS si afecta cuentas pendientes
+            if (pedido.estado === 'entregado') {
+                req.io.to('cajero').emit('cuenta-cancelada', {
+                    mesa: pedido.mesa.numero,
+                    pedido_id: pedido.id,
+                    motivo,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            // 3. ✅ AGREGADO: Actualizar estado de mesa si es necesario
+            if (otrosPedidos === 0) {
+                req.io.emit('mesa-estado-actualizada', {
+                    mesa_id: pedido.mesa.id,
+                    mesa_numero: pedido.mesa.numero,
+                    nuevo_estado: 'libre',
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            console.log('✅ Eventos de cancelación emitidos');
         }
 
         res.json({
@@ -987,7 +1213,7 @@ const cancelarPedido = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error cancelando pedido:', error);
+        console.error('❌ Error cancelando pedido:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor'
