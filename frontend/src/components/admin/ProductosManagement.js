@@ -54,7 +54,7 @@ const ProductosManagement = () => {
             console.error('Error fetching productos:', error);
             setError('Error al cargar productos. Verifique la conexión.');
             toast.error('Error al cargar productos');
-            setProductos([]); // ✅ Asegurar array vacío en error
+            setProductos([]);
         } finally {
             setLoading(false);
         }
@@ -68,7 +68,7 @@ const ProductosManagement = () => {
         } catch (error) {
             console.error('Error fetching categorías:', error);
             toast.error('Error al cargar categorías');
-            setCategorias([]); // ✅ Asegurar array vacío en error
+            setCategorias([]);
         }
     }, []);
 
@@ -138,7 +138,7 @@ const ProductosManagement = () => {
         });
     }, []);
 
-    // ✅ Función para guardar producto
+    // ✅ Función para guardar producto - CORREGIDO: Se agregó la función faltante
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         
@@ -177,7 +177,7 @@ const ProductosManagement = () => {
             }
             
             handleCloseModal();
-            await fetchProductos(); // ✅ Recargar productos después de modificar
+            await fetchProductos();
         } catch (error) {
             console.error('Error saving producto:', error);
             const errorMessage = error.response?.data?.error || 'Error al guardar producto';
@@ -194,7 +194,7 @@ const ProductosManagement = () => {
         try {
             await productosService.delete(producto.id);
             toast.success('Producto eliminado exitosamente');
-            await fetchProductos(); // ✅ Recargar productos después de eliminar
+            await fetchProductos();
         } catch (error) {
             console.error('Error deleting producto:', error);
             const errorMessage = error.response?.data?.error || 'Error al eliminar producto';
@@ -212,7 +212,7 @@ const ProductosManagement = () => {
                 `${producto.nombre} marcado como ${nuevoEstado ? 'disponible' : 'agotado'}`
             );
             
-            await fetchProductos(); // ✅ Recargar productos después de cambiar estado
+            await fetchProductos();
         } catch (error) {
             console.error('Error updating availability:', error);
             const errorMessage = error.response?.data?.error || 'Error al cambiar disponibilidad';
@@ -240,7 +240,7 @@ const ProductosManagement = () => {
             
             setCategoriaForm({ nombre: '', descripcion: '' });
             setShowCategoriaModal(false);
-            await fetchCategorias(); // ✅ Recargar categorías después de crear
+            await fetchCategorias();
         } catch (error) {
             console.error('Error creating categoria:', error);
             const errorMessage = error.response?.data?.error || 'Error al crear categoría';
@@ -685,6 +685,118 @@ const ProductosManagement = () => {
                     </Card.Body>
                 </Card>
             )}
+
+            {/* Modal para Crear/Editar Producto */}
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>
+                        {editingProducto ? 'Editar Producto' : 'Nuevo Producto'}
+                    </Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleSubmit}>
+                    <Modal.Body>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Nombre del Producto *</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={formData.nombre}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            nombre: e.target.value
+                                        })}
+                                        required
+                                        placeholder="Ej: Pizza Margarita"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Precio *</Form.Label>
+                                    <InputGroup>
+                                        <InputGroup.Text>$</InputGroup.Text>
+                                        <Form.Control
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={formData.precio}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                precio: e.target.value
+                                            })}
+                                            required
+                                            placeholder="0.00"
+                                        />
+                                    </InputGroup>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Descripción</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={formData.descripcion}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    descripcion: e.target.value
+                                })}
+                                placeholder="Descripción del producto..."
+                            />
+                        </Form.Group>
+
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Categoría *</Form.Label>
+                                    <Form.Select
+                                        value={formData.categoria_id}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            categoria_id: e.target.value
+                                        })}
+                                        required
+                                    >
+                                        <option value="">Selecciona una categoría</option>
+                                        {categorias.map(categoria => (
+                                            <option key={categoria.id} value={categoria.id}>
+                                                {categoria.nombre}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Estado</Form.Label>
+                                    <div className="mt-2">
+                                        <Form.Check
+                                            type="switch"
+                                            id="disponible-switch"
+                                            label={formData.disponible ? "Disponible" : "No disponible"}
+                                            checked={formData.disponible}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                disponible: e.target.checked
+                                            })}
+                                        />
+                                    </div>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseModal}>
+                            Cancelar
+                        </Button>
+                        <Button variant="primary" type="submit">
+                            {editingProducto ? 'Actualizar' : 'Crear'} Producto
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
 
             {/* Modal para Crear Categoría */}
             <Modal show={showCategoriaModal} onHide={() => setShowCategoriaModal(false)} centered>
