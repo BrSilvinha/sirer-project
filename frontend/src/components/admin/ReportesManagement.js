@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Container, Row, Col, Card, Badge, Button, Form, 
-    Spinner, Modal, Tab, Tabs, Table, ButtonGroup, Alert
+    Table, Spinner, Modal, Tab, Tabs, ButtonGroup, Alert
 } from 'react-bootstrap';
 import {
     Chart as ChartJS,
@@ -45,6 +45,7 @@ const ReportesManagement = () => {
     });
     const [showExportModal, setShowExportModal] = useState(false);
     const [exportType, setExportType] = useState('pdf');
+    const [exportando, setExportando] = useState(false);
 
     // Estados para diferentes tipos de reportes
     const [reporteVentas, setReporteVentas] = useState(null);
@@ -114,26 +115,214 @@ const ReportesManagement = () => {
         setFiltros(prev => ({ ...prev, [campo]: valor }));
     }, []);
 
+    // ✅ FUNCIÓN DE EXPORTACIÓN A CSV (simulación de Excel)
+    const exportarCSV = useCallback((datos, nombreArchivo) => {
+        try {
+            let csvContent = '';
+            
+            if (activeTab === 'ventas' && reporteVentas) {
+                csvContent = 'Período,Total Ventas,Total Pedidos,Promedio por Pedido\n';
+                reporteVentas.ventas_por_periodo?.forEach(venta => {
+                    csvContent += `${venta.periodo},${venta.total_ventas},${venta.total_pedidos},${venta.promedio_pedido}\n`;
+                });
+            } else if (activeTab === 'productos' && reporteProductos) {
+                csvContent = 'Producto,Categoría,Cantidad Vendida,Ingresos Totales\n';
+                reporteProductos.productos?.forEach(producto => {
+                    csvContent += `"${producto.producto?.nombre}","${producto.producto?.categoria?.nombre}",${producto.total_vendido},${producto.ingresos_totales}\n`;
+                });
+            } else if (activeTab === 'mozos' && reporteMozos) {
+                csvContent = 'Mozo,Total Pedidos,Total Ventas,Promedio por Pedido\n';
+                reporteMozos.mozos?.forEach(mozo => {
+                    csvContent += `"${mozo.mozo?.nombre}",${mozo.total_pedidos},${mozo.total_ventas},${mozo.promedio_por_pedido}\n`;
+                });
+            } else if (activeTab === 'mesas' && reporteMesas) {
+                csvContent = 'Mesa,Capacidad,Total Pedidos,Ingresos Totales,Promedio por Pedido\n';
+                reporteMesas.mesas?.forEach(mesa => {
+                    csvContent += `Mesa ${mesa.mesa?.numero},${mesa.mesa?.capacidad},${mesa.total_pedidos},${mesa.ingresos_totales},${mesa.promedio_por_pedido}\n`;
+                });
+            }
+
+            if (csvContent) {
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${nombreArchivo}_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                toast.success('Archivo CSV descargado correctamente');
+            } else {
+                toast.error('No hay datos para exportar');
+            }
+        } catch (error) {
+            console.error('Error exportando CSV:', error);
+            toast.error('Error al generar archivo CSV');
+        }
+    }, [activeTab, reporteVentas, reporteProductos, reporteMozos, reporteMesas]);
+
+    // ✅ FUNCIÓN DE EXPORTACIÓN A PDF (simulación básica)
+    const exportarPDF = useCallback(() => {
+        try {
+            // Crear contenido HTML para el PDF
+            const fechaActual = new Date().toLocaleDateString();
+            const periodo = `${filtros.fechaInicio} al ${filtros.fechaFin}`;
+            
+            let contenidoHTML = `
+                <html>
+                <head>
+                    <title>Reporte SIRER - ${activeTab.toUpperCase()}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                        .periodo { color: #666; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        .total { font-weight: bold; background-color: #e8f5e8; }
+                        .footer { margin-top: 30px; text-align: right; color: #666; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SISTEMA SIRER</h1>
+                        <h2>Reporte de ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+                    </div>
+                    <div class="periodo">
+                        <strong>Período:</strong> ${periodo}<br>
+                        <strong>Generado:</strong> ${fechaActual}
+                    </div>
+            `;
+
+            if (activeTab === 'ventas' && reporteVentas) {
+                contenidoHTML += `
+                    <h3>Resumen Total</h3>
+                    <table>
+                        <tr><td><strong>Total Ventas:</strong></td><td>$${reporteVentas.resumen_total?.total_ventas || '0.00'}</td></tr>
+                        <tr><td><strong>Total Pedidos:</strong></td><td>${reporteVentas.resumen_total?.total_pedidos || 0}</td></tr>
+                        <tr><td><strong>Promedio por Pedido:</strong></td><td>$${reporteVentas.resumen_total?.promedio_pedido || '0.00'}</td></tr>
+                    </table>
+                    
+                    <h3>Ventas por Período</h3>
+                    <table>
+                        <tr><th>Período</th><th>Total Ventas</th><th>Total Pedidos</th><th>Promedio</th></tr>
+                `;
+                reporteVentas.ventas_por_periodo?.forEach(venta => {
+                    contenidoHTML += `<tr><td>${venta.periodo}</td><td>$${venta.total_ventas}</td><td>${venta.total_pedidos}</td><td>$${venta.promedio_pedido}</td></tr>`;
+                });
+                contenidoHTML += '</table>';
+            }
+
+            if (activeTab === 'productos' && reporteProductos) {
+                contenidoHTML += `
+                    <h3>Productos Más Vendidos</h3>
+                    <table>
+                        <tr><th>Posición</th><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Ingresos</th></tr>
+                `;
+                reporteProductos.productos?.forEach((producto, index) => {
+                    contenidoHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${producto.producto?.nombre || 'N/A'}</td>
+                            <td>${producto.producto?.categoria?.nombre || 'N/A'}</td>
+                            <td>${producto.total_vendido}</td>
+                            <td>$${producto.ingresos_totales}</td>
+                        </tr>
+                    `;
+                });
+                contenidoHTML += '</table>';
+            }
+
+            if (activeTab === 'mozos' && reporteMozos) {
+                contenidoHTML += `
+                    <h3>Rendimiento de Mozos</h3>
+                    <table>
+                        <tr><th>Posición</th><th>Mozo</th><th>Total Pedidos</th><th>Total Ventas</th><th>Promedio</th></tr>
+                `;
+                reporteMozos.mozos?.forEach((mozo, index) => {
+                    contenidoHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${mozo.mozo?.nombre || 'N/A'}</td>
+                            <td>${mozo.total_pedidos}</td>
+                            <td>$${mozo.total_ventas}</td>
+                            <td>$${mozo.promedio_por_pedido}</td>
+                        </tr>
+                    `;
+                });
+                contenidoHTML += '</table>';
+            }
+
+            if (activeTab === 'mesas' && reporteMesas) {
+                contenidoHTML += `
+                    <h3>Rendimiento de Mesas</h3>
+                    <table>
+                        <tr><th>Mesa</th><th>Capacidad</th><th>Total Pedidos</th><th>Ingresos</th><th>Promedio</th></tr>
+                `;
+                reporteMesas.mesas?.forEach(mesa => {
+                    contenidoHTML += `
+                        <tr>
+                            <td>Mesa ${mesa.mesa?.numero}</td>
+                            <td>${mesa.mesa?.capacidad} personas</td>
+                            <td>${mesa.total_pedidos}</td>
+                            <td>$${mesa.ingresos_totales}</td>
+                            <td>$${mesa.promedio_por_pedido}</td>
+                        </tr>
+                    `;
+                });
+                contenidoHTML += '</table>';
+            }
+
+            contenidoHTML += `
+                    <div class="footer">
+                        <p>Generado por Sistema SIRER - ${new Date().toLocaleString()}</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Abrir en nueva ventana para imprimir/guardar como PDF
+            const ventanaPDF = window.open('', '_blank');
+            ventanaPDF.document.write(contenidoHTML);
+            ventanaPDF.document.close();
+            
+            // Auto-imprimir después de un breve delay
+            setTimeout(() => {
+                ventanaPDF.print();
+            }, 500);
+            
+            toast.success('PDF generado correctamente. Use Ctrl+P para guardar como PDF');
+            
+        } catch (error) {
+            console.error('Error generando PDF:', error);
+            toast.error('Error al generar PDF');
+        }
+    }, [activeTab, filtros, reporteVentas, reporteProductos, reporteMozos, reporteMesas]);
+
     const handleExportar = useCallback((tipo) => {
         setExportType(tipo);
         setShowExportModal(true);
     }, []);
 
     const handleConfirmExport = useCallback(async () => {
+        setExportando(true);
         try {
-            toast.loading('Generando reporte...', { duration: 2000 });
+            if (exportType === 'excel') {
+                const nombreArchivo = `reporte_${activeTab}_${filtros.fechaInicio}_${filtros.fechaFin}`;
+                exportarCSV(null, nombreArchivo);
+            } else if (exportType === 'pdf') {
+                exportarPDF();
+            }
             
-            // Simulación de exportación (reemplazar con llamada real)
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            toast.success(`Reporte exportado como ${exportType.toUpperCase()}`);
             setShowExportModal(false);
             
         } catch (error) {
             console.error('Error al exportar:', error);
             toast.error('Error al exportar reporte');
+        } finally {
+            setExportando(false);
         }
-    }, [exportType]);
+    }, [exportType, activeTab, filtros, exportarCSV, exportarPDF]);
 
     // Configuraciones de gráficos con datos reales
     const ventasChartData = {
@@ -269,7 +458,7 @@ const ReportesManagement = () => {
                                 variant="outline-success" 
                                 size="sm"
                                 onClick={() => handleExportar('excel')}
-                                disabled={loading}
+                                disabled={loading || exportando}
                             >
                                 <i className="fas fa-file-excel me-1"></i>
                                 Excel
@@ -278,7 +467,7 @@ const ReportesManagement = () => {
                                 variant="outline-danger" 
                                 size="sm"
                                 onClick={() => handleExportar('pdf')}
-                                disabled={loading}
+                                disabled={loading || exportando}
                             >
                                 <i className="fas fa-file-pdf me-1"></i>
                                 PDF
@@ -518,47 +707,6 @@ const ReportesManagement = () => {
                     }>
                         {reporteProductos ? (
                             <>
-                                {/* Métricas de productos */}
-                                <Row className="mb-4">
-                                    <Col md={4}>
-                                        <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-utensils fa-2x text-primary mb-2"></i>
-                                                <div className="h4 mb-0 text-primary">
-                                                    {reporteProductos.productos?.length || 0}
-                                                </div>
-                                                <div className="text-muted small">Productos Vendidos</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Card className="border-0 shadow-sm bg-success bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-crown fa-2x text-success mb-2"></i>
-                                                <div className="h6 mb-1 text-success">
-                                                    {reporteProductos.productos?.[0]?.producto?.nombre || 'N/A'}
-                                                </div>
-                                                <div className="text-muted small">Más Vendido</div>
-                                                <div className="small">
-                                                    ${parseFloat(reporteProductos.productos?.[0]?.ingresos_totales || 0).toFixed(2)}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-star fa-2x text-warning mb-2"></i>
-                                                <div className="h4 mb-0 text-warning">
-                                                    {reporteProductos.productos?.reduce((sum, p) => 
-                                                        sum + parseInt(p.total_vendido || 0), 0) || 0}
-                                                </div>
-                                                <div className="text-muted small">Total Vendidos</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
                                 {/* Gráfico de productos */}
                                 <Row className="mb-4">
                                     <Col>
@@ -655,58 +803,6 @@ const ReportesManagement = () => {
                     }>
                         {reporteMozos ? (
                             <>
-                                {/* Métricas de mozos */}
-                                <Row className="mb-4">
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-users fa-2x text-primary mb-2"></i>
-                                                <div className="h4 mb-0">{reporteMozos.mozos?.length || 0}</div>
-                                                <div className="text-muted small">Mozos Activos</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-success bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-crown fa-2x text-success mb-2"></i>
-                                                <div className="h6 mb-1 text-success">
-                                                    {reporteMozos.mozos?.[0]?.mozo?.nombre || 'N/A'}
-                                                </div>
-                                                <div className="text-muted small">Mejor Vendedor</div>
-                                                <div className="small">
-                                                    ${parseFloat(reporteMozos.mozos?.[0]?.total_ventas || 0).toFixed(2)}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-info bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-chart-line fa-2x text-info mb-2"></i>
-                                                <div className="h4 mb-0 text-info">
-                                                    ${(reporteMozos.mozos?.reduce((sum, m) => 
-                                                        sum + parseFloat(m.total_ventas || 0), 0) / 
-                                                        (reporteMozos.mozos?.length || 1)).toFixed(2)}
-                                                </div>
-                                                <div className="text-muted small">Promedio Ventas</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-receipt fa-2x text-warning mb-2"></i>
-                                                <div className="h4 mb-0 text-warning">
-                                                    {reporteMozos.mozos?.reduce((sum, m) => 
-                                                        sum + parseInt(m.total_pedidos || 0), 0) || 0}
-                                                </div>
-                                                <div className="text-muted small">Total Pedidos</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
                                 {/* Gráfico de mozos */}
                                 <Row className="mb-4">
                                     <Col>
@@ -801,58 +897,6 @@ const ReportesManagement = () => {
                     }>
                         {reporteMesas ? (
                             <>
-                                {/* Métricas de mesas */}
-                                <Row className="mb-4">
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-table fa-2x text-primary mb-2"></i>
-                                                <div className="h4 mb-0">{reporteMesas.mesas?.length || 0}</div>
-                                                <div className="text-muted small">Mesas Analizadas</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-success bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-star fa-2x text-success mb-2"></i>
-                                                <div className="h6 mb-1 text-success">
-                                                    Mesa {reporteMesas.mesas?.[0]?.mesa?.numero || 'N/A'}
-                                                </div>
-                                                <div className="text-muted small">Más Rentable</div>
-                                                <div className="small">
-                                                    ${parseFloat(reporteMesas.mesas?.[0]?.ingresos_totales || 0).toFixed(2)}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-info bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-dollar-sign fa-2x text-info mb-2"></i>
-                                                <div className="h4 mb-0 text-info">
-                                                    ${(reporteMesas.mesas?.reduce((sum, m) => 
-                                                        sum + parseFloat(m.ingresos_totales || 0), 0) || 0).toFixed(2)}
-                                                </div>
-                                                <div className="text-muted small">Ingresos Totales</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-sync-alt fa-2x text-warning mb-2"></i>
-                                                <div className="h4 mb-0 text-warning">
-                                                    {(reporteMesas.mesas?.reduce((sum, m) => 
-                                                        sum + parseInt(m.total_pedidos || 0), 0) / 
-                                                        (reporteMesas.mesas?.length || 1)).toFixed(1)}
-                                                </div>
-                                                <div className="text-muted small">Promedio Pedidos</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
                                 {/* Tabla de mesas */}
                                 {reporteMesas.mesas?.length > 0 && (
                                     <Row>
@@ -882,7 +926,7 @@ const ReportesManagement = () => {
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <Badge bg="outline-secondary">
+                                                                        <Badge bg="secondary">
                                                                             {mesa.mesa?.capacidad || 0} pers
                                                                         </Badge>
                                                                     </td>
@@ -940,29 +984,43 @@ const ReportesManagement = () => {
                     </div>
 
                     <div className="mb-3">
-                        <strong>Secciones incluidas:</strong>
+                        <strong>Sección:</strong>
                         <div className="mt-2">
-                            {['ventas', 'productos', 'mozos', 'mesas'].map(seccion => (
-                                <Badge key={seccion} bg="outline-success" className="me-2 mb-1">
-                                    <i className="fas fa-check me-1"></i>
-                                    {seccion.charAt(0).toUpperCase() + seccion.slice(1)}
-                                </Badge>
-                            ))}
+                            <Badge bg="success" className="me-2 mb-1">
+                                <i className="fas fa-check me-1"></i>
+                                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                            </Badge>
                         </div>
                     </div>
 
                     <Alert variant="info" className="small">
                         <i className="fas fa-info-circle me-2"></i>
-                        El reporte se generará con todos los gráficos y tablas del período seleccionado.
+                        {exportType === 'pdf' 
+                            ? 'Se abrirá una nueva ventana para generar el PDF. Use Ctrl+P para guardarlo.'
+                            : 'Se descargará un archivo CSV que puede abrir en Excel o Google Sheets.'
+                        }
                     </Alert>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setShowExportModal(false)}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleConfirmExport}>
-                        <i className="fas fa-download me-2"></i>
-                        Exportar {exportType.toUpperCase()}
+                    <Button 
+                        variant="primary" 
+                        onClick={handleConfirmExport}
+                        disabled={exportando}
+                    >
+                        {exportando ? (
+                            <>
+                                <Spinner animation="border" size="sm" className="me-2" />
+                                Generando...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-download me-2"></i>
+                                Exportar {exportType.toUpperCase()}
+                            </>
+                        )}
                     </Button>
                 </Modal.Footer>
             </Modal>

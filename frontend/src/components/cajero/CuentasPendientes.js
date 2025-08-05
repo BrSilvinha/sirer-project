@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Container, Row, Col, Card, Badge, Button, Modal, 
-    Form, Table, Spinner, InputGroup, ButtonGroup, Alert
+    Form, Table, Spinner, InputGroup, ButtonGroup
 } from 'react-bootstrap';
 import { pedidosService, mesasService } from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
@@ -17,8 +17,6 @@ const CuentasPendientes = () => {
     const [observacionesPago, setObservacionesPago] = useState('');
     const [procesandoPago, setProcesandoPago] = useState(false);
     const [filtroMonto, setFiltroMonto] = useState('todos');
-    const [socketConnected, setSocketConnected] = useState(false);
-    const [lastUpdate, setLastUpdate] = useState(null);
     const [estadisticas, setEstadisticas] = useState({
         total_mesas: 0,
         total_a_cobrar: 0,
@@ -44,46 +42,39 @@ const CuentasPendientes = () => {
             mesa.estado === 'cuenta_solicitada' || mesa.estado === 'ocupada'
         );
 
-        console.log(`🔍 Verificando ${mesasCandidatas.length} mesas candidatas de ${mesas.length} total`);
-
-        // Procesar en lotes para reducir carga
-        for (let i = 0; i < mesasCandidatas.length; i += 3) {
-            const lote = mesasCandidatas.slice(i, i + 3);
-            
-            const promesasLote = lote.map(async (mesa) => {
-                try {
-                    const cuentaResponse = await pedidosService.getCuenta(mesa.id);
-                    return {
-                        mesa,
-                        cuenta: cuentaResponse.data.data
-                    };
-                } catch (error) {
-                    // Mesa sin cuenta pendiente - esto es normal
-                    return null;
-                }
-            });
-
-            const resultadosLote = await Promise.all(promesasLote);
-            
-            // Agregar solo las mesas con cuentas válidas
-            resultadosLote.forEach(resultado => {
-                if (resultado) {
-                    mesasConCuentasData.push(resultado);
-                }
-            });
-
-            // Pausa entre lotes para no sobrecargar
-            if (i + 3 < mesasCandidatas.length) {
-                await new Promise(resolve => setTimeout(resolve, 100));
+        // ✅ PROCESAMIENTO PARALELO MASIVO - Sin esperas entre lotes
+        const promesasTodasLasMesas = mesasCandidatas.map(async (mesa) => {
+            try {
+                const cuentaResponse = await pedidosService.getCuenta(mesa.id);
+                return {
+                    mesa,
+                    cuenta: cuentaResponse.data.data
+                };
+            } catch (error) {
+                return null; // Mesa sin cuenta pendiente
             }
-        }
+        });
+
+        // ✅ EJECUTAR TODAS LAS CONSULTAS AL MISMO TIEMPO
+        const resultados = await Promise.all(promesasTodasLasMesas);
+        
+        // Filtrar solo las mesas con cuentas válidas
+        resultados.forEach(resultado => {
+            if (resultado) {
+                mesasConCuentasData.push(resultado);
+            }
+        });
 
         return mesasConCuentasData;
     }, []);
 
-    const fetchMesasConCuentas = useCallback(async () => {
+    const fetchMesasConCuentas = useCallback(async (esActualizacionManual = false) => {
+        // ✅ NO mostrar loading en actualizaciones automáticas
+        
         try {
-            setLoading(true);
+            if (esActualizacionManual) {
+                setLoading(true);
+            }
             
             // Obtener todas las mesas activas
             const mesasResponse = await mesasService.getAll();
@@ -94,8 +85,6 @@ const CuentasPendientes = () => {
                 mesa.activa && (mesa.estado === 'cuenta_solicitada' || mesa.estado === 'ocupada')
             );
 
-            console.log(`📊 ${mesasPotenciales.length} mesas potenciales de ${todasLasMesas.length} total`);
-
             if (mesasPotenciales.length === 0) {
                 setMesasConCuentas([]);
                 setEstadisticas({
@@ -104,7 +93,6 @@ const CuentasPendientes = () => {
                     promedio_cuenta: 0,
                     mesa_mayor: null
                 });
-                setLastUpdate(new Date().toLocaleTimeString());
                 return;
             }
 
@@ -119,192 +107,127 @@ const CuentasPendientes = () => {
                 mesasFiltradas = mesasConCuentasData.filter(m => m.cuenta.resumen.total_general >= 50);
             }
 
-            setMesasConCuentas(mesasFiltradas);
-
-            // Calcular estadísticas
-            if (mesasConCuentasData.length > 0) {
-                const totalACobrar = mesasConCuentasData.reduce((sum, m) => 
-                    sum + parseFloat(m.cuenta.resumen.total_general), 0
-                );
-                const promedio = totalACobrar / mesasConCuentasData.length;
-                const mesaMayor = mesasConCuentasData.reduce((max, current) => 
-                    parseFloat(current.cuenta.resumen.total_general) > parseFloat(max.cuenta.resumen.total_general) 
-                        ? current : max
-                );
-
-                setEstadisticas({
-                    total_mesas: mesasConCuentasData.length,
-                    total_a_cobrar: totalACobrar,
-                    promedio_cuenta: promedio,
-                    mesa_mayor: mesaMayor
+            // ✅ ACTUALIZACIÓN SUAVE - Solo actualizar si hay cambios reales
+            const mesasActualesIds = mesasConCuentas.map(m => m.mesa.id).sort();
+            const nuevasMesasIds = mesasFiltradas.map(m => m.mesa.id).sort();
+            
+            const hayDiferencias = JSON.stringify(mesasActualesIds) !== JSON.stringify(nuevasMesasIds) ||
+                mesasFiltradas.some((mesa, index) => {
+                    const mesaActual = mesasConCuentas[index];
+                    return !mesaActual || 
+                           mesa.cuenta.resumen.total_general !== mesaActual.cuenta.resumen.total_general ||
+                           mesa.mesa.estado !== mesaActual.mesa.estado;
                 });
-            } else {
-                setEstadisticas({
-                    total_mesas: 0,
-                    total_a_cobrar: 0,
-                    promedio_cuenta: 0,
-                    mesa_mayor: null
-                });
+
+            // Solo actualizar si realmente hay cambios
+            if (hayDiferencias || mesasConCuentas.length === 0) {
+                setMesasConCuentas(mesasFiltradas);
+
+                // Calcular estadísticas solo si hay cambios
+                if (mesasConCuentasData.length > 0) {
+                    const totalACobrar = mesasConCuentasData.reduce((sum, m) => 
+                        sum + parseFloat(m.cuenta.resumen.total_general), 0
+                    );
+                    const promedio = totalACobrar / mesasConCuentasData.length;
+                    const mesaMayor = mesasConCuentasData.reduce((max, current) => 
+                        parseFloat(current.cuenta.resumen.total_general) > parseFloat(max.cuenta.resumen.total_general) 
+                            ? current : max
+                    );
+
+                    setEstadisticas({
+                        total_mesas: mesasConCuentasData.length,
+                        total_a_cobrar: totalACobrar,
+                        promedio_cuenta: promedio,
+                        mesa_mayor: mesaMayor
+                    });
+                } else {
+                    setEstadisticas({
+                        total_mesas: 0,
+                        total_a_cobrar: 0,
+                        promedio_cuenta: 0,
+                        mesa_mayor: null
+                    });
+                }
             }
-
-            setLastUpdate(new Date().toLocaleTimeString());
-            console.log(`✅ ${mesasConCuentasData.length} mesas con cuentas encontradas`);
 
         } catch (error) {
             console.error('Error fetching mesas con cuentas:', error);
-            toast.error('Error al cargar las cuentas pendientes');
+            // ✅ Solo mostrar error en actualizaciones manuales
+            if (esActualizacionManual) {
+                toast.error('Error al cargar las cuentas pendientes');
+            }
         } finally {
-            setLoading(false);
+            if (esActualizacionManual) {
+                setLoading(false);
+            }
         }
-    }, [filtroMonto, verificarCuentasMesas]);
+    }, [filtroMonto, verificarCuentasMesas, mesasConCuentas]);
 
     // 🔌 Configurar eventos de Socket.io
     useEffect(() => {
-        if (!isConnected) {
-            setSocketConnected(false);
-            return;
-        }
+        if (!isConnected) return;
 
-        setSocketConnected(true);
-        console.log('🔌 Cajero conectado a Socket.io');
-
-        // ✅ EVENTO: Nuevo pedido creado
+        // Eventos de Socket.io con actualización INMEDIATA
         const handleNuevoPedido = (data) => {
-            console.log('🆕 Nuevo pedido detectado:', data);
-            toast.success(`🆕 Nueva actividad en Mesa ${data.mesa?.numero || data.pedido?.mesa?.numero}`, {
-                duration: 4000,
-                icon: '📋'
-            });
-            
-            // Actualizar cuentas después de un breve delay
-            setTimeout(() => {
-                fetchMesasConCuentas();
-            }, 2000);
+            toast.success(`Nueva actividad en Mesa ${data.mesa?.numero || data.pedido?.mesa?.numero}`);
+            // ✅ ACTUALIZACIÓN INMEDIATA - Sin delays
+            fetchMesasConCuentas();
         };
 
-        // ✅ EVENTO: Pedido listo para cobrar
         const handlePedidoListoCobrar = (data) => {
-            console.log('💰 Pedido listo para cobrar:', data);
-            
-            // Notificación prominente
-            toast.success(
-                `💰 Mesa ${data.mesa} lista para cobrar - $${parseFloat(data.total).toFixed(2)}`,
-                { 
-                    duration: 8000,
-                    icon: '💳',
-                    style: {
-                        background: '#28a745',
-                        color: 'white',
-                        fontSize: '16px',
-                        fontWeight: 'bold'
-                    }
-                }
-            );
-            
-            // Actualizar lista inmediatamente
+            toast.success(`Mesa ${data.mesa} lista para cobrar - ${parseFloat(data.total).toFixed(2)}`);
+            // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
-        // ✅ EVENTO: Cuenta solicitada por mozo
         const handleCuentaSolicitada = (data) => {
-            console.log('🧾 Cuenta solicitada:', data);
-            
-            toast.success(
-                `🧾 Mesa ${data.mesa} solicita la cuenta`,
-                { 
-                    duration: 6000,
-                    icon: '🧾',
-                    style: {
-                        background: '#ffc107',
-                        color: '#212529'
-                    }
-                }
-            );
-            
-            // Actualizar lista
+            toast.success(`Mesa ${data.mesa} solicita la cuenta`);
+            // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
-        // ✅ EVENTO: Cuenta actualizada (productos agregados)
         const handleCuentaActualizada = (data) => {
-            console.log('🔄 Cuenta actualizada:', data);
+            toast.info(`Mesa ${data.mesa?.numero} actualizada. Nuevo total: ${parseFloat(data.nuevo_total).toFixed(2)}`);
             
-            toast.info(
-                `🔄 Mesa ${data.mesa?.numero} - Se agregaron ${data.productos_agregados} producto(s). Nuevo total: $${parseFloat(data.nuevo_total).toFixed(2)}`,
-                { 
-                    duration: 6000,
-                    icon: '🔄'
-                }
-            );
-            
-            // Si es la mesa que estamos viendo, actualizar
             if (cuentaSeleccionada && cuentaSeleccionada.mesa.id === data.mesa?.id) {
-                // Cerrar modal para evitar inconsistencias
                 setShowPagoModal(false);
                 resetFormularioPago();
-                toast.info('💡 Mesa actualizada. Por favor, vuelve a abrir la cuenta.');
+                toast.info('Mesa actualizada. Vuelve a abrir la cuenta.');
             }
             
-            // Actualizar lista
+            // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
-        // ✅ EVENTO: Mesa liberada (pago procesado)
         const handleMesaLiberada = (data) => {
-            console.log('🏠 Mesa liberada:', data);
-            
-            toast.success(
-                `✅ Mesa ${data.mesa} liberada - Pago procesado correctamente`,
-                { 
-                    duration: 4000,
-                    icon: '✅'
-                }
-            );
-            
-            // Actualizar lista
+            toast.success(`Mesa ${data.mesa} liberada - Pago procesado`);
+            // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
-        // ✅ EVENTO: Estado de mesa actualizado
         const handleMesaEstadoActualizada = (data) => {
-            console.log('🏠 Estado de mesa actualizado:', data);
-            
-            // Solo actualizar si es relevante para cajero
             if (data.nuevo_estado === 'cuenta_solicitada' || data.nuevo_estado === 'libre') {
+                // ✅ ACTUALIZACIÓN INMEDIATA
                 fetchMesasConCuentas();
             }
         };
 
-        // ✅ EVENTO: Actividad general de mesa
         const handleActividadMesa = (data) => {
-            console.log('📊 Actividad de mesa:', data);
-            
             if (data.accion === 'nuevo_pedido') {
-                // Actualizar después de un delay para dar tiempo a que se procese
-                setTimeout(() => {
-                    fetchMesasConCuentas();
-                }, 1500);
-            }
-        };
-
-        // ✅ EVENTO: Pedido entregado
-        const handlePedidoEntregado = (data) => {
-            console.log('✅ Pedido entregado:', data);
-            
-            if (data.listo_para_cobrar) {
-                toast.success(
-                    `✅ Mesa ${data.mesa} - Pedido entregado, listo para cobrar`,
-                    { 
-                        duration: 6000,
-                        icon: '✅'
-                    }
-                );
-                
+                // ✅ ACTUALIZACIÓN INMEDIATA - Sin delays
                 fetchMesasConCuentas();
             }
         };
 
-        // ✅ REGISTRAR TODOS LOS EVENTOS
+        const handlePedidoEntregado = (data) => {
+            if (data.listo_para_cobrar) {
+                toast.success(`Mesa ${data.mesa} - Pedido entregado, listo para cobrar`);
+                // ✅ ACTUALIZACIÓN INMEDIATA
+                fetchMesasConCuentas();
+            }
+        };
+
+        // Registrar eventos
         on('actividad-mesa', handleActividadMesa);
         on('pedido-listo-para-cobrar', handlePedidoListoCobrar);
         on('cuenta-solicitada', handleCuentaSolicitada);
@@ -315,10 +238,9 @@ const CuentasPendientes = () => {
         on('nuevo-pedido', handleNuevoPedido);
         on('pedido-creado', handleNuevoPedido);
 
-        // ✅ SOLICITAR ACTUALIZACIÓN AL CONECTARSE
+        // Solicitar actualización
         emit('solicitar-cuentas-pendientes');
 
-        // Cleanup
         return () => {
             off('actividad-mesa', handleActividadMesa);
             off('pedido-listo-para-cobrar', handlePedidoListoCobrar);
@@ -359,7 +281,6 @@ const CuentasPendientes = () => {
 
             const cambio = metodoPago === 'efectivo' ? montoRecibidoNum - totalAPagar : 0;
             
-            // ✅ Emitir evento de socket
             if (emit) {
                 emit('pago-procesado', {
                     mesa: cuentaSeleccionada.mesa.numero,
@@ -370,17 +291,15 @@ const CuentasPendientes = () => {
             }
             
             toast.success(
-                `✅ Pago procesado correctamente. ${cambio > 0 ? `Cambio: $${cambio.toFixed(2)}` : ''}`,
-                { duration: 8000 }
+                `Pago procesado correctamente. ${cambio > 0 ? `Cambio: ${cambio.toFixed(2)}` : ''}`,
+                { duration: 6000 }
             );
 
             setShowPagoModal(false);
             resetFormularioPago();
             
-            // Actualizar lista después de un breve delay
-            setTimeout(() => {
-                fetchMesasConCuentas();
-            }, 1000);
+            // ✅ ACTUALIZACIÓN SILENCIOSA después del pago
+            fetchMesasConCuentas(false);
 
         } catch (error) {
             console.error('Error processing payment:', error);
@@ -397,22 +316,57 @@ const CuentasPendientes = () => {
         return Math.max(0, recibido - total);
     }, [cuentaSeleccionada, metodoPago, montoRecibido]);
 
-    // ✅ Cargar datos inicial y configurar auto-refresh
+    // ✅ ACTUALIZACIONES SUAVES Y NO VISIBLES
     useEffect(() => {
-        fetchMesasConCuentas();
+        // ✅ Carga inicial más rápida - mostrar interfaz inmediatamente
+        setLoading(false); // No mostrar loading inicial
+        fetchMesasConCuentas(false); // Carga silenciosa desde el inicio
         
-        // Auto-refresh cada 30 segundos (reducido porque Socket.io maneja updates)
-        const interval = setInterval(fetchMesasConCuentas, 30000);
+        // ✅ Actualización silenciosa cada 5 segundos
+        const interval = setInterval(() => {
+            fetchMesasConCuentas(false);
+        }, 5000);
+        
         return () => clearInterval(interval);
     }, [fetchMesasConCuentas]);
 
-    if (loading) {
+    // ✅ Polling ultra rápido cuando socket desconectado (sin loading visible) 
+    useEffect(() => {
+        if (!isConnected) {
+            const ultraFastInterval = setInterval(() => {
+                fetchMesasConCuentas(false); // Silencioso
+            }, 2000);
+            return () => clearInterval(ultraFastInterval);
+        }
+    }, [isConnected, fetchMesasConCuentas]);
+
+    // ✅ Actualización inmediata al enfocar ventana (sin loading)
+    useEffect(() => {
+        const handleFocus = () => {
+            fetchMesasConCuentas(false);
+        };
+
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchMesasConCuentas(false);
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [fetchMesasConCuentas]);
+
+    if (loading && mesasConCuentas.length === 0) {
         return (
             <Container>
                 <div className="text-center py-5">
                     <Spinner animation="border" variant="success" size="lg" />
-                    <p className="mt-3 h5">Cargando cuentas pendientes...</p>
-                    <p className="text-muted">Verificando mesas con actividad...</p>
+                    <p className="mt-3 h5">Verificando mesas...</p>
                 </div>
             </Container>
         );
@@ -420,30 +374,17 @@ const CuentasPendientes = () => {
 
     return (
         <Container fluid>
-            {/* Header */}
+            {/* Header limpio */}
             <Row className="mb-4">
                 <Col>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 className="mb-1">
                                 <i className="fas fa-cash-register text-success me-2"></i>
                                 Cuentas por Cobrar
-                                {/* ✅ Indicador de conexión Socket.io */}
-                                <Badge 
-                                    bg={socketConnected ? 'success' : 'warning'} 
-                                    className="ms-2 small"
-                                >
-                                    <i className={`fas ${socketConnected ? 'fa-wifi' : 'fa-wifi-slash'} me-1`}></i>
-                                    {socketConnected ? 'Tiempo Real' : 'Sin conexión'}
-                                </Badge>
                             </h2>
                             <p className="text-muted mb-0">
-                                Procesa los pagos de las mesas con cuenta solicitada
-                                {lastUpdate && (
-                                    <small className="ms-2 text-info">
-                                        • Última actualización: {lastUpdate}
-                                    </small>
-                                )}
+                                Procesa los pagos de las mesas
                             </p>
                         </div>
                         
@@ -472,30 +413,20 @@ const CuentasPendientes = () => {
                             <Button 
                                 variant="outline-info" 
                                 size="sm"
-                                onClick={fetchMesasConCuentas}
+                                onClick={() => {
+                                    // ✅ ACTUALIZACIÓN MANUAL con loading visible
+                                    fetchMesasConCuentas(true);
+                                }}
                                 disabled={loading}
                             >
                                 <i className="fas fa-sync-alt me-1"></i>
-                                Actualizar
+                                {loading ? 'Actualizando...' : 'Actualizar'}
                             </Button>
                         </div>
                     </div>
 
-                    {/* ✅ Alerta de estado de conexión */}
-                    {!socketConnected && (
-                        <Alert variant="warning" className="mb-3">
-                            <Alert.Heading className="h6">
-                                <i className="fas fa-exclamation-triangle me-2"></i>
-                                Conexión en tiempo real no disponible
-                            </Alert.Heading>
-                            <p className="small mb-0">
-                                Las actualizaciones automáticas están limitadas. Los cambios se mostrarán cada 30 segundos.
-                            </p>
-                        </Alert>
-                    )}
-
-                    {/* Estadísticas */}
-                    <Row>
+                    {/* Estadísticas limpias */}
+                    <Row className="mt-3">
                         <Col md={3}>
                             <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
                                 <Card.Body className="text-center py-3">
@@ -545,20 +476,29 @@ const CuentasPendientes = () => {
                 </Col>
             </Row>
 
-            {/* Lista de cuentas */}
+            {/* Lista de cuentas - diseño limpio */}
             {mesasConCuentas.length === 0 ? (
                 <Row>
                     <Col>
                         <Card className="border-0 shadow-sm">
                             <Card.Body className="text-center py-5">
-                                <i className="fas fa-check-circle fa-4x text-success mb-4"></i>
-                                <h4>¡Excelente trabajo! 🎉</h4>
-                                <p className="text-muted mb-0">
-                                    No hay cuentas pendientes por cobrar.
-                                </p>
-                                <small className="text-muted d-block mt-2">
-                                    ✅ Sistema {socketConnected ? 'conectado en tiempo real' : 'actualizado'} - Verificación automática de mesas
-                                </small>
+                                {loading ? (
+                                    <>
+                                        <Spinner animation="border" variant="success" className="mb-3" />
+                                        <h5>Verificando mesas...</h5>
+                                        <p className="text-muted mb-0">
+                                            Buscando cuentas pendientes
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-check-circle fa-4x text-success mb-4"></i>
+                                        <h4>¡No hay cuentas pendientes!</h4>
+                                        <p className="text-muted mb-0">
+                                            Todas las mesas están al día con sus pagos.
+                                        </p>
+                                    </>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>
@@ -567,7 +507,7 @@ const CuentasPendientes = () => {
                 <Row>
                     {mesasConCuentas.map((mesaConCuenta) => (
                         <Col lg={4} md={6} key={mesaConCuenta.mesa.id} className="mb-4">
-                            <Card className="h-100 border-0 shadow-sm border-success border-2 hover-menu">
+                            <Card className="h-100 border-0 shadow-sm border-success border-2">
                                 <Card.Header className="bg-success text-white">
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div>
@@ -579,22 +519,14 @@ const CuentasPendientes = () => {
                                                 {mesaConCuenta.mesa.capacidad} personas
                                             </small>
                                         </div>
-                                        <div className="d-flex flex-column align-items-end">
-                                            <Badge 
-                                                bg={mesaConCuenta.mesa.estado === 'cuenta_solicitada' ? 'warning' : 'info'}
-                                                className="px-2 py-1 mb-1"
-                                            >
-                                                {mesaConCuenta.mesa.estado === 'cuenta_solicitada' ? 
-                                                    'Cuenta Solicitada' : 'Ocupada'
-                                                }
-                                            </Badge>
-                                            {socketConnected && (
-                                                <Badge bg="light" text="dark" className="small">
-                                                    <i className="fas fa-wifi text-success me-1"></i>
-                                                    En vivo
-                                                </Badge>
-                                            )}
-                                        </div>
+                                        <Badge 
+                                            bg={mesaConCuenta.mesa.estado === 'cuenta_solicitada' ? 'warning' : 'info'}
+                                            className="px-2 py-1"
+                                        >
+                                            {mesaConCuenta.mesa.estado === 'cuenta_solicitada' ? 
+                                                'Cuenta Solicitada' : 'Ocupada'
+                                            }
+                                        </Badge>
                                     </div>
                                 </Card.Header>
 
@@ -612,10 +544,6 @@ const CuentasPendientes = () => {
                                                 <span>Items totales:</span>
                                                 <span>{mesaConCuenta.cuenta.resumen.total_items}</span>
                                             </div>
-                                            <div className="d-flex justify-content-between mb-2">
-                                                <span>Subtotal:</span>
-                                                <span>${mesaConCuenta.cuenta.resumen.total_general}</span>
-                                            </div>
                                             <hr className="my-2" />
                                             <div className="d-flex justify-content-between">
                                                 <strong>TOTAL:</strong>
@@ -627,7 +555,7 @@ const CuentasPendientes = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <strong className="text-muted small">PRODUCTOS MÁS PEDIDOS:</strong>
+                                        <strong className="text-muted small">PRODUCTOS:</strong>
                                         <div className="mt-1">
                                             {mesaConCuenta.cuenta.resumen.productos.slice(0, 3).map((producto, index) => (
                                                 <div key={index} className="d-flex justify-content-between small">
@@ -645,19 +573,12 @@ const CuentasPendientes = () => {
                                         </div>
                                     </div>
 
-                                    <div className="mb-3">
-                                        <div className="d-flex justify-content-between small">
-                                            <strong className="text-muted">HORA SOLICITUD:</strong>
-                                            <span>{new Date(mesaConCuenta.cuenta.fecha_generacion).toLocaleTimeString()}</span>
-                                        </div>
-                                    </div>
-
                                     <div className="d-grid">
                                         <Button
                                             variant="success"
                                             size="lg"
                                             onClick={() => handleVerCuentaDetalle(mesaConCuenta)}
-                                            className="fw-bold pulse-menu"
+                                            className="fw-bold"
                                         >
                                             <i className="fas fa-credit-card me-2"></i>
                                             Procesar Pago
@@ -670,8 +591,8 @@ const CuentasPendientes = () => {
                 </Row>
             )}
 
-            {/* Modal de procesamiento de pago */}
-            <Modal show={showPagoModal} onHide={() => setShowPagoModal(false)} size="lg" className="modal-menu">
+            {/* Modal de procesamiento de pago - diseño limpio */}
+            <Modal show={showPagoModal} onHide={() => setShowPagoModal(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>
                         <i className="fas fa-cash-register me-2"></i>
@@ -683,7 +604,7 @@ const CuentasPendientes = () => {
                         <>
                             <div className="bg-light p-3 rounded mb-4">
                                 <h6 className="mb-3">Resumen de la Cuenta:</h6>
-                                <Table size="sm" className="table-menu mb-0">
+                                <Table size="sm" className="mb-0">
                                     <thead>
                                         <tr>
                                             <th>Producto</th>
@@ -718,7 +639,6 @@ const CuentasPendientes = () => {
                                         <Form.Select
                                             value={metodoPago}
                                             onChange={(e) => setMetodoPago(e.target.value)}
-                                            className="form-select-menu"
                                         >
                                             <option value="efectivo">💵 Efectivo</option>
                                             <option value="tarjeta_debito">💳 Tarjeta de Débito</option>
@@ -743,7 +663,6 @@ const CuentasPendientes = () => {
                                                     value={montoRecibido}
                                                     onChange={(e) => setMontoRecibido(e.target.value)}
                                                     placeholder="0.00"
-                                                    className="form-control-menu"
                                                 />
                                             </InputGroup>
                                         </Form.Group>
@@ -752,7 +671,7 @@ const CuentasPendientes = () => {
                             </Row>
 
                             {metodoPago === 'efectivo' && montoRecibido && (
-                                <div className="alert alert-menu-info mb-3">
+                                <div className="alert alert-info mb-3">
                                     <div className="d-flex justify-content-between align-items-center">
                                         <strong>
                                             <i className="fas fa-calculator me-2"></i>
@@ -779,41 +698,8 @@ const CuentasPendientes = () => {
                                     value={observacionesPago}
                                     onChange={(e) => setObservacionesPago(e.target.value)}
                                     placeholder="Notas adicionales sobre el pago..."
-                                    className="form-control-menu"
                                 />
                             </Form.Group>
-
-                            {/* ✅ Información adicional */}
-                            <div className="bg-menu-light-gold p-3 rounded mb-3">
-                                <h6 className="text-menu-dark mb-2">
-                                    <i className="fas fa-info-circle me-2"></i>
-                                    Información de la Mesa
-                                </h6>
-                                <Row>
-                                    <Col md={6}>
-                                        <small>
-                                            <strong>Mesa:</strong> {cuentaSeleccionada.mesa.numero}<br />
-                                            <strong>Capacidad:</strong> {cuentaSeleccionada.mesa.capacidad} personas<br />
-                                            <strong>Estado:</strong> {cuentaSeleccionada.mesa.estado}
-                                        </small>
-                                    </Col>
-                                    <Col md={6}>
-                                        <small>
-                                            <strong>Total Pedidos:</strong> {cuentaSeleccionada.cuenta.resumen.total_pedidos}<br />
-                                            <strong>Total Items:</strong> {cuentaSeleccionada.cuenta.resumen.total_items}<br />
-                                            <strong>Cuenta generada:</strong> {new Date(cuentaSeleccionada.cuenta.fecha_generacion).toLocaleString()}
-                                        </small>
-                                    </Col>
-                                </Row>
-                            </div>
-
-                            {/* ✅ Estado de conexión en modal */}
-                            {socketConnected && (
-                                <div className="alert alert-menu-success small mb-3">
-                                    <i className="fas fa-wifi me-2"></i>
-                                    <strong>Conexión en tiempo real activa:</strong> Esta cuenta se actualizará automáticamente si se agregan más productos.
-                                </div>
-                            )}
                         </>
                     )}
                 </Modal.Body>
@@ -836,7 +722,6 @@ const CuentasPendientes = () => {
                             (metodoPago === 'efectivo' && (!montoRecibido || parseFloat(montoRecibido) < parseFloat(cuentaSeleccionada?.cuenta.resumen.total_general || 0)))
                         }
                         size="lg"
-                        className="btn-menu-primary"
                     >
                         {procesandoPago ? (
                             <>
@@ -846,40 +731,9 @@ const CuentasPendientes = () => {
                         ) : (
                             <>
                                 <i className="fas fa-check me-2"></i>
-                                Confirmar Pago ({metodoPago === 'efectivo' ? `${montoRecibido || '0.00'}` : `${parseFloat(cuentaSeleccionada?.cuenta.resumen.total_general || 0).toFixed(2)}`})
+                                Confirmar Pago
                             </>
                         )}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* ✅ Modal de conexión perdida */}
-            <Modal show={!socketConnected && !loading} backdrop="static">
-                <Modal.Header>
-                    <Modal.Title>
-                        <i className="fas fa-wifi-slash text-warning me-2"></i>
-                        Conexión en tiempo real interrumpida
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="text-center">
-                        <i className="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                        <h5>Reconectando...</h5>
-                        <p className="text-muted">
-                            La conexión en tiempo real se interrumpió. Las actualizaciones automáticas están temporalmente deshabilitadas.
-                        </p>
-                        <div className="d-flex justify-content-center">
-                            <Spinner animation="border" variant="warning" />
-                        </div>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button 
-                        variant="outline-warning" 
-                        onClick={() => window.location.reload()}
-                    >
-                        <i className="fas fa-sync-alt me-2"></i>
-                        Recargar Página
                     </Button>
                 </Modal.Footer>
             </Modal>
