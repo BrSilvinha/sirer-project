@@ -61,7 +61,7 @@ const PedidosForm = () => {
             setCarrito([...carrito, { ...producto, cantidad: 1 }]);
         }
         
-        toast.success(`S/{producto.nombre} agregado al pedido`);
+        toast.success(`${producto.nombre} agregado al pedido`);
     };
 
     const removerDelCarrito = (productoId) => {

@@ -191,7 +191,7 @@ const UsuariosManagement = () => {
             const nuevoEstado = !usuario.activo;
             
             await authService.toggleUserStatus(usuario.id, nuevoEstado);
-            toast.success(`Usuario S/{nuevoEstado ? 'activado' : 'desactivado'} exitosamente`);
+            toast.success(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} exitosamente`);
             
             fetchUsuarios();
         } catch (error) {
@@ -291,13 +291,13 @@ const UsuariosManagement = () => {
         const diferencia = Math.floor((ahora - fechaAcceso) / 1000 / 60);
         
         if (diferencia < 1) return 'Ahora mismo';
-        if (diferencia < 60) return `Hace S/{diferencia} min`;
+        if (diferencia < 60) return `Hace ${diferencia} min`;
         
         const horas = Math.floor(diferencia / 60);
-        if (horas < 24) return `Hace S/{horas}h`;
+        if (horas < 24) return `Hace ${horas}h`;
         
         const dias = Math.floor(horas / 24);
-        return `Hace S/{dias} díaS/{dias !== 1 ? 's' : ''}`;
+        return `Hace ${dias} día${dias !== 1 ? 's' : ''}`;
     }, []);
 
     const getEstadoConexion = useCallback((ultimoAcceso) => {
@@ -506,10 +506,10 @@ const UsuariosManagement = () => {
                                             <td>
                                                 <div className="d-flex align-items-center">
                                                     <div 
-                                                        className={`rounded-circle me-3 d-flex align-items-center justify-content-center bg-S/{getRolColor(usuario.rol)} bg-opacity-15`}
+                                                        className={`rounded-circle me-3 d-flex align-items-center justify-content-center bg-${getRolColor(usuario.rol)} bg-opacity-15`}
                                                         style={{ width: '40px', height: '40px' }}
                                                     >
-                                                        <i className={`fas S/{getRolIcon(usuario.rol)} text-S/{getRolColor(usuario.rol)}`}></i>
+                                                        <i className={`fas ${getRolIcon(usuario.rol)} text-${getRolColor(usuario.rol)}`}></i>
                                                     </div>
                                                     <div>
                                                         <div className="fw-bold">{usuario.nombre}</div>
@@ -519,13 +519,13 @@ const UsuariosManagement = () => {
                                             </td>
                                             <td>
                                                 <Badge bg={getRolColor(usuario.rol)}>
-                                                    <i className={`fas S/{getRolIcon(usuario.rol)} me-1`}></i>
+                                                    <i className={`fas ${getRolIcon(usuario.rol)} me-1`}></i>
                                                     {getRolText(usuario.rol)}
                                                 </Badge>
                                             </td>
                                             <td>
                                                 <Badge bg={usuario.activo ? 'success' : 'danger'}>
-                                                    <i className={`fas S/{usuario.activo ? 'fa-check-circle' : 'fa-times-circle'} me-1`}></i>
+                                                    <i className={`fas ${usuario.activo ? 'fa-check-circle' : 'fa-times-circle'} me-1`}></i>
                                                     {usuario.activo ? 'Activo' : 'Inactivo'}
                                                 </Badge>
                                             </td>
@@ -573,7 +573,7 @@ const UsuariosManagement = () => {
                                                             size="sm"
                                                             onClick={() => handleToggleEstado(usuario)}
                                                         >
-                                                            <i className={`fas S/{usuario.activo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
+                                                            <i className={`fas ${usuario.activo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
                                                         </Button>
                                                     </OverlayTrigger>
                                                 </div>
@@ -594,14 +594,14 @@ const UsuariosManagement = () => {
                         const estadoConexion = getEstadoConexion(usuario.ultimo_acceso);
                         return (
                             <Col lg={4} md={6} key={usuario.id} className="mb-4">
-                                <Card className={`h-100 border-0 shadow-sm S/{!usuario.activo ? 'opacity-75' : ''}`}>
+                                <Card className={`h-100 border-0 shadow-sm ${!usuario.activo ? 'opacity-75' : ''}`}>
                                     <Card.Body>
                                         <div className="d-flex justify-content-between align-items-start mb-3">
                                             <div 
-                                                className={`rounded-circle d-flex align-items-center justify-content-center bg-S/{getRolColor(usuario.rol)} bg-opacity-15`}
+                                                className={`rounded-circle d-flex align-items-center justify-content-center bg-${getRolColor(usuario.rol)} bg-opacity-15`}
                                                 style={{ width: '60px', height: '60px' }}
                                             >
-                                                <i className={`fas S/{getRolIcon(usuario.rol)} text-S/{getRolColor(usuario.rol)} fa-lg`}></i>
+                                                <i className={`fas ${getRolIcon(usuario.rol)} text-${getRolColor(usuario.rol)} fa-lg`}></i>
                                             </div>
                                             <div className="d-flex flex-column gap-1">
                                                 <Badge bg={usuario.activo ? 'success' : 'danger'}>
@@ -617,7 +617,7 @@ const UsuariosManagement = () => {
                                         <p className="text-muted mb-2">{usuario.email}</p>
                                         
                                         <Badge bg={getRolColor(usuario.rol)} className="mb-3">
-                                            <i className={`fas S/{getRolIcon(usuario.rol)} me-1`}></i>
+                                            <i className={`fas ${getRolIcon(usuario.rol)} me-1`}></i>
                                             {getRolText(usuario.rol)}
                                         </Badge>
 
@@ -653,7 +653,7 @@ const UsuariosManagement = () => {
                                                 onClick={() => handleToggleEstado(usuario)}
                                                 className="flex-fill"
                                             >
-                                                <i className={`fas S/{usuario.activo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
+                                                <i className={`fas ${usuario.activo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
                                             </Button>
                                         </div>
                                     </Card.Body>

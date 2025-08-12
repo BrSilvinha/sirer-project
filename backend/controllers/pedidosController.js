@@ -58,7 +58,7 @@ const obtenerPedidos = async (req, res) => {
             // Buscar por número de mesa
             searchConditions.push({
                 'S/mesa.numeroS/': {
-                    [Op.like]: `%S/{busqueda}%`
+                    [Op.like]: `%${busqueda}%`
                 }
             });
 
@@ -260,14 +260,14 @@ const crearPedido = async (req, res) => {
             if (!producto || !producto.activo) {
                 return res.status(400).json({
                     success: false,
-                    error: `Producto con ID S/{item.producto_id} no encontrado o inactivo`
+                    error: `Producto con ID ${item.producto_id} no encontrado o inactivo`
                 });
             }
 
             if (!producto.disponible) {
                 return res.status(400).json({
                     success: false,
-                    error: `Producto "S/{producto.nombre}" no está disponible`
+                    error: `Producto "${producto.nombre}" no está disponible`
                 });
             }
 
@@ -448,7 +448,7 @@ const cambiarEstadoPedido = async (req, res) => {
 
         // ✅ CORREGIDO: Emitir eventos específicos según el cambio de estado
         if (req.io) {
-            console.log(`📡 Emitiendo evento por cambio de estado: S/{estadoAnterior} → S/{estado}`);
+            console.log(`📡 Emitiendo evento por cambio de estado: ${estadoAnterior} → ${estado}`);
 
             switch (estado) {
                 case 'en_cocina':
@@ -982,14 +982,14 @@ const agregarProductosPedido = async (req, res) => {
             if (!producto || !producto.activo) {
                 return res.status(400).json({
                     success: false,
-                    error: `Producto con ID S/{item.producto_id} no encontrado o inactivo`
+                    error: `Producto con ID ${item.producto_id} no encontrado o inactivo`
                 });
             }
 
             if (!producto.disponible) {
                 return res.status(400).json({
                     success: false,
-                    error: `Producto "S/{producto.nombre}" no está disponible`
+                    error: `Producto "${producto.nombre}" no está disponible`
                 });
             }
 
@@ -1101,7 +1101,7 @@ const agregarProductosPedido = async (req, res) => {
 
         res.json({
             success: true,
-            message: `S/{productosValidados.length} producto(s) agregado(s) al pedido`,
+            message: `${productosValidados.length} producto(s) agregado(s) al pedido`,
             data: pedidoActualizado
         });
 
@@ -1152,8 +1152,8 @@ const cancelarPedido = async (req, res) => {
         await pedido.update({ 
             estado: 'cancelado',
             observaciones: pedido.observaciones ? 
-                `S/{pedido.observaciones} | CANCELADO: S/{motivo}` : 
-                `CANCELADO: S/{motivo}`,
+                `${pedido.observaciones} | CANCELADO: ${motivo}` : 
+                `CANCELADO: ${motivo}`,
             fecha_cancelacion: new Date()
         });
 

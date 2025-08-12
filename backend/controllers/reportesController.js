@@ -145,7 +145,7 @@ const obtenerDashboard = async (req, res) => {
         };
 
         const todosPedidos = await Pedido.findAll(pedidosQuery);
-        console.log(`📈 Encontrados S/{todosPedidos.length} pedidos en el período`);
+        console.log(`📈 Encontrados ${todosPedidos.length} pedidos en el período`);
 
         // ✅ PROCESAMIENTO: Ventas del día (solo pedidos pagados)
         const pedidosPagados = todosPedidos.filter(p => p.estado === 'pagado');
@@ -339,7 +339,7 @@ const obtenerReporteVentas = async (req, res) => {
             attributes: ['id', 'total', 'created_at']
         });
 
-        console.log(`💰 Encontrados S/{pedidos.length} pedidos pagados`);
+        console.log(`💰 Encontrados ${pedidos.length} pedidos pagados`);
 
         // ✅ PROCESAMIENTO: Agrupar ventas por período
         const ventasPorPeriodo = {};
@@ -350,16 +350,16 @@ const obtenerReporteVentas = async (req, res) => {
             
             switch (agrupar_por) {
                 case 'hora':
-                    clave = `S/{fecha.getFullYear()}-S/{String(fecha.getMonth() + 1).padStart(2, '0')}-S/{String(fecha.getDate()).padStart(2, '0')} S/{String(fecha.getHours()).padStart(2, '0')}:00:00`;
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')} ${String(fecha.getHours()).padStart(2, '0')}:00:00`;
                     break;
                 case 'dia':
-                    clave = `S/{fecha.getFullYear()}-S/{String(fecha.getMonth() + 1).padStart(2, '0')}-S/{String(fecha.getDate()).padStart(2, '0')}`;
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
                     break;
                 case 'mes':
-                    clave = `S/{fecha.getFullYear()}-S/{String(fecha.getMonth() + 1).padStart(2, '0')}`;
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
                     break;
                 default:
-                    clave = `S/{fecha.getFullYear()}-S/{String(fecha.getMonth() + 1).padStart(2, '0')}-S/{String(fecha.getDate()).padStart(2, '0')}`;
+                    clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
             }
             
             if (!ventasPorPeriodo[clave]) {
@@ -469,7 +469,7 @@ const obtenerProductosMasVendidos = async (req, res) => {
             attributes: ['producto_id', 'cantidad', 'subtotal']
         });
 
-        console.log(`🛒 Procesando S/{detalles.length} detalles de productos`);
+        console.log(`🛒 Procesando ${detalles.length} detalles de productos`);
 
         // ✅ PROCESAMIENTO: Agrupar productos
         const productosAgrupados = detalles.reduce((acc, detalle) => {
@@ -569,7 +569,7 @@ const obtenerReporteMozos = async (req, res) => {
             }
         });
 
-        console.log(`👨‍🍳 Procesando datos de S/{pedidosMozos.length} pedidos`);
+        console.log(`👨‍🍳 Procesando datos de ${pedidosMozos.length} pedidos`);
 
         // ✅ PROCESAMIENTO: Agrupar por mozo
         const mozosAgrupados = pedidosMozos.reduce((acc, pedido) => {
@@ -665,7 +665,7 @@ const obtenerReporteMesas = async (req, res) => {
             }
         });
 
-        console.log(`🪑 Procesando datos de S/{pedidosMesas.length} pedidos por mesa`);
+        console.log(`🪑 Procesando datos de ${pedidosMesas.length} pedidos por mesa`);
 
         // ✅ PROCESAMIENTO: Agrupar por mesa
         const mesasAgrupadas = pedidosMesas.reduce((acc, pedido) => {
@@ -773,7 +773,7 @@ const obtenerVentasPorCategoria = async (req, res) => {
             attributes: ['cantidad', 'subtotal']
         });
 
-        console.log(`📊 Procesando S/{detalles.length} detalles por categoría`);
+        console.log(`📊 Procesando ${detalles.length} detalles por categoría`);
 
         // ✅ PROCESAMIENTO: Agrupar por categoría
         const categoriasAgrupadas = detalles.reduce((acc, detalle) => {
@@ -889,7 +889,7 @@ const obtenerMetodosPago = async (req, res) => {
             attributes: ['metodo_pago', 'total', 'monto_recibido']
         });
 
-        console.log(`💰 Procesando S/{pedidos.length} transacciones`);
+        console.log(`💰 Procesando ${pedidos.length} transacciones`);
 
         // ✅ PROCESAMIENTO: Agrupar por método de pago
         const metodosMap = pedidos.reduce((acc, pedido) => {

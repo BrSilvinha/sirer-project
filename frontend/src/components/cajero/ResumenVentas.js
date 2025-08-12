@@ -292,7 +292,7 @@ const ResumenVentas = () => {
                                     bg={resumenTurno?.estado_turno === 'Activo' ? 'success' : 'secondary'}
                                     className="px-3 py-2"
                                 >
-                                    <i className={`fas S/{
+                                    <i className={`fas ${
                                         resumenTurno?.estado_turno === 'Activo' ? 'fa-play' : 'fa-stop'
                                     } me-1`}></i>
                                     Turno {resumenTurno?.estado_turno}
@@ -354,7 +354,7 @@ const ResumenVentas = () => {
                                 <Card.Body className="text-center">
                                     <i className="fas fa-dollar-sign fa-2x text-success mb-2"></i>
                                     <div className="h3 mb-0 text-success">
-                                        S/ S/{parseFloat(resumenTurno.total_ventas).toFixed(2)}
+                                        S/{parseFloat(resumenTurno.total_ventas).toFixed(2)}
                                     </div>
                                     <div className="text-muted small">Total Ventas</div>
                                 </Card.Body>
@@ -374,7 +374,7 @@ const ResumenVentas = () => {
                                 <Card.Body className="text-center">
                                     <i className="fas fa-chart-line fa-2x text-info mb-2"></i>
                                     <div className="h3 mb-0 text-info">
-                                        S/ S/{parseFloat(resumenTurno.promedio_venta).toFixed(2)}
+                                        S/{parseFloat(resumenTurno.promedio_venta).toFixed(2)}
                                     </div>
                                     <div className="text-muted small">Promedio por Pedido</div>
                                 </Card.Body>
@@ -475,7 +475,7 @@ const ResumenVentas = () => {
                                                             </Badge>
                                                         </td>
                                                         <td>
-                                                            <strong>S/{metodo.total.toFixed(2)}</strong>
+                                                            <strong>${metodo.total.toFixed(2)}</strong>
                                                         </td>
                                                         <td>
                                                             <div className="d-flex align-items-center">
@@ -584,7 +584,7 @@ const ResumenVentas = () => {
                                             <tr key={index}>
                                                 <td>{detalle.producto?.nombre || 'Producto'}</td>
                                                 <td>{detalle.cantidad}</td>
-                                                <td>S/S/{parseFloat(detalle.subtotal).toFixed(2)}</td>
+                                                <td>S/${parseFloat(detalle.subtotal).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -594,7 +594,7 @@ const ResumenVentas = () => {
                             )}
                             
                             <div className="d-flex justify-content-between align-items-center mt-3">
-                                <strong>Total: S/ S/{parseFloat(pedidoSeleccionado.total).toFixed(2)}</strong>
+                                <strong>Total: S/ ${parseFloat(pedidoSeleccionado.total).toFixed(2)}</strong>
                                 <Badge bg="success">{pedidoSeleccionado.metodo_pago || 'Efectivo'}</Badge>
                             </div>
                         </>

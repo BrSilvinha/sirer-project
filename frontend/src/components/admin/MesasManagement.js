@@ -95,7 +95,7 @@ const MesasManagement = () => {
     };
 
     const handleDelete = async (mesa) => {
-        if (window.confirm(`¿Estás seguro de eliminar la Mesa S/{mesa.numero}?`)) {
+        if (window.confirm(`¿Estás seguro de eliminar la Mesa ${mesa.numero}?`)) {
             try {
                 await mesasService.delete(mesa.id);
                 toast.success('Mesa eliminada exitosamente');
@@ -111,7 +111,7 @@ const MesasManagement = () => {
     const handleChangeStatus = async (mesa, nuevoEstado) => {
         try {
             await mesasService.changeStatus(mesa.id, nuevoEstado);
-            toast.success(`Mesa S/{mesa.numero} marcada como S/{nuevoEstado}`);
+            toast.success(`Mesa ${mesa.numero} marcada como ${nuevoEstado}`);
             fetchMesas();
             fetchEstadisticas();
         } catch (error) {
@@ -242,10 +242,10 @@ const MesasManagement = () => {
                                 <Card.Body className="text-center">
                                     <div className="mb-3">
                                         <div 
-                                            className={`rounded-circle mx-auto d-flex align-items-center justify-content-center bg-S/{getEstadoColor(mesa.estado)}`}
+                                            className={`rounded-circle mx-auto d-flex align-items-center justify-content-center bg-${getEstadoColor(mesa.estado)}`}
                                             style={{ width: '80px', height: '80px' }}
                                         >
-                                            <i className={`fas S/{getEstadoIcon(mesa.estado)} text-white fa-2x`}></i>
+                                            <i className={`fas ${getEstadoIcon(mesa.estado)} text-white fa-2x`}></i>
                                         </div>
                                     </div>
                                     
@@ -349,7 +349,7 @@ const MesasManagement = () => {
                                         </td>
                                         <td>
                                             <Badge bg={getEstadoColor(mesa.estado)}>
-                                                <i className={`fas S/{getEstadoIcon(mesa.estado)} me-1`}></i>
+                                                <i className={`fas ${getEstadoIcon(mesa.estado)} me-1`}></i>
                                                 {getEstadoText(mesa.estado)}
                                             </Badge>
                                         </td>

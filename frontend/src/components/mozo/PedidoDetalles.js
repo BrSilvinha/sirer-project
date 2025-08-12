@@ -96,7 +96,7 @@ const PedidoDetalles = () => {
                 }
             });
 
-            toast.success(`Pedido marcado como S/{getEstadoText(nuevoEstado).toLowerCase()}`);
+            toast.success(`Pedido marcado como ${getEstadoText(nuevoEstado).toLowerCase()}`);
             setShowCambiarEstadoModal(false);
             setNuevoEstado('');
         } catch (error) {
@@ -158,11 +158,11 @@ const PedidoDetalles = () => {
         const diferencia = Math.floor((ahora - inicio) / 1000 / 60); // minutos
         
         if (diferencia < 1) return 'Recién';
-        if (diferencia < 60) return `S/{diferencia} min`;
+        if (diferencia < 60) return `${diferencia} min`;
         
         const horas = Math.floor(diferencia / 60);
         const minutos = diferencia % 60;
-        return `S/{horas}h S/{minutos}m`;
+        return `${horas}h ${minutos}m`;
     };
 
     if (loading) {
@@ -225,7 +225,7 @@ const PedidoDetalles = () => {
                             <span>
                                 <h2 className="d-inline mb-0">Pedido #{pedido.id}</h2>
                                 <Badge bg={getEstadoColor(pedido.estado)} className="ms-3">
-                                    <i className={`fas S/{getEstadoIcon(pedido.estado)} me-1`}></i>
+                                    <i className={`fas ${getEstadoIcon(pedido.estado)} me-1`}></i>
                                     {getEstadoText(pedido.estado)}
                                 </Badge>
                             </span>
@@ -280,14 +280,14 @@ const PedidoDetalles = () => {
                                     <div className="mb-3">
                                         <strong>Estado Actual:</strong>
                                         <Badge bg={getEstadoColor(pedido.estado)} className="ms-2">
-                                            <i className={`fas S/{getEstadoIcon(pedido.estado)} me-1`}></i>
+                                            <i className={`fas ${getEstadoIcon(pedido.estado)} me-1`}></i>
                                             {getEstadoText(pedido.estado)}
                                         </Badge>
                                     </div>
                                     <div className="mb-3">
                                         <strong>Total:</strong>
                                         <span className="text-success h5 ms-2">
-                                            S/{pedido.total.toFixed(2)}
+                                            ${pedido.total.toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="mb-3">
@@ -340,12 +340,12 @@ const PedidoDetalles = () => {
                                             </Col>
                                             <Col md={2} className="text-center">
                                                 <span className="text-muted">
-                                                    S/{producto.precio.toFixed(2)}
+                                                    ${producto.precio.toFixed(2)}
                                                 </span>
                                             </Col>
                                             <Col md={2} className="text-end">
                                                 <strong className="text-success">
-                                                    S/{producto.subtotal.toFixed(2)}
+                                                    ${producto.subtotal.toFixed(2)}
                                                 </strong>
                                             </Col>
                                         </Row>
@@ -356,7 +356,7 @@ const PedidoDetalles = () => {
                                 <div className="d-flex justify-content-between align-items-center">
                                     <strong className="text-lg">Total del Pedido:</strong>
                                     <strong className="text-success h4 mb-0">
-                                        S/{pedido.total.toFixed(2)}
+                                        ${pedido.total.toFixed(2)}
                                     </strong>
                                 </div>
                             </div>
@@ -388,20 +388,20 @@ const PedidoDetalles = () => {
                                     const esPendiente = !yaCompletado && !esActual;
 
                                     return (
-                                        <div key={index} className={`timeline-item S/{esActual ? 'active' : ''} S/{yaCompletado ? 'completed' : ''}`}>
-                                            <div className={`timeline-marker S/{
+                                        <div key={index} className={`timeline-item ${esActual ? 'active' : ''} ${yaCompletado ? 'completed' : ''}`}>
+                                            <div className={`timeline-marker ${
                                                 yaCompletado ? 'bg-success' : 
                                                 esActual ? 'bg-primary' : 
                                                 'bg-light'
                                             }`}>
-                                                <i className={`fas S/{
+                                                <i className={`fas ${
                                                     yaCompletado ? 'fa-check' : 
                                                     esActual ? getEstadoIcon(item.estado) : 
                                                     'fa-circle'
                                                 } text-white`}></i>
                                             </div>
                                             <div className="timeline-content">
-                                                <h6 className={`mb-1 S/{esPendiente ? 'text-muted' : ''}`}>
+                                                <h6 className={`mb-1 ${esPendiente ? 'text-muted' : ''}`}>
                                                     {item.texto}
                                                 </h6>
                                                 {item.tiempo && (
@@ -439,20 +439,20 @@ const PedidoDetalles = () => {
                                 {posiblesEstados.map(estado => (
                                     <Button
                                         key={estado}
-                                        variant={`outline-S/{getEstadoColor(estado)}`}
+                                        variant={`outline-${getEstadoColor(estado)}`}
                                         onClick={() => {
                                             setNuevoEstado(estado);
                                             setShowCambiarEstadoModal(true);
                                         }}
                                     >
-                                        <i className={`fas S/{getEstadoIcon(estado)} me-2`}></i>
+                                        <i className={`fas ${getEstadoIcon(estado)} me-2`}></i>
                                         Marcar como {getEstadoText(estado)}
                                     </Button>
                                 ))}
                                 
                                 <Button
                                     variant="outline-secondary"
-                                    onClick={() => navigate(`/dashboard/mozo/pedidos/S/{pedido.mesa.id}`)}
+                                    onClick={() => navigate(`/dashboard/mozo/pedidos/${pedido.mesa.id}`)}
                                 >
                                     <i className="fas fa-plus me-2"></i>
                                     Agregar Items
@@ -505,7 +505,7 @@ const PedidoDetalles = () => {
                         <div className="mt-3 p-3 bg-light rounded">
                             <strong>Nuevo estado:</strong>
                             <Badge bg={getEstadoColor(nuevoEstado)} className="ms-2">
-                                <i className={`fas S/{getEstadoIcon(nuevoEstado)} me-1`}></i>
+                                <i className={`fas ${getEstadoIcon(nuevoEstado)} me-1`}></i>
                                 {getEstadoText(nuevoEstado)}
                             </Badge>
                         </div>

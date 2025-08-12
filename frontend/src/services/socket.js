@@ -23,7 +23,7 @@ class SocketService {
 
         this.user = user;
         
-        console.log(`🔄 Conectando a Socket.io como S/{user.nombre} (S/{user.rol})...`);
+        console.log(`🔄 Conectando a Socket.io como ${user.nombre} (${user.rol})...`);
 
         this.socket = io(this.serverUrl, {
             auth: { token },
@@ -45,7 +45,7 @@ class SocketService {
         this.socket.on('connect', () => {
             this.connected = true;
             this.reconnectAttempts = 0;
-            console.log(`✅ Conectado a Socket.io - ID: S/{this.socket.id}`);
+            console.log(`✅ Conectado a Socket.io - ID: ${this.socket.id}`);
             
             // Unirse a la sala del rol
             this.joinRole(this.user.rol);
@@ -59,7 +59,7 @@ class SocketService {
         // Evento de desconexión
         this.socket.on('disconnect', (reason) => {
             this.connected = false;
-            console.log(`❌ Desconectado de Socket.io: S/{reason}`);
+            console.log(`❌ Desconectado de Socket.io: ${reason}`);
             
             if (reason === 'io server disconnect') {
                 // Desconexión del servidor, reconectar manualmente
@@ -70,12 +70,12 @@ class SocketService {
         // Eventos de reconexión
         this.socket.on('reconnect_attempt', (attemptNumber) => {
             this.reconnectAttempts = attemptNumber;
-            console.log(`🔄 Intento de reconexión S/{attemptNumber}/S/{this.maxReconnectAttempts}`);
+            console.log(`🔄 Intento de reconexión ${attemptNumber}/${this.maxReconnectAttempts}`);
         });
 
         this.socket.on('reconnect', (attemptNumber) => {
             this.connected = true;
-            console.log(`✅ Reconectado después de S/{attemptNumber} intentos`);
+            console.log(`✅ Reconectado después de ${attemptNumber} intentos`);
             toast.success('🔌 Reconectado al sistema', { duration: 3000 });
         });
 
@@ -119,7 +119,7 @@ class SocketService {
                 this.setupAdminEvents();
                 break;
             default:
-                console.log(`Rol S/{this.user.rol} no tiene eventos específicos configurados`);
+                console.log(`Rol ${this.user.rol} no tiene eventos específicos configurados`);
                 break;
         }
     }
@@ -133,7 +133,7 @@ class SocketService {
             // Notificación sonora + visual
             this.playNotificationSound();
             toast.success(
-                `🍽️ Mesa S/{data.mesa} - Pedido #S/{data.pedidoId} listo para entregar`,
+                `🍽️ Mesa ${data.mesa} - Pedido #${data.pedidoId} listo para entregar`,
                 { 
                     duration: 8000,
                     icon: '🔔'
@@ -149,7 +149,7 @@ class SocketService {
             console.log('📋 Pedido disponible para entregar:', data);
             
             toast(
-                `📋 Mesa S/{data.mesa} tiene un pedido listo`,
+                `📋 Mesa ${data.mesa} tiene un pedido listo`,
                 { 
                     duration: 5000,
                     icon: '📋'
@@ -162,8 +162,8 @@ class SocketService {
             console.log('🥘 Producto actualizado:', data);
             
             const mensaje = data.disponible ? 
-                `✅ S/{data.productoNombre} ya está disponible` :
-                `❌ S/{data.productoNombre} se agotó`;
+                `✅ ${data.productoNombre} ya está disponible` :
+                `❌ ${data.productoNombre} se agotó`;
                 
             toast(mensaje, {
                 duration: 4000,
@@ -187,7 +187,7 @@ class SocketService {
             
             // Notificación visual prominente
             toast.success(
-                `🔥 NUEVO PEDIDO - Mesa S/{data.pedido.mesa.numero}`,
+                `🔥 NUEVO PEDIDO - Mesa ${data.pedido.mesa.numero}`,
                 { 
                     duration: 10000,
                     icon: '🔔',
@@ -212,7 +212,7 @@ class SocketService {
             console.log('💳 Pedido listo para cobrar:', data);
             
             toast.success(
-                `💳 Mesa S/{data.mesa} lista para cobrar - S/S/{data.total}`,
+                `💳 Mesa ${data.mesa} lista para cobrar - S/${data.total}`,
                 { 
                     duration: 6000,
                     icon: '💰'
@@ -227,7 +227,7 @@ class SocketService {
             console.log('🧾 Cuenta solicitada:', data);
             
             toast.success(
-                `🧾 Mesa S/{data.mesa} solicita la cuenta - S/S/{data.total}`,
+                `🧾 Mesa ${data.mesa} solicita la cuenta - S/${data.total}`,
                 { 
                     duration: 8000,
                     icon: '🧾'
@@ -293,7 +293,7 @@ class SocketService {
             };
             
             toast(
-                `📢 S/{data.admin}: S/{data.mensaje}`,
+                `📢 ${data.admin}: ${data.mensaje}`,
                 toastConfig
             );
         });
@@ -333,7 +333,7 @@ class SocketService {
     joinRole(role) {
         if (this.socket?.connected) {
             this.socket.emit('join-room', role);
-            console.log(`🏠 Unido a sala: S/{role}`);
+            console.log(`🏠 Unido a sala: ${role}`);
         }
     }
 
@@ -341,7 +341,7 @@ class SocketService {
     emit(event, data) {
         if (this.socket?.connected) {
             this.socket.emit(event, data);
-            console.log(`📤 Evento emitido: S/{event}`, data);
+            console.log(`📤 Evento emitido: ${event}`, data);
         } else {
             console.warn('⚠️ Socket no conectado, evento no enviado:', event);
         }
@@ -373,7 +373,7 @@ class SocketService {
                 try {
                     callback(data);
                 } catch (error) {
-                    console.error(`❌ Error ejecutando callback para S/{event}:`, error);
+                    console.error(`❌ Error ejecutando callback para ${event}:`, error);
                 }
             });
         }

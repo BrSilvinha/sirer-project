@@ -86,21 +86,21 @@ const MesasView = () => {
             // Cambiar estado a ocupada primero
             mesasService.changeStatus(mesa.id, 'ocupada')
                 .then(() => {
-                    navigate(`/dashboard/mozo/pedidos/S/{mesa.id}`);
+                    navigate(`/dashboard/mozo/pedidos/${mesa.id}`);
                 })
                 .catch(error => {
                     console.error('Error changing mesa status:', error);
                     toast.error('Error al ocupar la mesa');
                 });
         } else {
-            navigate(`/dashboard/mozo/pedidos/S/{mesa.id}`);
+            navigate(`/dashboard/mozo/pedidos/${mesa.id}`);
         }
     }, [navigate]);
 
     const handleCambiarEstadoMesa = useCallback(async (mesaId, nuevoEstado) => {
         try {
             await mesasService.changeStatus(mesaId, nuevoEstado);
-            toast.success(`Mesa actualizada a S/{getEstadoText(nuevoEstado)}`);
+            toast.success(`Mesa actualizada a ${getEstadoText(nuevoEstado)}`);
             fetchMesas();
             fetchEstadisticas();
         } catch (error) {
@@ -352,7 +352,7 @@ const MesasView = () => {
                     {mesas.map((mesa) => (
                         <Col lg={3} md={4} sm={6} key={mesa.id} className="mb-4">
                             <Card 
-                                className={`h-100 border-0 shadow-sm S/{
+                                className={`h-100 border-0 shadow-sm ${
                                     mesa.estado === 'libre' ? 'border-success' : 
                                     mesa.estado === 'ocupada' ? 'border-danger' : 
                                     'border-warning'
@@ -367,12 +367,12 @@ const MesasView = () => {
                                     {/* Icono y número de mesa */}
                                     <div className="mb-3">
                                         <div 
-                                            className={`rounded-circle mx-auto d-flex align-items-center justify-content-center bg-S/{getEstadoColor(mesa.estado)} bg-opacity-15`}
+                                            className={`rounded-circle mx-auto d-flex align-items-center justify-content-center bg-${getEstadoColor(mesa.estado)} bg-opacity-15`}
                                             style={{ width: '80px', height: '80px' }}
                                         >
                                             <div className="text-center">
-                                                <i className={`fas S/{getEstadoIcon(mesa.estado)} text-S/{getEstadoColor(mesa.estado)} fa-2x`}></i>
-                                                <div className={`mt-1 small fw-bold text-S/{getEstadoColor(mesa.estado)}`}>
+                                                <i className={`fas ${getEstadoIcon(mesa.estado)} text-${getEstadoColor(mesa.estado)} fa-2x`}></i>
+                                                <div className={`mt-1 small fw-bold text-${getEstadoColor(mesa.estado)}`}>
                                                     #{mesa.numero}
                                                 </div>
                                             </div>
@@ -425,10 +425,10 @@ const MesasView = () => {
                                         <Col md={2}>
                                             <div className="d-flex align-items-center">
                                                 <div 
-                                                    className={`rounded-circle me-3 d-flex align-items-center justify-content-center bg-S/{getEstadoColor(mesa.estado)} bg-opacity-15`}
+                                                    className={`rounded-circle me-3 d-flex align-items-center justify-content-center bg-${getEstadoColor(mesa.estado)} bg-opacity-15`}
                                                     style={{ width: '50px', height: '50px' }}
                                                 >
-                                                    <i className={`fas S/{getEstadoIcon(mesa.estado)} text-S/{getEstadoColor(mesa.estado)}`}></i>
+                                                    <i className={`fas ${getEstadoIcon(mesa.estado)} text-${getEstadoColor(mesa.estado)}`}></i>
                                                 </div>
                                                 <div>
                                                     <h5 className="mb-0">Mesa {mesa.numero}</h5>
@@ -519,7 +519,7 @@ const MesasView = () => {
                                 <p className="text-muted">
                                     {filtroEstado === 'todos' 
                                         ? 'Contacta con el administrador para configurar las mesas.'
-                                        : `No hay mesas con estado "S/{getEstadoText(filtroEstado)}".`
+                                        : `No hay mesas con estado "${getEstadoText(filtroEstado)}".`
                                     }
                                 </p>
                                 {filtroEstado !== 'todos' && (
@@ -574,7 +574,7 @@ const MesasView = () => {
                                                             {getEstadoPedidoText(pedido.estado)}
                                                         </Badge>
                                                         <span className="text-success fw-bold">
-                                                            S/{parseFloat(pedido.total).toFixed(2)}
+                                                            ${parseFloat(pedido.total).toFixed(2)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -599,7 +599,7 @@ const MesasView = () => {
                                                             {pedido.detalles.map((detalle, index) => (
                                                                 <div key={index} className="small text-muted">
                                                                     • {detalle.cantidad}x {detalle.producto.nombre} 
-                                                                    <span className="ms-2">S/S/{parseFloat(detalle.subtotal).toFixed(2)}</span>
+                                                                    <span className="ms-2">S/${parseFloat(detalle.subtotal).toFixed(2)}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -648,7 +648,7 @@ const MesasView = () => {
                                 <div className="d-flex justify-content-between align-items-center">
                                     <strong>Total general:</strong>
                                     <strong className="text-success">
-                                        S/{pedidosMesa.reduce((sum, pedido) => sum + parseFloat(pedido.total), 0).toFixed(2)}
+                                        ${pedidosMesa.reduce((sum, pedido) => sum + parseFloat(pedido.total), 0).toFixed(2)}
                                     </strong>
                                 </div>
                             </div>

@@ -83,7 +83,7 @@ const PedidosHistorial = () => {
                 setTotalPages(data.pagination?.totalPages || 1);
                 setTotalRecords(data.pagination?.total || 0);
                 
-                console.log(`✅ S/{data.data?.length || 0} pedidos cargados`);
+                console.log(`✅ ${data.data?.length || 0} pedidos cargados`);
             } else {
                 setError('Error en la respuesta del servidor');
             }
@@ -428,7 +428,7 @@ const PedidosHistorial = () => {
                                             </td>
                                             <td>
                                                 <Badge bg={getEstadoColor(pedido.estado)}>
-                                                    <i className={`fas S/{getEstadoIcon(pedido.estado)} me-1`}></i>
+                                                    <i className={`fas ${getEstadoIcon(pedido.estado)} me-1`}></i>
                                                     {getEstadoText(pedido.estado)}
                                                 </Badge>
                                             </td>
@@ -471,7 +471,7 @@ const PedidosHistorial = () => {
                                                     <Button
                                                         variant="outline-info"
                                                         size="sm"
-                                                        onClick={() => navigate(`/dashboard/mozo/pedido/S/{pedido.id}`)}
+                                                        onClick={() => navigate(`/dashboard/mozo/pedido/${pedido.id}`)}
                                                     >
                                                         <i className="fas fa-external-link-alt"></i>
                                                     </Button>
@@ -561,7 +561,7 @@ const PedidosHistorial = () => {
                                     <div className="mb-3">
                                         <strong>Total:</strong>{' '}
                                         <span className="text-success h5">
-                                            S/ S/{parseFloat(pedidoSeleccionado.total).toFixed(2)}
+                                            S/{parseFloat(pedidoSeleccionado.total).toFixed(2)}
                                         </span>
                                     </div>
                                 </Col>
@@ -584,7 +584,7 @@ const PedidosHistorial = () => {
                                                 <td>{detalle.producto?.nombre || 'Producto'}</td>
                                                 <td>{detalle.cantidad}</td>
                                                 <td>S/{parseFloat(detalle.precio_unitario).toFixed(2)}</td>
-                                                <td>S/S/{parseFloat(detalle.subtotal).toFixed(2)}</td>
+                                                <td>S/{parseFloat(detalle.subtotal).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

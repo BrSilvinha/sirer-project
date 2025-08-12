@@ -169,25 +169,25 @@ const CuentasPendientes = () => {
 
         // Eventos de Socket.io con actualización INMEDIATA
         const handleNuevoPedido = (data) => {
-            toast.success(`Nueva actividad en Mesa S/{data.mesa?.numero || data.pedido?.mesa?.numero}`);
+            toast.success(`Nueva actividad en Mesa ${data.mesa?.numero || data.pedido?.mesa?.numero}`);
             // ✅ ACTUALIZACIÓN INMEDIATA - Sin delays
             fetchMesasConCuentas();
         };
 
         const handlePedidoListoCobrar = (data) => {
-            toast.success(`Mesa S/{data.mesa} lista para cobrar - S/{parseFloat(data.total).toFixed(2)}`);
+            toast.success(`Mesa ${data.mesa} lista para cobrar - ${parseFloat(data.total).toFixed(2)}`);
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
         const handleCuentaSolicitada = (data) => {
-            toast.success(`Mesa S/{data.mesa} solicita la cuenta`);
+            toast.success(`Mesa ${data.mesa} solicita la cuenta`);
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
         const handleCuentaActualizada = (data) => {
-            toast.info(`Mesa S/{data.mesa?.numero} actualizada. Nuevo total: S/{parseFloat(data.nuevo_total).toFixed(2)}`);
+            toast.info(`Mesa ${data.mesa?.numero} actualizada. Nuevo total: ${parseFloat(data.nuevo_total).toFixed(2)}`);
             
             if (cuentaSeleccionada && cuentaSeleccionada.mesa.id === data.mesa?.id) {
                 setShowPagoModal(false);
@@ -200,7 +200,7 @@ const CuentasPendientes = () => {
         };
 
         const handleMesaLiberada = (data) => {
-            toast.success(`Mesa S/{data.mesa} liberada - Pago procesado`);
+            toast.success(`Mesa ${data.mesa} liberada - Pago procesado`);
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
@@ -221,7 +221,7 @@ const CuentasPendientes = () => {
 
         const handlePedidoEntregado = (data) => {
             if (data.listo_para_cobrar) {
-                toast.success(`Mesa S/{data.mesa} - Pedido entregado, listo para cobrar`);
+                toast.success(`Mesa ${data.mesa} - Pedido entregado, listo para cobrar`);
                 // ✅ ACTUALIZACIÓN INMEDIATA
                 fetchMesasConCuentas();
             }
@@ -464,7 +464,7 @@ const CuentasPendientes = () => {
                                     <i className="fas fa-crown fa-2x text-warning mb-2"></i>
                                     <div className="h3 mb-0 text-warning">
                                         {estadisticas.mesa_mayor ? 
-                                            `Mesa S/{estadisticas.mesa_mayor.mesa.numero}` : 
+                                            `Mesa ${estadisticas.mesa_mayor.mesa.numero}` : 
                                             'N/A'
                                         }
                                     </div>
