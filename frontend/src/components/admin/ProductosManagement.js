@@ -537,7 +537,11 @@ const ProductosManagement = () => {
                                     
                                     <div className="mb-3">
                                         <span className="h4 text-success mb-0">
+<<<<<<< HEAD
                                             S/ S/ ${parseFloat(producto.precio || 0).toFixed(2)}
+=======
+                                            ${parseFloat(producto.precio || 0).toFixed(2)}
+>>>>>>> 46aa35ab46ceb22c04d217de50f19afa2d096670
                                         </span>
                                     </div>
 
@@ -613,7 +617,11 @@ const ProductosManagement = () => {
                                         </td>
                                         <td>
                                             <strong className="text-success">
+<<<<<<< HEAD
                                                 S/ S/ ${parseFloat(producto.precio || 0).toFixed(2)}
+=======
+                                                ${parseFloat(producto.precio || 0).toFixed(2)}
+>>>>>>> 46aa35ab46ceb22c04d217de50f19afa2d096670
                                             </strong>
                                         </td>
                                         <td>

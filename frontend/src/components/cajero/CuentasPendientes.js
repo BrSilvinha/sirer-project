@@ -678,7 +678,11 @@ const CuentasPendientes = () => {
                                             Cambio a entregar:
                                         </strong>
                                         <span className="h4 mb-0 text-success">
+<<<<<<< HEAD
                                             S/ ${calcularCambio().toFixed(2)}
+=======
+                                            ${calcularCambio().toFixed(2)}
+>>>>>>> 46aa35ab46ceb22c04d217de50f19afa2d096670
                                         </span>
                                     </div>
                                     {calcularCambio() < 0 && (
