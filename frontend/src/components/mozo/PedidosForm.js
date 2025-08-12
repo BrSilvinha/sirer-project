@@ -224,7 +224,7 @@ const PedidosForm = () => {
                                         <Card.Body>
                                             <div className="d-flex justify-content-between align-items-start mb-2">
                                                 <h6 className="mb-0">{producto.nombre}</h6>
-                                                <Badge bg="success">${producto.precio}</Badge>
+                                                <Badge bg="success">S/ {producto.precio}</Badge>
                                             </div>
                                             {producto.descripcion && (
                                                 <p className="text-muted small mb-2">
@@ -276,7 +276,7 @@ const PedidosForm = () => {
                                                     <div className="flex-grow-1">
                                                         <h6 className="mb-1">{item.nombre}</h6>
                                                         <small className="text-muted">
-                                                            ${item.precio} c/u
+                                                            S/ {item.precio} c/u
                                                         </small>
                                                     </div>
                                                     <div className="d-flex align-items-center">
@@ -306,7 +306,7 @@ const PedidosForm = () => {
                                                     </div>
                                                 </div>
                                                 <div className="text-end mt-1">
-                                                    <strong>${(parseFloat(item.precio) * item.cantidad).toFixed(2)}</strong>
+                                                    <strong>S/ {(parseFloat(item.precio) * item.cantidad).toFixed(2)}</strong>
                                                 </div>
                                             </ListGroup.Item>
                                         ))}
@@ -317,7 +317,7 @@ const PedidosForm = () => {
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <h5 className="mb-0">Total:</h5>
                                         <h4 className="mb-0 text-primary">
-                                            ${calcularTotal().toFixed(2)}
+                                            S/ {calcularTotal().toFixed(2)}
                                         </h4>
                                     </div>
                                     
@@ -375,7 +375,7 @@ const PedidosForm = () => {
                             <ListGroup.Item key={item.id} className="px-0">
                                 <div className="d-flex justify-content-between">
                                     <span>{item.cantidad}x {item.nombre}</span>
-                                    <span>${(parseFloat(item.precio) * item.cantidad).toFixed(2)}</span>
+                                    <span>S/ {(parseFloat(item.precio) * item.cantidad).toFixed(2)}</span>
                                 </div>
                             </ListGroup.Item>
                         ))}
@@ -383,7 +383,7 @@ const PedidosForm = () => {
                     
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <strong>Total:</strong>
-                        <strong className="text-primary">${calcularTotal().toFixed(2)}</strong>
+                        <strong className="text-primary">S/ {calcularTotal().toFixed(2)}</strong>
                     </div>
                     
                     {observaciones && (

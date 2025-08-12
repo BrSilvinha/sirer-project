@@ -414,7 +414,7 @@ const PedidosCocina = () => {
                                         <div className="d-flex justify-content-between">
                                             <strong className="text-muted small">TOTAL:</strong>
                                             <span className="h6 text-success mb-0">
-                                                ${parseFloat(pedido.total || 0).toFixed(2)}
+                                                S/ ${parseFloat(pedido.total || 0).toFixed(2)}
                                             </span>
                                         </div>
                                         <div className="d-flex justify-content-between">

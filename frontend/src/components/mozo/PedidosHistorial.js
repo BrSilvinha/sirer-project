@@ -313,7 +313,7 @@ const PedidosHistorial = () => {
                         <Card className="border-0 shadow-sm bg-info bg-opacity-10">
                             <Card.Body className="text-center">
                                 <i className="fas fa-dollar-sign fa-2x text-info mb-2"></i>
-                                <div className="h4 mb-0">${estadisticas.ingresos_hoy}</div>
+                                <div className="h4 mb-0">S/ ${estadisticas.ingresos_hoy}</div>
                                 <div className="text-muted small">Ingresos Hoy</div>
                             </Card.Body>
                         </Card>
@@ -447,7 +447,7 @@ const PedidosHistorial = () => {
                                             </td>
                                             <td>
                                                 <strong className="text-success">
-                                                    ${parseFloat(pedido.total).toFixed(2)}
+                                                    S/ ${parseFloat(pedido.total).toFixed(2)}
                                                 </strong>
                                             </td>
                                             <td>
@@ -561,7 +561,7 @@ const PedidosHistorial = () => {
                                     <div className="mb-3">
                                         <strong>Total:</strong>{' '}
                                         <span className="text-success h5">
-                                            ${parseFloat(pedidoSeleccionado.total).toFixed(2)}
+                                            S/ S/ ${parseFloat(pedidoSeleccionado.total).toFixed(2)}
                                         </span>
                                     </div>
                                 </Col>
@@ -584,7 +584,7 @@ const PedidosHistorial = () => {
                                                 <td>{detalle.producto?.nombre || 'Producto'}</td>
                                                 <td>{detalle.cantidad}</td>
                                                 <td>${parseFloat(detalle.precio_unitario).toFixed(2)}</td>
-                                                <td>${parseFloat(detalle.subtotal).toFixed(2)}</td>
+                                                <td>S/ $S/ ${parseFloat(detalle.subtotal).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

@@ -537,7 +537,7 @@ const ProductosManagement = () => {
                                     
                                     <div className="mb-3">
                                         <span className="h4 text-success mb-0">
-                                            ${parseFloat(producto.precio || 0).toFixed(2)}
+                                            S/ S/ ${parseFloat(producto.precio || 0).toFixed(2)}
                                         </span>
                                     </div>
 
@@ -613,7 +613,7 @@ const ProductosManagement = () => {
                                         </td>
                                         <td>
                                             <strong className="text-success">
-                                                ${parseFloat(producto.precio || 0).toFixed(2)}
+                                                S/ S/ ${parseFloat(producto.precio || 0).toFixed(2)}
                                             </strong>
                                         </td>
                                         <td>
@@ -715,7 +715,7 @@ const ProductosManagement = () => {
                                 <Form.Group className="mb-3">
                                     <Form.Label>Precio *</Form.Label>
                                     <InputGroup>
-                                        <InputGroup.Text>$</InputGroup.Text>
+                                        <InputGroup.Text>S/</InputGroup.Text>
                                         <Form.Control
                                             type="number"
                                             step="0.01"

@@ -548,7 +548,7 @@ const CuentasPendientes = () => {
                                             <div className="d-flex justify-content-between">
                                                 <strong>TOTAL:</strong>
                                                 <strong className="text-success h5 mb-0">
-                                                    ${parseFloat(mesaConCuenta.cuenta.resumen.total_general).toFixed(2)}
+                                                    S/ ${parseFloat(mesaConCuenta.cuenta.resumen.total_general).toFixed(2)}
                                                 </strong>
                                             </div>
                                         </div>
@@ -561,7 +561,7 @@ const CuentasPendientes = () => {
                                                 <div key={index} className="d-flex justify-content-between small">
                                                     <span>• {producto.producto.nombre}</span>
                                                     <span className="text-muted">
-                                                        {producto.cantidad}x - ${parseFloat(producto.subtotal).toFixed(2)}
+                                                        {producto.cantidad}x - S/ S/ ${parseFloat(producto.subtotal).toFixed(2)}
                                                     </span>
                                                 </div>
                                             ))}
@@ -619,14 +619,14 @@ const CuentasPendientes = () => {
                                                 <td>{producto.producto.nombre}</td>
                                                 <td>{producto.cantidad}</td>
                                                 <td>${parseFloat(producto.producto.precio).toFixed(2)}</td>
-                                                <td>${parseFloat(producto.subtotal).toFixed(2)}</td>
+                                                <td>S/ S/ ${parseFloat(producto.subtotal).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                     <tfoot>
                                         <tr className="table-success">
                                             <th colSpan="3">TOTAL:</th>
-                                            <th>${parseFloat(cuentaSeleccionada.cuenta.resumen.total_general).toFixed(2)}</th>
+                                            <th>S/ ${parseFloat(cuentaSeleccionada.cuenta.resumen.total_general).toFixed(2)}</th>
                                         </tr>
                                     </tfoot>
                                 </Table>
@@ -656,7 +656,7 @@ const CuentasPendientes = () => {
                                         <Form.Group className="mb-3">
                                             <Form.Label><strong>Monto Recibido:</strong></Form.Label>
                                             <InputGroup>
-                                                <InputGroup.Text>$</InputGroup.Text>
+                                                <InputGroup.Text>S/</InputGroup.Text>
                                                 <Form.Control
                                                     type="number"
                                                     step="0.01"
@@ -678,7 +678,7 @@ const CuentasPendientes = () => {
                                             Cambio a entregar:
                                         </strong>
                                         <span className="h4 mb-0 text-success">
-                                            ${calcularCambio().toFixed(2)}
+                                            S/ ${calcularCambio().toFixed(2)}
                                         </span>
                                     </div>
                                     {calcularCambio() < 0 && (

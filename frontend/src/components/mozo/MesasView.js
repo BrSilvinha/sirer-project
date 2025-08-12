@@ -574,7 +574,7 @@ const MesasView = () => {
                                                             {getEstadoPedidoText(pedido.estado)}
                                                         </Badge>
                                                         <span className="text-success fw-bold">
-                                                            ${parseFloat(pedido.total).toFixed(2)}
+                                                            S/ ${parseFloat(pedido.total).toFixed(2)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -599,7 +599,7 @@ const MesasView = () => {
                                                             {pedido.detalles.map((detalle, index) => (
                                                                 <div key={index} className="small text-muted">
                                                                     • {detalle.cantidad}x {detalle.producto.nombre} 
-                                                                    <span className="ms-2">${parseFloat(detalle.subtotal).toFixed(2)}</span>
+                                                                    <span className="ms-2">S/ $S/ ${parseFloat(detalle.subtotal).toFixed(2)}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -648,7 +648,7 @@ const MesasView = () => {
                                 <div className="d-flex justify-content-between align-items-center">
                                     <strong>Total general:</strong>
                                     <strong className="text-success">
-                                        ${pedidosMesa.reduce((sum, pedido) => sum + parseFloat(pedido.total), 0).toFixed(2)}
+                                        S/ ${pedidosMesa.reduce((sum, pedido) => sum + parseFloat(pedido.total), 0).toFixed(2)}
                                     </strong>
                                 </div>
                             </div>

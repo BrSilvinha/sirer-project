@@ -866,7 +866,7 @@ const ReportesManagement = () => {
                                                                     </td>
                                                                     <td>
                                                                         <strong className="text-success">
-                                                                            ${parseFloat(mozo.total_ventas || 0).toFixed(2)}
+                                                                            S/ ${parseFloat(mozo.total_ventas || 0).toFixed(2)}
                                                                         </strong>
                                                                     </td>
                                                                     <td>${parseFloat(mozo.promedio_por_pedido || 0).toFixed(2)}</td>
