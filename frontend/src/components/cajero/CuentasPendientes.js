@@ -291,7 +291,7 @@ const CuentasPendientes = () => {
             }
             
             toast.success(
-                `Pago procesado correctamente. S/{cambio > 0 ? `Cambio: S/{cambio.toFixed(2)}` : ''}`,
+                `Pago procesado correctamente. ${cambio > 0 ? `Cambio: ${cambio.toFixed(2)}` : ''}`,
                 { duration: 6000 }
             );
 
