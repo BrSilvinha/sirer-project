@@ -89,7 +89,7 @@ const Dashboard = () => {
                                 className="d-flex align-items-center"
                                 style={{ border: 'none' }}
                             >
-                                <i className={`fas ${getRoleIcon(user.rol)} me-2`}></i>
+                                <i className={`fas S/{getRoleIcon(user.rol)} me-2`}></i>
                                 {user.nombre}
                             </Dropdown.Toggle>
 
@@ -100,7 +100,7 @@ const Dashboard = () => {
                                         <br />
                                         <small className="text-muted">{user.email}</small>
                                         <br />
-                                        <span className={`badge bg-${getRoleColor(user.rol)}`}>
+                                        <span className={`badge bg-S/{getRoleColor(user.rol)}`}>
                                             {user.rol.charAt(0).toUpperCase() + user.rol.slice(1)}
                                         </span>
                                     </div>
@@ -135,13 +135,13 @@ const Dashboard = () => {
                                     key={index}
                                     as={Link}
                                     to={item.path}
-                                    className={`py-2 px-3 mb-1 rounded ${
+                                    className={`py-2 px-3 mb-1 rounded S/{
                                         location.pathname === item.path 
-                                            ? `bg-${getRoleColor(user.rol)} text-white` 
+                                            ? `bg-S/{getRoleColor(user.rol)} text-white` 
                                             : 'text-dark hover-bg-light'
                                     }`}
                                 >
-                                    <i className={`fas ${item.icon} me-2`}></i>
+                                    <i className={`fas S/{item.icon} me-2`}></i>
                                     {item.label}
                                 </Nav.Link>
                             ))}

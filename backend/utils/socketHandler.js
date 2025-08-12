@@ -31,11 +31,11 @@ const configureSocketIO = (io) => {
 
     io.on('connection', (socket) => {
         const usuario = socket.usuario;
-        console.log(`✅ Usuario conectado: ${usuario.nombre} (${usuario.rol}) - Socket: ${socket.id}`);
+        console.log(`✅ Usuario conectado: S/{usuario.nombre} (S/{usuario.rol}) - Socket: S/{socket.id}`);
         
         // Unirse automáticamente a la sala de su rol
         socket.join(usuario.rol);
-        console.log(`👤 Usuario ${usuario.nombre} se unió a sala: ${usuario.rol}`);
+        console.log(`👤 Usuario S/{usuario.nombre} se unió a sala: S/{usuario.rol}`);
         
         // Eventos específicos por rol
         setupRoleSpecificEvents(socket, usuario);
@@ -45,7 +45,7 @@ const configureSocketIO = (io) => {
         
         // Manejar desconexión
         socket.on('disconnect', (reason) => {
-            console.log(`❌ Usuario desconectado: ${usuario.nombre} - Socket: ${socket.id}, razón: ${reason}`);
+            console.log(`❌ Usuario desconectado: S/{usuario.nombre} - Socket: S/{socket.id}, razón: S/{reason}`);
         });
     });
 };
@@ -168,13 +168,13 @@ const setupGeneralEvents = (socket, usuario, io) => {
     // Evento para unirse a salas específicas
     socket.on('join-room', (room) => {
         socket.join(room);
-        console.log(`🏠 Usuario ${usuario.nombre} se unió a sala: ${room}`);
+        console.log(`🏠 Usuario S/{usuario.nombre} se unió a sala: S/{room}`);
     });
 
     // Evento para salir de salas específicas  
     socket.on('leave-room', (room) => {
         socket.leave(room);
-        console.log(`🚪 Usuario ${usuario.nombre} salió de sala: ${room}`);
+        console.log(`🚪 Usuario S/{usuario.nombre} salió de sala: S/{room}`);
     });
 
     // Evento de ping/pong para mantener conexión

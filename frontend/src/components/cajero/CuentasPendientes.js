@@ -169,25 +169,25 @@ const CuentasPendientes = () => {
 
         // Eventos de Socket.io con actualización INMEDIATA
         const handleNuevoPedido = (data) => {
-            toast.success(`Nueva actividad en Mesa ${data.mesa?.numero || data.pedido?.mesa?.numero}`);
+            toast.success(`Nueva actividad en Mesa S/{data.mesa?.numero || data.pedido?.mesa?.numero}`);
             // ✅ ACTUALIZACIÓN INMEDIATA - Sin delays
             fetchMesasConCuentas();
         };
 
         const handlePedidoListoCobrar = (data) => {
-            toast.success(`Mesa ${data.mesa} lista para cobrar - ${parseFloat(data.total).toFixed(2)}`);
+            toast.success(`Mesa S/{data.mesa} lista para cobrar - S/{parseFloat(data.total).toFixed(2)}`);
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
         const handleCuentaSolicitada = (data) => {
-            toast.success(`Mesa ${data.mesa} solicita la cuenta`);
+            toast.success(`Mesa S/{data.mesa} solicita la cuenta`);
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
         const handleCuentaActualizada = (data) => {
-            toast.info(`Mesa ${data.mesa?.numero} actualizada. Nuevo total: ${parseFloat(data.nuevo_total).toFixed(2)}`);
+            toast.info(`Mesa S/{data.mesa?.numero} actualizada. Nuevo total: S/{parseFloat(data.nuevo_total).toFixed(2)}`);
             
             if (cuentaSeleccionada && cuentaSeleccionada.mesa.id === data.mesa?.id) {
                 setShowPagoModal(false);
@@ -200,7 +200,7 @@ const CuentasPendientes = () => {
         };
 
         const handleMesaLiberada = (data) => {
-            toast.success(`Mesa ${data.mesa} liberada - Pago procesado`);
+            toast.success(`Mesa S/{data.mesa} liberada - Pago procesado`);
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
@@ -221,7 +221,7 @@ const CuentasPendientes = () => {
 
         const handlePedidoEntregado = (data) => {
             if (data.listo_para_cobrar) {
-                toast.success(`Mesa ${data.mesa} - Pedido entregado, listo para cobrar`);
+                toast.success(`Mesa S/{data.mesa} - Pedido entregado, listo para cobrar`);
                 // ✅ ACTUALIZACIÓN INMEDIATA
                 fetchMesasConCuentas();
             }
@@ -291,7 +291,7 @@ const CuentasPendientes = () => {
             }
             
             toast.success(
-                `Pago procesado correctamente. ${cambio > 0 ? `Cambio: ${cambio.toFixed(2)}` : ''}`,
+                `Pago procesado correctamente. S/{cambio > 0 ? `Cambio: S/{cambio.toFixed(2)}` : ''}`,
                 { duration: 6000 }
             );
 
@@ -400,13 +400,13 @@ const CuentasPendientes = () => {
                                     variant={filtroMonto === 'menores' ? 'success' : 'outline-success'}
                                     onClick={() => setFiltroMonto('menores')}
                                 >
-                                    &lt; $50
+                                    &lt; S/ 50
                                 </Button>
                                 <Button 
                                     variant={filtroMonto === 'mayores' ? 'success' : 'outline-success'}
                                     onClick={() => setFiltroMonto('mayores')}
                                 >
-                                    ≥ $50
+                                    ≥ S/ 50
                                 </Button>
                             </ButtonGroup>
                             
@@ -441,7 +441,7 @@ const CuentasPendientes = () => {
                                 <Card.Body className="text-center py-3">
                                     <i className="fas fa-dollar-sign fa-2x text-success mb-2"></i>
                                     <div className="h3 mb-0 text-success">
-                                        ${estadisticas.total_a_cobrar.toFixed(2)}
+                                        S/ {estadisticas.total_a_cobrar.toFixed(2)}
                                     </div>
                                     <div className="small text-muted">Total a Cobrar</div>
                                 </Card.Body>
@@ -452,7 +452,7 @@ const CuentasPendientes = () => {
                                 <Card.Body className="text-center py-3">
                                     <i className="fas fa-chart-line fa-2x text-info mb-2"></i>
                                     <div className="h3 mb-0 text-info">
-                                        ${estadisticas.promedio_cuenta.toFixed(2)}
+                                        S/ {estadisticas.promedio_cuenta.toFixed(2)}
                                     </div>
                                     <div className="small text-muted">Promedio por Mesa</div>
                                 </Card.Body>
@@ -464,7 +464,7 @@ const CuentasPendientes = () => {
                                     <i className="fas fa-crown fa-2x text-warning mb-2"></i>
                                     <div className="h3 mb-0 text-warning">
                                         {estadisticas.mesa_mayor ? 
-                                            `Mesa ${estadisticas.mesa_mayor.mesa.numero}` : 
+                                            `Mesa S/{estadisticas.mesa_mayor.mesa.numero}` : 
                                             'N/A'
                                         }
                                     </div>
@@ -548,7 +548,7 @@ const CuentasPendientes = () => {
                                             <div className="d-flex justify-content-between">
                                                 <strong>TOTAL:</strong>
                                                 <strong className="text-success h5 mb-0">
-                                                    S/ ${parseFloat(mesaConCuenta.cuenta.resumen.total_general).toFixed(2)}
+                                                    S/ {parseFloat(mesaConCuenta.cuenta.resumen.total_general).toFixed(2)}
                                                 </strong>
                                             </div>
                                         </div>
@@ -561,7 +561,7 @@ const CuentasPendientes = () => {
                                                 <div key={index} className="d-flex justify-content-between small">
                                                     <span>• {producto.producto.nombre}</span>
                                                     <span className="text-muted">
-                                                        {producto.cantidad}x - S/ S/ ${parseFloat(producto.subtotal).toFixed(2)}
+                                                        {producto.cantidad}x - S/ {parseFloat(producto.subtotal).toFixed(2)}
                                                     </span>
                                                 </div>
                                             ))}
@@ -618,15 +618,15 @@ const CuentasPendientes = () => {
                                             <tr key={index}>
                                                 <td>{producto.producto.nombre}</td>
                                                 <td>{producto.cantidad}</td>
-                                                <td>${parseFloat(producto.producto.precio).toFixed(2)}</td>
-                                                <td>S/ S/ ${parseFloat(producto.subtotal).toFixed(2)}</td>
+                                                <td>S/ {parseFloat(producto.producto.precio).toFixed(2)}</td>
+                                                <td>S/ {parseFloat(producto.subtotal).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                     <tfoot>
                                         <tr className="table-success">
                                             <th colSpan="3">TOTAL:</th>
-                                            <th>S/ ${parseFloat(cuentaSeleccionada.cuenta.resumen.total_general).toFixed(2)}</th>
+                                            <th>S/ {parseFloat(cuentaSeleccionada.cuenta.resumen.total_general).toFixed(2)}</th>
                                         </tr>
                                     </tfoot>
                                 </Table>
@@ -678,11 +678,7 @@ const CuentasPendientes = () => {
                                             Cambio a entregar:
                                         </strong>
                                         <span className="h4 mb-0 text-success">
-<<<<<<< HEAD
-                                            S/ ${calcularCambio().toFixed(2)}
-=======
-                                            ${calcularCambio().toFixed(2)}
->>>>>>> 46aa35ab46ceb22c04d217de50f19afa2d096670
+                                            S/ {calcularCambio().toFixed(2)}
                                         </span>
                                     </div>
                                     {calcularCambio() < 0 && (

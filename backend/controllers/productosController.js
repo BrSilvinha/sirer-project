@@ -254,7 +254,7 @@ const cambiarDisponibilidadProducto = async (req, res) => {
 
         res.json({
             success: true,
-            message: `Producto ${disponible ? 'habilitado' : 'deshabilitado'} exitosamente`,
+            message: `Producto S/{disponible ? 'habilitado' : 'deshabilitado'} exitosamente`,
             data: producto
         });
     } catch (error) {

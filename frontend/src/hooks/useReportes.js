@@ -21,7 +21,7 @@ export const useReportes = () => {
                     { progress: 20, message: 'Validando datos...' },
                     { progress: 40, message: 'Procesando información...' },
                     { progress: 60, message: 'Generando estructura...' },
-                    { progress: 80, message: `Creando archivo ${formato.toUpperCase()}...` },
+                    { progress: 80, message: `Creando archivo S/{formato.toUpperCase()}...` },
                     { progress: 95, message: 'Finalizando...' }
                 ];
 
@@ -49,7 +49,7 @@ export const useReportes = () => {
                                     filename = reportesDownloadService.generateCSV(tipo, datos);
                                     break;
                                 default:
-                                    throw new Error(`Formato ${formato} no soportado`);
+                                    throw new Error(`Formato S/{formato} no soportado`);
                             }
 
                             setExportProgress(100);
@@ -59,7 +59,7 @@ export const useReportes = () => {
                                 setExportProgress(0);
                                 setCurrentExport(null);
                                 
-                                toast.success(`📁 ${filename} descargado exitosamente`, {
+                                toast.success(`📁 S/{filename} descargado exitosamente`, {
                                     duration: 5000,
                                     icon: '✅'
                                 });
@@ -73,7 +73,7 @@ export const useReportes = () => {
                             setExportProgress(0);
                             setCurrentExport(null);
                             
-                            toast.error(`❌ Error: ${error.message}`);
+                            toast.error(`❌ Error: S/{error.message}`);
                             reject(error);
                         }
                     }
@@ -90,7 +90,7 @@ export const useReportes = () => {
 
     // 🚀 Descarga rápida (sin modal)
     const quickDownload = useCallback(async (tipo, datos, filtros, formato) => {
-        const loadingToast = toast.loading(`Generando ${formato.toUpperCase()}...`);
+        const loadingToast = toast.loading(`Generando S/{formato.toUpperCase()}...`);
         
         try {
             let filename;
@@ -107,11 +107,11 @@ export const useReportes = () => {
                     filename = reportesDownloadService.generateCSV(tipo, datos);
                     break;
                 default:
-                    throw new Error(`Formato ${formato} no soportado`);
+                    throw new Error(`Formato S/{formato} no soportado`);
             }
 
             toast.dismiss(loadingToast);
-            toast.success(`📁 ${filename} descargado`, {
+            toast.success(`📁 S/{filename} descargado`, {
                 duration: 4000,
                 icon: '✅'
             });
@@ -120,7 +120,7 @@ export const useReportes = () => {
 
         } catch (error) {
             toast.dismiss(loadingToast);
-            toast.error(`❌ Error: ${error.message}`);
+            toast.error(`❌ Error: S/{error.message}`);
             throw error;
         }
     }, []);
@@ -141,7 +141,7 @@ export const useReportes = () => {
             const results = await Promise.all(promises);
             const successful = results.filter(r => r.success).length;
             
-            toast.success(`✅ ${successful}/${formatos.length} archivos descargados`, {
+            toast.success(`✅ S/{successful}/S/{formatos.length} archivos descargados`, {
                 duration: 6000
             });
             
@@ -195,7 +195,7 @@ export const useReportes = () => {
             20: 'Validando datos...',
             40: 'Procesando información...',
             60: 'Generando estructura...',
-            80: `Creando archivo ${currentExport?.formato?.toUpperCase() || ''}...`,
+            80: `Creando archivo S/{currentExport?.formato?.toUpperCase() || ''}...`,
             95: 'Finalizando...',
             100: '¡Completado!'
         };
@@ -285,9 +285,9 @@ export const useReportes = () => {
 
         const finalSize = estimatedSize * (formatMultipliers[formato] || 1);
 
-        if (finalSize < 1) return `${Math.round(finalSize * 1000)} B`;
-        if (finalSize < 1000) return `${Math.round(finalSize)} KB`;
-        return `${Math.round(finalSize / 1000 * 10) / 10} MB`;
+        if (finalSize < 1) return `S/{Math.round(finalSize * 1000)} B`;
+        if (finalSize < 1000) return `S/{Math.round(finalSize)} KB`;
+        return `S/{Math.round(finalSize / 1000 * 10) / 10} MB`;
     }, []);
 
     return {

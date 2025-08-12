@@ -83,7 +83,7 @@ const PedidosHistorial = () => {
                 setTotalPages(data.pagination?.totalPages || 1);
                 setTotalRecords(data.pagination?.total || 0);
                 
-                console.log(`✅ ${data.data?.length || 0} pedidos cargados`);
+                console.log(`✅ S/{data.data?.length || 0} pedidos cargados`);
             } else {
                 setError('Error en la respuesta del servidor');
             }
@@ -313,7 +313,7 @@ const PedidosHistorial = () => {
                         <Card className="border-0 shadow-sm bg-info bg-opacity-10">
                             <Card.Body className="text-center">
                                 <i className="fas fa-dollar-sign fa-2x text-info mb-2"></i>
-                                <div className="h4 mb-0">S/ ${estadisticas.ingresos_hoy}</div>
+                                <div className="h4 mb-0">S/{estadisticas.ingresos_hoy}</div>
                                 <div className="text-muted small">Ingresos Hoy</div>
                             </Card.Body>
                         </Card>
@@ -428,7 +428,7 @@ const PedidosHistorial = () => {
                                             </td>
                                             <td>
                                                 <Badge bg={getEstadoColor(pedido.estado)}>
-                                                    <i className={`fas ${getEstadoIcon(pedido.estado)} me-1`}></i>
+                                                    <i className={`fas S/{getEstadoIcon(pedido.estado)} me-1`}></i>
                                                     {getEstadoText(pedido.estado)}
                                                 </Badge>
                                             </td>
@@ -447,7 +447,7 @@ const PedidosHistorial = () => {
                                             </td>
                                             <td>
                                                 <strong className="text-success">
-                                                    S/ ${parseFloat(pedido.total).toFixed(2)}
+                                                    S/{parseFloat(pedido.total).toFixed(2)}
                                                 </strong>
                                             </td>
                                             <td>
@@ -471,7 +471,7 @@ const PedidosHistorial = () => {
                                                     <Button
                                                         variant="outline-info"
                                                         size="sm"
-                                                        onClick={() => navigate(`/dashboard/mozo/pedido/${pedido.id}`)}
+                                                        onClick={() => navigate(`/dashboard/mozo/pedido/S/{pedido.id}`)}
                                                     >
                                                         <i className="fas fa-external-link-alt"></i>
                                                     </Button>
@@ -561,7 +561,7 @@ const PedidosHistorial = () => {
                                     <div className="mb-3">
                                         <strong>Total:</strong>{' '}
                                         <span className="text-success h5">
-                                            S/ S/ ${parseFloat(pedidoSeleccionado.total).toFixed(2)}
+                                            S/ S/{parseFloat(pedidoSeleccionado.total).toFixed(2)}
                                         </span>
                                     </div>
                                 </Col>
@@ -583,8 +583,8 @@ const PedidosHistorial = () => {
                                             <tr key={index}>
                                                 <td>{detalle.producto?.nombre || 'Producto'}</td>
                                                 <td>{detalle.cantidad}</td>
-                                                <td>${parseFloat(detalle.precio_unitario).toFixed(2)}</td>
-                                                <td>S/ $S/ ${parseFloat(detalle.subtotal).toFixed(2)}</td>
+                                                <td>S/{parseFloat(detalle.precio_unitario).toFixed(2)}</td>
+                                                <td>S/S/{parseFloat(detalle.subtotal).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

@@ -83,9 +83,9 @@ const startServer = async () => {
         const PORT = process.env.PORT || 5000;
         
         server.listen(PORT, () => {
-            console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
+            console.log(`🚀 Servidor ejecutándose en puerto S/{PORT}`);
             console.log(`📡 Socket.io configurado y listo`);
-            console.log(`🌐 API disponible en http://localhost:${PORT}/api`);
+            console.log(`🌐 API disponible en http://localhost:S/{PORT}/api`);
         });
 
     } catch (error) {

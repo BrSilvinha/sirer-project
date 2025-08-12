@@ -187,7 +187,7 @@ const ProductosManagement = () => {
 
     // ✅ Función para eliminar producto
     const handleDelete = useCallback(async (producto) => {
-        if (!window.confirm(`¿Estás seguro de eliminar el producto "${producto.nombre}"?`)) {
+        if (!window.confirm(`¿Estás seguro de eliminar el producto "S/{producto.nombre}"?`)) {
             return;
         }
 
@@ -209,7 +209,7 @@ const ProductosManagement = () => {
             await productosService.changeAvailability(producto.id, nuevoEstado);
             
             toast.success(
-                `${producto.nombre} marcado como ${nuevoEstado ? 'disponible' : 'agotado'}`
+                `S/{producto.nombre} marcado como S/{nuevoEstado ? 'disponible' : 'agotado'}`
             );
             
             await fetchProductos();
@@ -508,7 +508,7 @@ const ProductosManagement = () => {
                     {productosFiltrados.map((producto) => (
                         <Col lg={3} md={4} sm={6} key={producto.id} className="mb-4">
                             <Card 
-                                className={`h-100 border-0 shadow-sm ${
+                                className={`h-100 border-0 shadow-sm S/{
                                     !producto.disponible ? 'opacity-75' : ''
                                 }`}
                             >
@@ -537,11 +537,7 @@ const ProductosManagement = () => {
                                     
                                     <div className="mb-3">
                                         <span className="h4 text-success mb-0">
-<<<<<<< HEAD
-                                            S/ S/ ${parseFloat(producto.precio || 0).toFixed(2)}
-=======
-                                            ${parseFloat(producto.precio || 0).toFixed(2)}
->>>>>>> 46aa35ab46ceb22c04d217de50f19afa2d096670
+                                            S/ {parseFloat(producto.precio || 0).toFixed(2)}
                                         </span>
                                     </div>
 
@@ -554,7 +550,7 @@ const ProductosManagement = () => {
                                                 size="sm"
                                                 onClick={() => handleToggleDisponibilidad(producto)}
                                             >
-                                                <i className={`fas ${
+                                                <i className={`fas S/{
                                                     producto.disponible ? 'fa-eye-slash' : 'fa-eye'
                                                 }`}></i>
                                             </Button>
@@ -617,16 +613,12 @@ const ProductosManagement = () => {
                                         </td>
                                         <td>
                                             <strong className="text-success">
-<<<<<<< HEAD
-                                                S/ S/ ${parseFloat(producto.precio || 0).toFixed(2)}
-=======
-                                                ${parseFloat(producto.precio || 0).toFixed(2)}
->>>>>>> 46aa35ab46ceb22c04d217de50f19afa2d096670
+                                                S/ {parseFloat(producto.precio || 0).toFixed(2)}
                                             </strong>
                                         </td>
                                         <td>
                                             <Badge bg={producto.disponible ? "success" : "danger"}>
-                                                <i className={`fas ${
+                                                <i className={`fas S/{
                                                     producto.disponible ? 'fa-check-circle' : 'fa-times-circle'
                                                 } me-1`}></i>
                                                 {producto.disponible ? "Disponible" : "Agotado"}
@@ -639,7 +631,7 @@ const ProductosManagement = () => {
                                                     size="sm"
                                                     onClick={() => handleToggleDisponibilidad(producto)}
                                                 >
-                                                    <i className={`fas ${
+                                                    <i className={`fas S/{
                                                         producto.disponible ? 'fa-eye-slash' : 'fa-eye'
                                                     }`}></i>
                                                 </Button>

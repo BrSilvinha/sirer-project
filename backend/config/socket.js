@@ -68,7 +68,7 @@ class SocketManager {
 
     handleConnection(socket) {
         const user = socket.user;
-        console.log(`✅ Usuario conectado: ${user.nombre} (${user.rol}) - Socket: ${socket.id}`);
+        console.log(`✅ Usuario conectado: S/{user.nombre} (S/{user.rol}) - Socket: S/{socket.id}`);
 
         // Registrar usuario conectado
         this.connectedUsers.set(user.id, { socket, user });
@@ -76,7 +76,7 @@ class SocketManager {
 
         // Unir al usuario a su sala de rol
         socket.join(user.rol);
-        socket.join(`user_${user.id}`);
+        socket.join(`user_S/{user.id}`);
 
         // Emitir estadísticas de conexión
         this.emitConnectionStats();
@@ -86,7 +86,7 @@ class SocketManager {
 
         // Manejar desconexión
         socket.on('disconnect', (reason) => {
-            console.log(`❌ Usuario desconectado: ${user.nombre} - Razón: ${reason}`);
+            console.log(`❌ Usuario desconectado: S/{user.nombre} - Razón: S/{reason}`);
             this.handleDisconnection(socket, user);
         });
 
@@ -114,7 +114,7 @@ class SocketManager {
     setupMozoEvents(socket, user) {
         // Evento cuando el mozo marca un pedido como entregado
         socket.on('pedido-entregado', (data) => {
-            console.log(`📋 Mozo ${user.nombre} marcó pedido ${data.pedidoId} como entregado`);
+            console.log(`📋 Mozo S/{user.nombre} marcó pedido S/{data.pedidoId} como entregado`);
             
             // Notificar a cajeros
             this.emitToRole('cajero', 'pedido-listo-para-cobrar', {
@@ -136,7 +136,7 @@ class SocketManager {
 
         // Evento cuando mozo solicita cuenta
         socket.on('solicitar-cuenta', (data) => {
-            console.log(`💳 Mozo ${user.nombre} solicitó cuenta para mesa ${data.mesa}`);
+            console.log(`💳 Mozo S/{user.nombre} solicitó cuenta para mesa S/{data.mesa}`);
             
             this.emitToRole('cajero', 'cuenta-solicitada', {
                 mesa: data.mesa,
@@ -151,7 +151,7 @@ class SocketManager {
     setupCocinaEvents(socket, user) {
         // Evento cuando cocina toma un pedido
         socket.on('tomar-pedido', (data) => {
-            console.log(`👨‍🍳 Cocina tomó pedido ${data.pedidoId}`);
+            console.log(`👨‍🍳 Cocina tomó pedido S/{data.pedidoId}`);
             
             this.emitToRole('mozo', 'pedido-tomado-cocina', {
                 pedidoId: data.pedidoId,
@@ -162,7 +162,7 @@ class SocketManager {
 
         // Evento cuando cocina marca pedido como preparado
         socket.on('pedido-preparado', (data) => {
-            console.log(`🔔 Pedido ${data.pedidoId} preparado por cocina`);
+            console.log(`🔔 Pedido S/{data.pedidoId} preparado por cocina`);
             
             // Notificar al mozo específico
             if (data.mozoId) {
@@ -184,7 +184,7 @@ class SocketManager {
 
         // Evento cuando cambia disponibilidad de producto
         socket.on('cambiar-disponibilidad-producto', (data) => {
-            console.log(`🥘 Producto ${data.productoNombre} marcado como ${data.disponible ? 'disponible' : 'agotado'}`);
+            console.log(`🥘 Producto S/{data.productoNombre} marcado como S/{data.disponible ? 'disponible' : 'agotado'}`);
             
             // Notificar a todos los mozos
             this.emitToRole('mozo', 'producto-disponibilidad-actualizada', {
@@ -207,7 +207,7 @@ class SocketManager {
     setupCajeroEvents(socket, user) {
         // Evento cuando se procesa un pago
         socket.on('pago-procesado', (data) => {
-            console.log(`💰 Cajero ${user.nombre} procesó pago mesa ${data.mesa}`);
+            console.log(`💰 Cajero S/{user.nombre} procesó pago mesa S/{data.mesa}`);
             
             // Notificar a todos sobre mesa liberada
             this.io.emit('mesa-liberada', {
@@ -231,7 +231,7 @@ class SocketManager {
     setupAdminEvents(socket, user) {
         // Evento para broadcast general
         socket.on('admin-broadcast', (data) => {
-            console.log(`📢 Admin ${user.nombre} envió broadcast: ${data.mensaje}`);
+            console.log(`📢 Admin S/{user.nombre} envió broadcast: S/{data.mensaje}`);
             
             this.io.emit('admin-mensaje', {
                 tipo: data.tipo || 'info',
@@ -256,13 +256,13 @@ class SocketManager {
         // Evento para unirse a salas específicas
         socket.on('join-room', (room) => {
             socket.join(room);
-            console.log(`🏠 ${user.nombre} se unió a sala: ${room}`);
+            console.log(`🏠 S/{user.nombre} se unió a sala: S/{room}`);
         });
 
         // Evento para salir de salas
         socket.on('leave-room', (room) => {
             socket.leave(room);
-            console.log(`🚪 ${user.nombre} salió de sala: ${room}`);
+            console.log(`🚪 S/{user.nombre} salió de sala: S/{room}`);
         });
     }
 
@@ -308,7 +308,7 @@ class SocketManager {
 
     // Métodos para uso desde controladores
     notifyNewOrder(pedidoData) {
-        console.log(`🔔 Nuevo pedido ${pedidoData.id} para mesa ${pedidoData.mesa.numero}`);
+        console.log(`🔔 Nuevo pedido S/{pedidoData.id} para mesa S/{pedidoData.mesa.numero}`);
         
         this.emitToRole('cocina', 'nuevo-pedido', {
             pedido: pedidoData,

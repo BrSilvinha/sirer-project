@@ -34,7 +34,7 @@ class ReportesDownloadService {
         }
         
         // Descargar archivo
-        const filename = `SIRER_${tipoReporte}_${fecha.replace(/\//g, '-')}.pdf`;
+        const filename = `SIRER_S/{tipoReporte}_S/{fecha.replace(/\//g, '-')}.pdf`;
         doc.save(filename);
         
         return filename;
@@ -69,7 +69,7 @@ class ReportesDownloadService {
         }
         
         // Descargar archivo
-        const filename = `SIRER_${tipoReporte}_${fecha.replace(/\//g, '-')}.xlsx`;
+        const filename = `SIRER_S/{tipoReporte}_S/{fecha.replace(/\//g, '-')}.xlsx`;
         XLSX.writeFile(workbook, filename);
         
         return filename;
@@ -90,12 +90,12 @@ class ReportesDownloadService {
         // Información del reporte
         doc.setFontSize(14);
         doc.setTextColor(0, 0, 0);
-        doc.text(`Reporte de ${this.getTipoReporteText(tipoReporte)}`, 20, 35);
+        doc.text(`Reporte de S/{this.getTipoReporteText(tipoReporte)}`, 20, 35);
         
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text(`Generado el: ${fecha}`, 20, 42);
-        doc.text(`Período: ${filtros.fechaInicio} al ${filtros.fechaFin}`, 20, 47);
+        doc.text(`Generado el: S/{fecha}`, 20, 42);
+        doc.text(`Período: S/{filtros.fechaInicio} al S/{filtros.fechaFin}`, 20, 47);
         
         return 55; // Posición Y donde continuar
     }
@@ -111,10 +111,10 @@ class ReportesDownloadService {
         yPosition += 10;
         
         const resumenData = [
-            ['Total Ventas', `$${datos.resumen.total_ventas.toFixed(2)}`],
+            ['Total Ventas', `S/S/{datos.resumen.total_ventas.toFixed(2)}`],
             ['Total Pedidos', datos.resumen.total_pedidos.toString()],
-            ['Promedio por Pedido', `$${datos.resumen.promedio_pedido.toFixed(2)}`],
-            ['Crecimiento', `${datos.resumen.crecimiento >= 0 ? '+' : ''}${datos.resumen.crecimiento.toFixed(1)}%`]
+            ['Promedio por Pedido', `S/S/{datos.resumen.promedio_pedido.toFixed(2)}`],
+            ['Crecimiento', `S/{datos.resumen.crecimiento >= 0 ? '+' : ''}S/{datos.resumen.crecimiento.toFixed(1)}%`]
         ];
         
         autoTable(doc, {
@@ -134,9 +134,9 @@ class ReportesDownloadService {
         
         const ventasDiarias = datos.datos_diarios.map(dia => [
             new Date(dia.fecha).toLocaleDateString('es-ES'),
-            `$${dia.ventas.toFixed(2)}`,
+            `S/S/{dia.ventas.toFixed(2)}`,
             dia.pedidos.toString(),
-            `$${dia.promedio.toFixed(2)}`
+            `S/S/{dia.promedio.toFixed(2)}`
         ]);
         
         autoTable(doc, {
@@ -163,8 +163,8 @@ class ReportesDownloadService {
             producto.nombre,
             producto.categoria,
             producto.cantidad_vendida.toString(),
-            `$${producto.ingresos_totales.toFixed(2)}`,
-            `${producto.popularidad_score}%`
+            `S/S/{producto.ingresos_totales.toFixed(2)}`,
+            `S/{producto.popularidad_score}%`
         ]);
         
         autoTable(doc, {
@@ -193,7 +193,7 @@ class ReportesDownloadService {
         const categoriasData = datos.por_categorias.map(categoria => [
             categoria.categoria,
             categoria.total_cantidad.toString(),
-            `$${categoria.total_ingresos.toFixed(2)}`
+            `S/S/{categoria.total_ingresos.toFixed(2)}`
         ]);
         
         autoTable(doc, {
@@ -219,10 +219,10 @@ class ReportesDownloadService {
             mozo.nombre,
             mozo.turno,
             mozo.total_pedidos.toString(),
-            `$${mozo.total_ventas.toFixed(2)}`,
-            `$${mozo.promedio_pedido.toFixed(2)}`,
-            `${mozo.satisfaccion_cliente.toFixed(1)}%`,
-            `${mozo.eficiencia_servicio.toFixed(1)}%`
+            `S/S/{mozo.total_ventas.toFixed(2)}`,
+            `S/S/{mozo.promedio_pedido.toFixed(2)}`,
+            `S/{mozo.satisfaccion_cliente.toFixed(1)}%`,
+            `S/{mozo.eficiencia_servicio.toFixed(1)}%`
         ]);
         
         autoTable(doc, {
@@ -255,12 +255,12 @@ class ReportesDownloadService {
         
         const mesasData = datos.mesas_performance.map(mesa => [
             mesa.numero.toString(),
-            `${mesa.capacidad} pers`,
+            `S/{mesa.capacidad} pers`,
             mesa.total_ocupaciones.toString(),
-            `${mesa.horas_ocupada}h`,
-            `$${mesa.ingresos_generados.toFixed(2)}`,
-            `${mesa.eficiencia_ocupacion.toFixed(1)}%`,
-            `${mesa.rotacion_diaria}x`
+            `S/{mesa.horas_ocupada}h`,
+            `S/S/{mesa.ingresos_generados.toFixed(2)}`,
+            `S/{mesa.eficiencia_ocupacion.toFixed(1)}%`,
+            `S/{mesa.rotacion_diaria}x`
         ]);
         
         autoTable(doc, {
@@ -390,21 +390,21 @@ class ReportesDownloadService {
         const fecha = new Date().toLocaleDateString('es-ES');
         
         // Header
-        csvContent += `SIRER - Reporte de ${this.getTipoReporteText(tipoReporte)}\n`;
-        csvContent += `Generado: ${fecha}\n\n`;
+        csvContent += `SIRER - Reporte de S/{this.getTipoReporteText(tipoReporte)}\n`;
+        csvContent += `Generado: S/{fecha}\n\n`;
         
         switch (tipoReporte) {
             case 'ventas':
                 csvContent += 'Fecha,Ventas,Pedidos,Promedio\n';
                 datos.datos_diarios.forEach(dia => {
-                    csvContent += `${dia.fecha},${dia.ventas},${dia.pedidos},${dia.promedio}\n`;
+                    csvContent += `S/{dia.fecha},S/{dia.ventas},S/{dia.pedidos},S/{dia.promedio}\n`;
                 });
                 break;
                 
             case 'productos':
                 csvContent += 'Producto,Categoría,Cantidad,Ingresos\n';
                 datos.productos_individuales.forEach(producto => {
-                    csvContent += `${producto.nombre},${producto.categoria},${producto.cantidad_vendida},${producto.ingresos_totales}\n`;
+                    csvContent += `S/{producto.nombre},S/{producto.categoria},S/{producto.cantidad_vendida},S/{producto.ingresos_totales}\n`;
                 });
                 break;
                 
@@ -420,14 +420,14 @@ class ReportesDownloadService {
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `SIRER_${tipoReporte}_${fecha.replace(/\//g, '-')}.csv`);
+            link.setAttribute('download', `SIRER_S/{tipoReporte}_S/{fecha.replace(/\//g, '-')}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
         
-        return `SIRER_${tipoReporte}_${fecha.replace(/\//g, '-')}.csv`;
+        return `SIRER_S/{tipoReporte}_S/{fecha.replace(/\//g, '-')}.csv`;
     }
 }
 

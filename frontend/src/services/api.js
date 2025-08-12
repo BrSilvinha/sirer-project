@@ -17,7 +17,7 @@ api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization = `Bearer S/{token}`;
         }
         return config;
     },
@@ -41,7 +41,7 @@ api.interceptors.response.use(
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (refreshToken) {
-                    const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+                    const response = await axios.post(`S/{API_BASE_URL}/auth/refresh`, {
                         refreshToken
                     });
 
@@ -49,7 +49,7 @@ api.interceptors.response.use(
                     localStorage.setItem('accessToken', accessToken);
 
                     // Reintentar la petición original
-                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+                    originalRequest.headers.Authorization = `Bearer S/{accessToken}`;
                     return api(originalRequest);
                 }
             } catch (refreshError) {
@@ -133,74 +133,74 @@ export const authService = {
     },
 
     updateUser: async (id, userData) => {
-        return await api.put(`/users/${id}`, userData);
+        return await api.put(`/users/S/{id}`, userData);
     },
 
     toggleUserStatus: async (id, status) => {
-        return await api.patch(`/users/${id}/status`, { activo: status });
+        return await api.patch(`/users/S/{id}/status`, { activo: status });
     },
 
     changePassword: async (id, passwordData) => {
-        return await api.patch(`/users/${id}/password`, passwordData);
+        return await api.patch(`/users/S/{id}/password`, passwordData);
     }
 };
 
 // Servicios de mesas
 export const mesasService = {
     getAll: () => api.get('/mesas'),
-    getById: (id) => api.get(`/mesas/${id}`),
+    getById: (id) => api.get(`/mesas/S/{id}`),
     create: (mesa) => api.post('/mesas', mesa),
-    update: (id, mesa) => api.put(`/mesas/${id}`, mesa),
-    delete: (id) => api.delete(`/mesas/${id}`),
-    changeStatus: (id, estado) => api.patch(`/mesas/${id}/estado`, { estado }),
+    update: (id, mesa) => api.put(`/mesas/S/{id}`, mesa),
+    delete: (id) => api.delete(`/mesas/S/{id}`),
+    changeStatus: (id, estado) => api.patch(`/mesas/S/{id}/estado`, { estado }),
     getStats: () => api.get('/mesas/estadisticas')
 };
 
 // Servicios de categorías
 export const categoriasService = {
     getAll: () => api.get('/categorias'),
-    getById: (id) => api.get(`/categorias/${id}`),
+    getById: (id) => api.get(`/categorias/S/{id}`),
     create: (categoria) => api.post('/categorias', categoria),
-    update: (id, categoria) => api.put(`/categorias/${id}`, categoria),
-    delete: (id) => api.delete(`/categorias/${id}`)
+    update: (id, categoria) => api.put(`/categorias/S/{id}`, categoria),
+    delete: (id) => api.delete(`/categorias/S/{id}`)
 };
 
 // Servicios de productos
 export const productosService = {
     getAll: (params) => api.get('/productos', { params }),
-    getById: (id) => api.get(`/productos/${id}`),
-    getByCategory: (categoriaId) => api.get(`/productos/categoria/${categoriaId}`),
+    getById: (id) => api.get(`/productos/S/{id}`),
+    getByCategory: (categoriaId) => api.get(`/productos/categoria/S/{categoriaId}`),
     getAvailable: () => api.get('/productos/disponibles'),
     create: (producto) => api.post('/productos', producto),
-    update: (id, producto) => api.put(`/productos/${id}`, producto),
-    delete: (id) => api.delete(`/productos/${id}`),
-    changeAvailability: (id, disponible) => api.patch(`/productos/${id}/disponibilidad`, { disponible })
+    update: (id, producto) => api.put(`/productos/S/{id}`, producto),
+    delete: (id) => api.delete(`/productos/S/{id}`),
+    changeAvailability: (id, disponible) => api.patch(`/productos/S/{id}/disponibilidad`, { disponible })
 };
 
 // Servicios de pedidos
 export const pedidosService = {
     getAll: (params) => api.get('/pedidos', { params }),
-    getById: (id) => api.get(`/pedidos/${id}`),
+    getById: (id) => api.get(`/pedidos/S/{id}`),
     getByMesa: (mesaId, incluirPagados = false) => {
         const params = incluirPagados ? { incluir_pagados: true } : {};
-        return api.get(`/pedidos/mesa/${mesaId}`, { params });
+        return api.get(`/pedidos/mesa/S/{mesaId}`, { params });
     },
     getCocina: () => api.get('/pedidos/cocina'),
     create: (pedido) => api.post('/pedidos', pedido),
-    changeStatus: (id, estado) => api.patch(`/pedidos/${id}/estado`, { estado }),
-    addProducts: (id, productos) => api.post(`/pedidos/${id}/productos`, { productos }),
-    cancel: (id, motivo) => api.patch(`/pedidos/${id}/cancelar`, { motivo }),
+    changeStatus: (id, estado) => api.patch(`/pedidos/S/{id}/estado`, { estado }),
+    addProducts: (id, productos) => api.post(`/pedidos/S/{id}/productos`, { productos }),
+    cancel: (id, motivo) => api.patch(`/pedidos/S/{id}/cancelar`, { motivo }),
     
     // ✅ Método getCuenta con manejo silencioso de errores
     getCuenta: async (mesaId) => {
         try {
-            return await api.get(`/pedidos/cuenta/mesa/${mesaId}`);
+            return await api.get(`/pedidos/cuenta/mesa/S/{mesaId}`);
         } catch (error) {
             throw error;
         }
     },
     
-    procesarPago: (mesaId, datosPago) => api.post(`/pedidos/pago/mesa/${mesaId}`, datosPago),
+    procesarPago: (mesaId, datosPago) => api.post(`/pedidos/pago/mesa/S/{mesaId}`, datosPago),
     getStats: (params) => api.get('/pedidos/estadisticas', { params })
 };
 
@@ -281,7 +281,7 @@ export const reportesService = {
     // Exportar reportes
     exportar: async (tipo, params = {}) => {
         try {
-            const response = await api.get(`/reportes/exportar/${tipo}`, { 
+            const response = await api.get(`/reportes/exportar/S/{tipo}`, { 
                 params,
                 responseType: 'blob'
             });

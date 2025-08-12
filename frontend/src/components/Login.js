@@ -131,7 +131,7 @@ const Login = () => {
                                                 type="button"
                                                 disabled={isSubmitting}
                                             >
-                                                <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                <i className={`fas S/{showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                                             </Button>
                                         </div>
                                     </Form.Group>

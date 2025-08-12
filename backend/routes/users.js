@@ -12,7 +12,7 @@ router.get('/', authenticateToken, authorizeRoles('administrador'), async (req, 
             order: [['created_at', 'DESC']]
         });
 
-        console.log(`✅ Encontrados ${usuarios.length} usuarios reales en la base de datos`);
+        console.log(`✅ Encontrados S/{usuarios.length} usuarios reales en la base de datos`);
 
         res.json({
             success: true,
@@ -137,7 +137,7 @@ router.patch('/:id/status', authenticateToken, authorizeRoles('administrador'), 
 
         res.json({
             success: true,
-            message: `Usuario ${activo ? 'activado' : 'desactivado'} exitosamente`,
+            message: `Usuario S/{activo ? 'activado' : 'desactivado'} exitosamente`,
             data: { id: usuario.id, activo }
         });
     } catch (error) {

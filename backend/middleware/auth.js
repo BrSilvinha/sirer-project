@@ -48,7 +48,7 @@ const authorizeRoles = (...roles) => {
 
         if (!roles.includes(req.user.rol)) {
             return res.status(403).json({ 
-                error: `Acceso denegado. Rol requerido: ${roles.join(' o ')}` 
+                error: `Acceso denegado. Rol requerido: S/{roles.join(' o ')}` 
             });
         }
 

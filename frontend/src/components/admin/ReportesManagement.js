@@ -123,22 +123,22 @@ const ReportesManagement = () => {
             if (activeTab === 'ventas' && reporteVentas) {
                 csvContent = 'Período,Total Ventas,Total Pedidos,Promedio por Pedido\n';
                 reporteVentas.ventas_por_periodo?.forEach(venta => {
-                    csvContent += `${venta.periodo},${venta.total_ventas},${venta.total_pedidos},${venta.promedio_pedido}\n`;
+                    csvContent += `S/{venta.periodo},S/{venta.total_ventas},S/{venta.total_pedidos},S/{venta.promedio_pedido}\n`;
                 });
             } else if (activeTab === 'productos' && reporteProductos) {
                 csvContent = 'Producto,Categoría,Cantidad Vendida,Ingresos Totales\n';
                 reporteProductos.productos?.forEach(producto => {
-                    csvContent += `"${producto.producto?.nombre}","${producto.producto?.categoria?.nombre}",${producto.total_vendido},${producto.ingresos_totales}\n`;
+                    csvContent += `"S/{producto.producto?.nombre}","S/{producto.producto?.categoria?.nombre}",S/{producto.total_vendido},S/{producto.ingresos_totales}\n`;
                 });
             } else if (activeTab === 'mozos' && reporteMozos) {
                 csvContent = 'Mozo,Total Pedidos,Total Ventas,Promedio por Pedido\n';
                 reporteMozos.mozos?.forEach(mozo => {
-                    csvContent += `"${mozo.mozo?.nombre}",${mozo.total_pedidos},${mozo.total_ventas},${mozo.promedio_por_pedido}\n`;
+                    csvContent += `"S/{mozo.mozo?.nombre}",S/{mozo.total_pedidos},S/{mozo.total_ventas},S/{mozo.promedio_por_pedido}\n`;
                 });
             } else if (activeTab === 'mesas' && reporteMesas) {
                 csvContent = 'Mesa,Capacidad,Total Pedidos,Ingresos Totales,Promedio por Pedido\n';
                 reporteMesas.mesas?.forEach(mesa => {
-                    csvContent += `Mesa ${mesa.mesa?.numero},${mesa.mesa?.capacidad},${mesa.total_pedidos},${mesa.ingresos_totales},${mesa.promedio_por_pedido}\n`;
+                    csvContent += `Mesa S/{mesa.mesa?.numero},S/{mesa.mesa?.capacidad},S/{mesa.total_pedidos},S/{mesa.ingresos_totales},S/{mesa.promedio_por_pedido}\n`;
                 });
             }
 
@@ -146,7 +146,7 @@ const ReportesManagement = () => {
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `${nombreArchivo}_${new Date().toISOString().split('T')[0]}.csv`;
+                link.download = `S/{nombreArchivo}_S/{new Date().toISOString().split('T')[0]}.csv`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -166,12 +166,12 @@ const ReportesManagement = () => {
         try {
             // Crear contenido HTML para el PDF
             const fechaActual = new Date().toLocaleDateString();
-            const periodo = `${filtros.fechaInicio} al ${filtros.fechaFin}`;
+            const periodo = `S/{filtros.fechaInicio} al S/{filtros.fechaFin}`;
             
             let contenidoHTML = `
                 <html>
                 <head>
-                    <title>Reporte SIRER - ${activeTab.toUpperCase()}</title>
+                    <title>Reporte SIRER - S/{activeTab.toUpperCase()}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 20px; }
                         .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
@@ -186,11 +186,11 @@ const ReportesManagement = () => {
                 <body>
                     <div class="header">
                         <h1>SISTEMA SIRER</h1>
-                        <h2>Reporte de ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+                        <h2>Reporte de S/{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
                     </div>
                     <div class="periodo">
-                        <strong>Período:</strong> ${periodo}<br>
-                        <strong>Generado:</strong> ${fechaActual}
+                        <strong>Período:</strong> S/{periodo}<br>
+                        <strong>Generado:</strong> S/{fechaActual}
                     </div>
             `;
 
@@ -198,9 +198,9 @@ const ReportesManagement = () => {
                 contenidoHTML += `
                     <h3>Resumen Total</h3>
                     <table>
-                        <tr><td><strong>Total Ventas:</strong></td><td>$${reporteVentas.resumen_total?.total_ventas || '0.00'}</td></tr>
-                        <tr><td><strong>Total Pedidos:</strong></td><td>${reporteVentas.resumen_total?.total_pedidos || 0}</td></tr>
-                        <tr><td><strong>Promedio por Pedido:</strong></td><td>$${reporteVentas.resumen_total?.promedio_pedido || '0.00'}</td></tr>
+                        <tr><td><strong>Total Ventas:</strong></td><td>S/S/{reporteVentas.resumen_total?.total_ventas || '0.00'}</td></tr>
+                        <tr><td><strong>Total Pedidos:</strong></td><td>S/{reporteVentas.resumen_total?.total_pedidos || 0}</td></tr>
+                        <tr><td><strong>Promedio por Pedido:</strong></td><td>S/S/{reporteVentas.resumen_total?.promedio_pedido || '0.00'}</td></tr>
                     </table>
                     
                     <h3>Ventas por Período</h3>
@@ -208,7 +208,7 @@ const ReportesManagement = () => {
                         <tr><th>Período</th><th>Total Ventas</th><th>Total Pedidos</th><th>Promedio</th></tr>
                 `;
                 reporteVentas.ventas_por_periodo?.forEach(venta => {
-                    contenidoHTML += `<tr><td>${venta.periodo}</td><td>$${venta.total_ventas}</td><td>${venta.total_pedidos}</td><td>$${venta.promedio_pedido}</td></tr>`;
+                    contenidoHTML += `<tr><td>S/{venta.periodo}</td><td>S/S/{venta.total_ventas}</td><td>S/{venta.total_pedidos}</td><td>S/S/{venta.promedio_pedido}</td></tr>`;
                 });
                 contenidoHTML += '</table>';
             }
@@ -222,11 +222,11 @@ const ReportesManagement = () => {
                 reporteProductos.productos?.forEach((producto, index) => {
                     contenidoHTML += `
                         <tr>
-                            <td>${index + 1}</td>
-                            <td>${producto.producto?.nombre || 'N/A'}</td>
-                            <td>${producto.producto?.categoria?.nombre || 'N/A'}</td>
-                            <td>${producto.total_vendido}</td>
-                            <td>$${producto.ingresos_totales}</td>
+                            <td>S/{index + 1}</td>
+                            <td>S/{producto.producto?.nombre || 'N/A'}</td>
+                            <td>S/{producto.producto?.categoria?.nombre || 'N/A'}</td>
+                            <td>S/{producto.total_vendido}</td>
+                            <td>S/S/{producto.ingresos_totales}</td>
                         </tr>
                     `;
                 });
@@ -242,11 +242,11 @@ const ReportesManagement = () => {
                 reporteMozos.mozos?.forEach((mozo, index) => {
                     contenidoHTML += `
                         <tr>
-                            <td>${index + 1}</td>
-                            <td>${mozo.mozo?.nombre || 'N/A'}</td>
-                            <td>${mozo.total_pedidos}</td>
-                            <td>$${mozo.total_ventas}</td>
-                            <td>$${mozo.promedio_por_pedido}</td>
+                            <td>S/{index + 1}</td>
+                            <td>S/{mozo.mozo?.nombre || 'N/A'}</td>
+                            <td>S/{mozo.total_pedidos}</td>
+                            <td>S/S/{mozo.total_ventas}</td>
+                            <td>S/S/{mozo.promedio_por_pedido}</td>
                         </tr>
                     `;
                 });
@@ -262,11 +262,11 @@ const ReportesManagement = () => {
                 reporteMesas.mesas?.forEach(mesa => {
                     contenidoHTML += `
                         <tr>
-                            <td>Mesa ${mesa.mesa?.numero}</td>
-                            <td>${mesa.mesa?.capacidad} personas</td>
-                            <td>${mesa.total_pedidos}</td>
-                            <td>$${mesa.ingresos_totales}</td>
-                            <td>$${mesa.promedio_por_pedido}</td>
+                            <td>Mesa S/{mesa.mesa?.numero}</td>
+                            <td>S/{mesa.mesa?.capacidad} personas</td>
+                            <td>S/{mesa.total_pedidos}</td>
+                            <td>S/S/{mesa.ingresos_totales}</td>
+                            <td>S/S/{mesa.promedio_por_pedido}</td>
                         </tr>
                     `;
                 });
@@ -275,7 +275,7 @@ const ReportesManagement = () => {
 
             contenidoHTML += `
                     <div class="footer">
-                        <p>Generado por Sistema SIRER - ${new Date().toLocaleString()}</p>
+                        <p>Generado por Sistema SIRER - S/{new Date().toLocaleString()}</p>
                     </div>
                 </body>
                 </html>
@@ -308,7 +308,7 @@ const ReportesManagement = () => {
         setExportando(true);
         try {
             if (exportType === 'excel') {
-                const nombreArchivo = `reporte_${activeTab}_${filtros.fechaInicio}_${filtros.fechaFin}`;
+                const nombreArchivo = `reporte_S/{activeTab}_S/{filtros.fechaInicio}_S/{filtros.fechaFin}`;
                 exportarCSV(null, nombreArchivo);
             } else if (exportType === 'pdf') {
                 exportarPDF();
@@ -334,7 +334,7 @@ const ReportesManagement = () => {
         ) || [],
         datasets: [
             {
-                label: 'Ventas ($)',
+                label: 'Ventas (S/)',
                 data: reporteVentas?.ventas_por_periodo?.map(v => 
                     parseFloat(v.total_ventas)
                 ) || [],
@@ -362,7 +362,7 @@ const ReportesManagement = () => {
             p.producto?.nombre || 'Sin nombre'
         ) || [],
         datasets: [{
-            label: 'Ingresos ($)',
+            label: 'Ingresos (S/)',
             data: reporteProductos?.productos?.slice(0, 8).map(p => 
                 parseFloat(p.ingresos_totales || 0)
             ) || [],
@@ -385,7 +385,7 @@ const ReportesManagement = () => {
         ) || [],
         datasets: [
             {
-                label: 'Ventas ($)',
+                label: 'Ventas (S/)',
                 data: reporteMozos?.mozos?.map(m => 
                     parseFloat(m.total_ventas || 0)
                 ) || [],
@@ -420,7 +420,7 @@ const ReportesManagement = () => {
                 position: 'left',
                 title: {
                     display: true,
-                    text: 'Ventas ($)'
+                    text: 'Ventas (S/)'
                 }
             },
             y1: {
@@ -583,7 +583,7 @@ const ReportesManagement = () => {
                                             <Card.Body className="text-center">
                                                 <i className="fas fa-dollar-sign fa-2x text-success mb-2"></i>
                                                 <div className="h4 mb-0 text-success">
-                                                    ${parseFloat(reporteVentas.resumen_total?.total_ventas || 0).toFixed(2)}
+                                                    S/{parseFloat(reporteVentas.resumen_total?.total_ventas || 0).toFixed(2)}
                                                 </div>
                                                 <div className="text-muted small">Total Ventas</div>
                                             </Card.Body>
@@ -605,7 +605,7 @@ const ReportesManagement = () => {
                                             <Card.Body className="text-center">
                                                 <i className="fas fa-chart-line fa-2x text-info mb-2"></i>
                                                 <div className="h4 mb-0 text-info">
-                                                    ${parseFloat(reporteVentas.resumen_total?.promedio_pedido || 0).toFixed(2)}
+                                                    S/{parseFloat(reporteVentas.resumen_total?.promedio_pedido || 0).toFixed(2)}
                                                 </div>
                                                 <div className="text-muted small">Promedio por Pedido</div>
                                             </Card.Body>
@@ -673,13 +673,13 @@ const ReportesManagement = () => {
                                                                     <td>{new Date(periodo.periodo).toLocaleDateString()}</td>
                                                                     <td>
                                                                         <strong className="text-success">
-                                                                            ${parseFloat(periodo.total_ventas).toFixed(2)}
+                                                                            S/{parseFloat(periodo.total_ventas).toFixed(2)}
                                                                         </strong>
                                                                     </td>
                                                                     <td>
                                                                         <Badge bg="primary">{periodo.total_pedidos}</Badge>
                                                                     </td>
-                                                                    <td>${parseFloat(periodo.promedio_pedido).toFixed(2)}</td>
+                                                                    <td>S/{parseFloat(periodo.promedio_pedido).toFixed(2)}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -770,7 +770,7 @@ const ReportesManagement = () => {
                                                                     </td>
                                                                     <td>
                                                                         <strong className="text-success">
-                                                                            ${parseFloat(producto.ingresos_totales || 0).toFixed(2)}
+                                                                            S/{parseFloat(producto.ingresos_totales || 0).toFixed(2)}
                                                                         </strong>
                                                                     </td>
                                                                     <td>
@@ -866,10 +866,10 @@ const ReportesManagement = () => {
                                                                     </td>
                                                                     <td>
                                                                         <strong className="text-success">
-                                                                            S/ ${parseFloat(mozo.total_ventas || 0).toFixed(2)}
+                                                                            S/{parseFloat(mozo.total_ventas || 0).toFixed(2)}
                                                                         </strong>
                                                                     </td>
-                                                                    <td>${parseFloat(mozo.promedio_por_pedido || 0).toFixed(2)}</td>
+                                                                    <td>S/{parseFloat(mozo.promedio_por_pedido || 0).toFixed(2)}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -935,10 +935,10 @@ const ReportesManagement = () => {
                                                                     </td>
                                                                     <td>
                                                                         <strong className="text-success">
-                                                                            ${parseFloat(mesa.ingresos_totales || 0).toFixed(2)}
+                                                                            S/{parseFloat(mesa.ingresos_totales || 0).toFixed(2)}
                                                                         </strong>
                                                                     </td>
-                                                                    <td>${parseFloat(mesa.promedio_por_pedido || 0).toFixed(2)}</td>
+                                                                    <td>S/{parseFloat(mesa.promedio_por_pedido || 0).toFixed(2)}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>

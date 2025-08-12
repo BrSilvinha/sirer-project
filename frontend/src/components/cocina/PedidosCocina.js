@@ -54,7 +54,7 @@ const PedidosCocina = () => {
 
             if (nuevosIds.length > 0 && pedidos.length > 0) {
                 playNotificationSound();
-                toast.success(`${nuevosIds.length} nuevo(s) pedido(s) recibido(s)!`, {
+                toast.success(`S/{nuevosIds.length} nuevo(s) pedido(s) recibido(s)!`, {
                     duration: 6000,
                     icon: '🔔'
                 });
@@ -126,7 +126,7 @@ const PedidosCocina = () => {
             const producto = productos.find(p => p.id === productoId);
             
             toast.success(
-                `${producto?.nombre} marcado como ${disponible ? 'disponible' : 'agotado'}`,
+                `S/{producto?.nombre} marcado como S/{disponible ? 'disponible' : 'agotado'}`,
                 { duration: 4000 }
             );
             
@@ -174,11 +174,11 @@ const PedidosCocina = () => {
         const diferencia = Math.floor((ahora - inicio) / 1000 / 60); // minutos
         
         if (diferencia < 1) return 'Recién llegado';
-        if (diferencia < 60) return `${diferencia} min`;
+        if (diferencia < 60) return `S/{diferencia} min`;
         
         const horas = Math.floor(diferencia / 60);
         const minutos = diferencia % 60;
-        return `${horas}h ${minutos}m`;
+        return `S/{horas}h S/{minutos}m`;
     }, []);
 
     const getProximoEstado = useCallback((estadoActual) => {
@@ -334,17 +334,17 @@ const PedidosCocina = () => {
                     {pedidos.map((pedido) => (
                         <Col lg={4} md={6} key={pedido.id} className="mb-4">
                             <Card 
-                                className={`h-100 border-0 shadow-sm border-${getEstadoColor(pedido.estado)} border-3`}
+                                className={`h-100 border-0 shadow-sm border-S/{getEstadoColor(pedido.estado)} border-3`}
                                 style={{ 
                                     borderStyle: 'solid !important',
                                     borderWidth: '3px !important'
                                 }}
                             >
-                                <Card.Header className={`bg-${getEstadoColor(pedido.estado)} text-white`}>
+                                <Card.Header className={`bg-S/{getEstadoColor(pedido.estado)} text-white`}>
                                     <Row className="align-items-center">
                                         <Col>
                                             <div className="d-flex align-items-center">
-                                                <i className={`fas ${getEstadoIcon(pedido.estado)} me-2`}></i>
+                                                <i className={`fas S/{getEstadoIcon(pedido.estado)} me-2`}></i>
                                                 <div>
                                                     <h6 className="mb-0">
                                                         Pedido #{pedido.id} - Mesa {pedido.mesa?.numero}
@@ -384,7 +384,7 @@ const PedidosCocina = () => {
                                                         <span className="text-dark">{detalle.producto?.nombre}</span>
                                                     </div>
                                                     <small className="text-muted">
-                                                        ${parseFloat(detalle.subtotal || 0).toFixed(2)}
+                                                        S/{parseFloat(detalle.subtotal || 0).toFixed(2)}
                                                     </small>
                                                 </div>
                                             )) || (
@@ -414,7 +414,7 @@ const PedidosCocina = () => {
                                         <div className="d-flex justify-content-between">
                                             <strong className="text-muted small">TOTAL:</strong>
                                             <span className="h6 text-success mb-0">
-                                                S/ ${parseFloat(pedido.total || 0).toFixed(2)}
+                                                S/{parseFloat(pedido.total || 0).toFixed(2)}
                                             </span>
                                         </div>
                                         <div className="d-flex justify-content-between">
@@ -443,7 +443,7 @@ const PedidosCocina = () => {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <i className={`fas ${
+                                                        <i className={`fas S/{
                                                             getEstadoIcon(getProximoEstado(pedido.estado))
                                                         } me-2`}></i>
                                                         {getTextoBotonAccion(pedido.estado)}
@@ -490,7 +490,7 @@ const PedidosCocina = () => {
                     <Row>
                         {productos.map((producto) => (
                             <Col lg={6} key={producto.id} className="mb-3">
-                                <Card className={`border-0 shadow-sm ${
+                                <Card className={`border-0 shadow-sm S/{
                                     producto.disponible ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'
                                 }`}>
                                     <Card.Body>
@@ -498,7 +498,7 @@ const PedidosCocina = () => {
                                             <div>
                                                 <h6 className="mb-1">{producto.nombre}</h6>
                                                 <small className="text-muted">
-                                                    {producto.categoria?.nombre} - ${producto.precio}
+                                                    {producto.categoria?.nombre} - S/{producto.precio}
                                                 </small>
                                             </div>
                                             <div className="d-flex align-items-center gap-2">
@@ -516,7 +516,7 @@ const PedidosCocina = () => {
                                                         !producto.disponible
                                                     )}
                                                 >
-                                                    <i className={`fas ${
+                                                    <i className={`fas S/{
                                                         producto.disponible ? 'fa-times' : 'fa-check'
                                                     }`}></i>
                                                 </Button>

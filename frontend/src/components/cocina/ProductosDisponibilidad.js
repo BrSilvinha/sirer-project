@@ -114,7 +114,7 @@ const ProductosDisponibilidad = () => {
             }));
 
             toast.success(
-                `${producto.nombre} marcado como ${nuevoEstado ? 'DISPONIBLE' : 'AGOTADO'}`,
+                `S/{producto.nombre} marcado como S/{nuevoEstado ? 'DISPONIBLE' : 'AGOTADO'}`,
                 { 
                     duration: 4000,
                     icon: nuevoEstado ? '✅' : '❌'
@@ -144,7 +144,7 @@ const ProductosDisponibilidad = () => {
 
         try {
             await Promise.all(promises);
-            toast.success(`${productosIds.length} productos actualizados`);
+            toast.success(`S/{productosIds.length} productos actualizados`);
         } catch (error) {
             toast.error('Error actualizando productos');
         }
@@ -384,7 +384,7 @@ const ProductosDisponibilidad = () => {
                     {productos.map((producto) => (
                         <Col lg={3} md={4} sm={6} key={producto.id} className="mb-4">
                             <Card 
-                                className={`h-100 border-0 shadow-sm ${
+                                className={`h-100 border-0 shadow-sm S/{
                                     producto.disponible 
                                         ? 'border-success border-2' 
                                         : 'border-danger border-2'
@@ -399,7 +399,7 @@ const ProductosDisponibilidad = () => {
                                         >
                                             {producto.categoria?.nombre}
                                         </Badge>
-                                        <div className={`rounded-circle ${
+                                        <div className={`rounded-circle S/{
                                             producto.disponible ? 'bg-success' : 'bg-danger'
                                         }`} style={{ width: '12px', height: '12px' }}></div>
                                     </div>
@@ -414,7 +414,7 @@ const ProductosDisponibilidad = () => {
                                     
                                     <div className="mb-3">
                                         <span className="h5 text-success mb-0">
-                                            ${parseFloat(producto.precio).toFixed(2)}
+                                            S/{parseFloat(producto.precio).toFixed(2)}
                                         </span>
                                     </div>
 
@@ -423,7 +423,7 @@ const ProductosDisponibilidad = () => {
                                             bg={producto.disponible ? "success" : "danger"}
                                             className="w-100 py-2"
                                         >
-                                            <i className={`fas ${
+                                            <i className={`fas S/{
                                                 producto.disponible ? 'fa-check-circle' : 'fa-times-circle'
                                             } me-2`}></i>
                                             {producto.disponible ? "DISPONIBLE" : "AGOTADO"}
@@ -444,7 +444,7 @@ const ProductosDisponibilidad = () => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <i className={`fas ${
+                                                    <i className={`fas S/{
                                                         producto.disponible ? 'fa-ban' : 'fa-check'
                                                     } me-2`}></i>
                                                     {producto.disponible ? 'Marcar Agotado' : 'Marcar Disponible'}

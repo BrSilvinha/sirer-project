@@ -142,7 +142,7 @@ const AdminHome = () => {
         labels: ['Hoy'],
         datasets: [
             {
-                label: 'Ventas ($)',
+                label: 'Ventas (S/)',
                 data: [parseFloat(dashboardData?.resumen?.ventas_hoy || 0)],
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgba(54, 162, 235, 1)',
@@ -257,7 +257,7 @@ const AdminHome = () => {
                                 <div className="flex-grow-1 ms-3">
                                     <div className="text-muted small">Ventas Hoy</div>
                                     <div className="h4 mb-0">
-                                        S/ ${dashboardData?.resumen?.ventas_hoy || '0.00'}
+                                        S/{dashboardData?.resumen?.ventas_hoy || '0.00'}
                                     </div>
                                 </div>
                             </div>
@@ -297,7 +297,7 @@ const AdminHome = () => {
                                 <div className="flex-grow-1 ms-3">
                                     <div className="text-muted small">Promedio por Pedido</div>
                                     <div className="h4 mb-0">
-                                        S/ ${dashboardData?.resumen?.promedio_por_pedido || '0.00'}
+                                        S/{dashboardData?.resumen?.promedio_por_pedido || '0.00'}
                                     </div>
                                 </div>
                             </div>
@@ -441,7 +441,7 @@ const AdminHome = () => {
                                                         </Badge>
                                                     </td>
                                                     <td className="text-success fw-bold">
-                                                        S/ ${parseFloat(producto.ingresos || 0).toFixed(2)}
+                                                        S/{parseFloat(producto.ingresos || 0).toFixed(2)}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -493,7 +493,7 @@ const AdminHome = () => {
                                                         </Badge>
                                                     </td>
                                                     <td className="text-success fw-bold">
-                                                        S/ ${parseFloat(mozo.total_ventas || 0).toFixed(2)}
+                                                        S/{parseFloat(mozo.total_ventas || 0).toFixed(2)}
                                                     </td>
                                                 </tr>
                                             ))}
