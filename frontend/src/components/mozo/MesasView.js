@@ -283,37 +283,43 @@ const MesasView = () => {
             {/* Header */}
             <Row className="mb-4">
                 <Col>
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 className="mb-1">Estado de Mesas</h2>
-                            <p className="text-muted mb-0">
-                                Selecciona una mesa para atender
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                        <div className="mb-3 mb-md-0">
+                            <h2 className="mb-1 fs-3 fs-md-2">Estado de Mesas</h2>
+                            <p className="text-muted mb-0 small">
+                                <span className="d-none d-sm-inline">Selecciona una mesa para atender</span>
+                                <span className="d-sm-none">Selecciona mesa</span>
                             </p>
                         </div>
-                        <div className="d-flex gap-2">
-                            <ButtonGroup>
+                        <div className="d-flex flex-wrap gap-2 w-100 w-md-auto">
+                            <ButtonGroup className="flex-fill flex-md-shrink-0">
                                 <Button 
                                     variant={view === 'grid' ? 'primary' : 'outline-primary'}
                                     size="sm"
                                     onClick={() => setView('grid')}
+                                    className="flex-fill"
                                 >
                                     <i className="fas fa-th-large me-1"></i>
-                                    Grid
+                                    <span className="d-none d-sm-inline">Grid</span>
                                 </Button>
                                 <Button 
                                     variant={view === 'list' ? 'primary' : 'outline-primary'}
                                     size="sm"
                                     onClick={() => setView('list')}
+                                    className="flex-fill"
                                 >
                                     <i className="fas fa-list me-1"></i>
-                                    Lista
+                                    <span className="d-none d-sm-inline">Lista</span>
                                 </Button>
                             </ButtonGroup>
                             
-                            <Dropdown>
-                                <Dropdown.Toggle variant="outline-secondary" size="sm">
+                            <Dropdown className="flex-fill flex-sm-shrink-0">
+                                <Dropdown.Toggle variant="outline-secondary" size="sm" className="w-100 w-sm-auto">
                                     <i className="fas fa-filter me-1"></i>
-                                    {filtroEstado === 'todos' ? 'Todas' : getEstadoText(filtroEstado)}
+                                    <span className="d-none d-sm-inline">
+                                        {filtroEstado === 'todos' ? 'Todas' : getEstadoText(filtroEstado)}
+                                    </span>
+                                    <span className="d-sm-none">Filtro</span>
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     <Dropdown.Item onClick={() => setFiltroEstado('todos')}>
@@ -339,9 +345,10 @@ const MesasView = () => {
                                 variant="info" 
                                 size="sm"
                                 onClick={() => navigate('/dashboard/mozo/historial')}
+                                className="flex-fill flex-sm-shrink-0"
                             >
                                 <i className="fas fa-history me-1"></i>
-                                Historial
+                                <span className="d-none d-sm-inline">Historial</span>
                             </Button>
                         </div>
                     </div>
@@ -351,39 +358,43 @@ const MesasView = () => {
             {/* Estadísticas rápidas */}
             {estadisticas && (
                 <Row className="mb-4">
-                    <Col md={3}>
+                    <Col xs={6} md={3} className="mb-3">
                         <Card className="border-0 shadow-sm bg-success bg-opacity-10">
-                            <Card.Body className="text-center">
-                                <i className="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                <div className="h4 mb-0">{estadisticas.libres}</div>
-                                <div className="text-muted small">Mesas Libres</div>
+                            <Card.Body className="text-center py-3">
+                                <i className="fas fa-check-circle fa-lg fa-md-2x text-success mb-2"></i>
+                                <div className="h5 h4-md mb-0">{estadisticas.libres}</div>
+                                <div className="text-muted small d-none d-sm-block">Mesas Libres</div>
+                                <div className="text-muted small d-sm-none">Libres</div>
                             </Card.Body>
                         </Card>
                     </Col>
-                    <Col md={3}>
+                    <Col xs={6} md={3} className="mb-3">
                         <Card className="border-0 shadow-sm bg-danger bg-opacity-10">
-                            <Card.Body className="text-center">
-                                <i className="fas fa-users fa-2x text-danger mb-2"></i>
-                                <div className="h4 mb-0">{estadisticas.ocupadas}</div>
-                                <div className="text-muted small">Mesas Ocupadas</div>
+                            <Card.Body className="text-center py-3">
+                                <i className="fas fa-users fa-lg fa-md-2x text-danger mb-2"></i>
+                                <div className="h5 h4-md mb-0">{estadisticas.ocupadas}</div>
+                                <div className="text-muted small d-none d-sm-block">Mesas Ocupadas</div>
+                                <div className="text-muted small d-sm-none">Ocupadas</div>
                             </Card.Body>
                         </Card>
                     </Col>
-                    <Col md={3}>
+                    <Col xs={6} md={3} className="mb-3">
                         <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
-                            <Card.Body className="text-center">
-                                <i className="fas fa-credit-card fa-2x text-warning mb-2"></i>
-                                <div className="h4 mb-0">{estadisticas.cuenta_solicitada}</div>
-                                <div className="text-muted small">Cuentas Pendientes</div>
+                            <Card.Body className="text-center py-3">
+                                <i className="fas fa-credit-card fa-lg fa-md-2x text-warning mb-2"></i>
+                                <div className="h5 h4-md mb-0">{estadisticas.cuenta_solicitada}</div>
+                                <div className="text-muted small d-none d-sm-block">Cuentas Pendientes</div>
+                                <div className="text-muted small d-sm-none">Pendientes</div>
                             </Card.Body>
                         </Card>
                     </Col>
-                    <Col md={3}>
+                    <Col xs={6} md={3} className="mb-3">
                         <Card className="border-0 shadow-sm bg-info bg-opacity-10">
-                            <Card.Body className="text-center">
-                                <i className="fas fa-percentage fa-2x text-info mb-2"></i>
-                                <div className="h4 mb-0">{estadisticas.porcentaje_ocupacion}%</div>
-                                <div className="text-muted small">Ocupación</div>
+                            <Card.Body className="text-center py-3">
+                                <i className="fas fa-percentage fa-lg fa-md-2x text-info mb-2"></i>
+                                <div className="h5 h4-md mb-0">{estadisticas.porcentaje_ocupacion}%</div>
+                                <div className="text-muted small d-none d-sm-block">Ocupación</div>
+                                <div className="text-muted small d-sm-none">%</div>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -394,7 +405,7 @@ const MesasView = () => {
             {view === 'grid' && (
                 <Row>
                     {mesas.map((mesa) => (
-                        <Col lg={3} md={4} sm={6} key={mesa.id} className="mb-4">
+                        <Col xs={12} sm={6} md={4} lg={3} key={mesa.id} className="mb-4">
                             <Card 
                                 className={`h-100 border-0 shadow-sm ${
                                     mesa.estado === 'libre' ? 'border-success' : 
@@ -424,10 +435,11 @@ const MesasView = () => {
                                     </div>
                                     
                                     {/* Información de la mesa */}
-                                    <h5 className="mb-2">Mesa {mesa.numero}</h5>
-                                    <p className="text-muted mb-2">
+                                    <h5 className="mb-2 fs-6 fs-md-5">Mesa {mesa.numero}</h5>
+                                    <p className="text-muted mb-2 small">
                                         <i className="fas fa-users me-1"></i>
-                                        Hasta {mesa.capacidad} personas
+                                        <span className="d-none d-sm-inline">Hasta {mesa.capacidad} personas</span>
+                                        <span className="d-sm-none">{mesa.capacidad} pers.</span>
                                     </p>
                                     
                                     {/* Badge de estado */}
@@ -445,7 +457,7 @@ const MesasView = () => {
 
                                     {/* Información adicional */}
                                     {mesa.estado !== 'libre' && (
-                                        <div className="mt-2">
+                                        <div className="mt-2 d-none d-sm-block">
                                             <small className="text-muted">
                                                 Actualizada: {new Date(mesa.updated_at).toLocaleTimeString()}
                                             </small>
@@ -581,7 +593,12 @@ const MesasView = () => {
             )}
 
             {/* Modal de pedidos de mesa */}
-            <Modal show={showPedidosModal} onHide={() => setShowPedidosModal(false)} size="lg">
+            <Modal 
+                show={showPedidosModal} 
+                onHide={() => setShowPedidosModal(false)} 
+                size="lg"
+                fullscreen="sm-down"
+            >
                 <Modal.Header closeButton>
                     <Modal.Title>
                         <i className="fas fa-table me-2"></i>
@@ -606,46 +623,70 @@ const MesasView = () => {
                             <ListGroup>
                                 {pedidosMesa.map((pedido) => (
                                     <ListGroup.Item key={pedido.id}>
-                                        <div className="d-flex justify-content-between align-items-start">
-                                            <div className="flex-grow-1">
-                                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                                    <h6 className="mb-0">
+                                        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start">
+                                            <div className="flex-grow-1 w-100">
+                                                <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-2">
+                                                    <h6 className="mb-1 mb-sm-0">
                                                         <i className="fas fa-receipt me-2"></i>
-                                                        Pedido #{pedido.id}
+                                                        <span className="d-none d-sm-inline">Pedido #{pedido.id}</span>
+                                                        <span className="d-sm-none">#{pedido.id}</span>
                                                     </h6>
-                                                    <div className="d-flex gap-2">
-                                                        <Badge bg={getEstadoBadgeVariant(pedido.estado)}>
+                                                    <div className="d-flex flex-wrap gap-2">
+                                                        <Badge bg={getEstadoBadgeVariant(pedido.estado)} className="text-nowrap">
                                                             {getEstadoPedidoText(pedido.estado)}
                                                         </Badge>
-                                                        <span className="text-success fw-bold">
+                                                        <span className="text-success fw-bold text-nowrap">
                                                             ${parseFloat(pedido.total).toFixed(2)}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="mb-2">
-                                                    <small className="text-muted">
-                                                        <i className="fas fa-clock me-1"></i>
-                                                        {new Date(pedido.created_at).toLocaleString()}
-                                                    </small>
-                                                    {pedido.mozo && (
-                                                        <small className="text-muted ms-3">
-                                                            <i className="fas fa-user me-1"></i>
-                                                            {pedido.mozo.nombre}
+                                                    <div className="d-flex flex-column flex-sm-row gap-1 gap-sm-3">
+                                                        <small className="text-muted">
+                                                            <i className="fas fa-clock me-1"></i>
+                                                            <span className="d-none d-sm-inline">
+                                                                {new Date(pedido.created_at).toLocaleString()}
+                                                            </span>
+                                                            <span className="d-sm-none">
+                                                                {new Date(pedido.created_at).toLocaleTimeString()}
+                                                            </span>
                                                         </small>
-                                                    )}
+                                                        {pedido.mozo && (
+                                                            <small className="text-muted">
+                                                                <i className="fas fa-user me-1"></i>
+                                                                <span className="text-truncate" style={{ maxWidth: '100px' }}>
+                                                                    {pedido.mozo.nombre}
+                                                                </span>
+                                                            </small>
+                                                        )}
+                                                    </div>
                                                 </div>
 
                                                 {pedido.detalles && pedido.detalles.length > 0 && (
                                                     <div className="mb-2">
                                                         <strong className="small">Productos:</strong>
                                                         <div className="mt-1">
-                                                            {pedido.detalles.map((detalle, index) => (
-                                                                <div key={index} className="small text-muted">
-                                                                    • {detalle.cantidad}x {detalle.producto.nombre} 
-                                                                    <span className="ms-2">S/${parseFloat(detalle.subtotal).toFixed(2)}</span>
+                                                            {pedido.detalles.slice(0, 3).map((detalle, index) => (
+                                                                <div key={index} className="d-flex justify-content-between align-items-center small text-muted">
+                                                                    <span className="text-truncate me-2">
+                                                                        • {detalle.cantidad}x {detalle.producto.nombre}
+                                                                    </span>
+                                                                    <span className="text-nowrap">
+                                                                        S/${parseFloat(detalle.subtotal).toFixed(2)}
+                                                                    </span>
                                                                 </div>
                                                             ))}
+                                                            {pedido.detalles.length > 3 && (
+                                                                <div className="small text-muted">
+                                                                    <span className="d-none d-sm-inline">
+                                                                        + {pedido.detalles.length - 3} productos más
+                                                                    </span>
+                                                                    <span className="d-sm-none">
+                                                                        +{pedido.detalles.length - 3} más
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}

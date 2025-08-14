@@ -342,13 +342,14 @@ const AdminHome = () => {
 
             {/* Gráficos */}
             <Row className="mb-4">
-                <Col lg={4} className="mb-3">
+                <Col md={6} lg={4} className="mb-3">
                     <Card className="border-0 shadow-sm h-100">
                         <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
+                            <h6 className="mb-0 d-flex align-items-center">
                                 <i className="fas fa-table me-2 text-primary"></i>
-                                Estado de Mesas
-                            </h5>
+                                <span className="d-none d-md-inline">Estado de Mesas</span>
+                                <span className="d-md-none">Mesas</span>
+                            </h6>
                         </Card.Header>
                         <Card.Body>
                             <div style={{ height: '300px' }}>
@@ -367,13 +368,14 @@ const AdminHome = () => {
                     </Card>
                 </Col>
 
-                <Col lg={4} className="mb-3">
+                <Col md={6} lg={4} className="mb-3">
                     <Card className="border-0 shadow-sm h-100">
                         <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
+                            <h6 className="mb-0 d-flex align-items-center">
                                 <i className="fas fa-clipboard-list me-2 text-success"></i>
-                                Pedidos por Estado
-                            </h5>
+                                <span className="d-none d-md-inline">Pedidos por Estado</span>
+                                <span className="d-md-none">Pedidos</span>
+                            </h6>
                         </Card.Header>
                         <Card.Body>
                             <div style={{ height: '300px' }}>
@@ -392,13 +394,14 @@ const AdminHome = () => {
                     </Card>
                 </Col>
 
-                <Col lg={4} className="mb-3">
+                <Col sm={12} lg={4} className="mb-3">
                     <Card className="border-0 shadow-sm h-100">
                         <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
+                            <h6 className="mb-0 d-flex align-items-center">
                                 <i className="fas fa-chart-bar me-2 text-info"></i>
-                                Ventas del Día
-                            </h5>
+                                <span className="d-none d-md-inline">Ventas del Día</span>
+                                <span className="d-md-none">Ventas</span>
+                            </h6>
                         </Card.Header>
                         <Card.Body>
                             <div style={{ height: '300px' }}>
@@ -431,30 +434,35 @@ const AdminHome = () => {
                         <Card.Body>
                             {dashboardData?.productos_mas_vendidos?.length > 0 ? (
                                 <div className="table-responsive">
-                                    <table className="table table-sm">
+                                    <table className="table table-sm table-borderless">
                                         <thead>
                                             <tr>
-                                                <th>Producto</th>
-                                                <th>Vendidos</th>
-                                                <th>Ingresos</th>
+                                                <th className="border-bottom">Producto</th>
+                                                <th className="border-bottom text-center d-none d-sm-table-cell">Vendidos</th>
+                                                <th className="border-bottom text-end">Ingresos</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {dashboardData.productos_mas_vendidos.slice(0, 5).map((producto, index) => (
                                                 <tr key={index}>
-                                                    <td>
+                                                    <td className="border-0">
                                                         <div className="d-flex align-items-center">
-                                                            <div className="bg-primary rounded-circle me-2" 
+                                                            <div className="bg-primary rounded-circle me-2 flex-shrink-0" 
                                                                  style={{ width: '8px', height: '8px' }}></div>
-                                                            {producto.producto?.nombre || 'Producto sin nombre'}
+                                                            <span className="text-truncate" style={{ maxWidth: '120px' }}>
+                                                                {producto.producto?.nombre || 'Producto sin nombre'}
+                                                            </span>
+                                                            <Badge bg="primary" className="ms-auto d-sm-none">
+                                                                {producto.total_vendido || 0}
+                                                            </Badge>
                                                         </div>
                                                     </td>
-                                                    <td>
+                                                    <td className="border-0 text-center d-none d-sm-table-cell">
                                                         <Badge bg="primary">
                                                             {producto.total_vendido || 0}
                                                         </Badge>
                                                     </td>
-                                                    <td className="text-success fw-bold">
+                                                    <td className="border-0 text-end text-success fw-bold text-nowrap">
                                                         S/{parseFloat(producto.ingresos || 0).toFixed(2)}
                                                     </td>
                                                 </tr>
@@ -483,30 +491,35 @@ const AdminHome = () => {
                         <Card.Body>
                             {dashboardData?.mozos_activos?.length > 0 ? (
                                 <div className="table-responsive">
-                                    <table className="table table-sm">
+                                    <table className="table table-sm table-borderless">
                                         <thead>
                                             <tr>
-                                                <th>Mozo</th>
-                                                <th>Pedidos</th>
-                                                <th>Ventas</th>
+                                                <th className="border-bottom">Mozo</th>
+                                                <th className="border-bottom text-center d-none d-sm-table-cell">Pedidos</th>
+                                                <th className="border-bottom text-end">Ventas</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {dashboardData.mozos_activos.map((mozo, index) => (
                                                 <tr key={index}>
-                                                    <td>
+                                                    <td className="border-0">
                                                         <div className="d-flex align-items-center">
-                                                            <div className="bg-warning rounded-circle me-2" 
+                                                            <div className="bg-warning rounded-circle me-2 flex-shrink-0" 
                                                                  style={{ width: '8px', height: '8px' }}></div>
-                                                            {mozo.mozo?.nombre || 'Mozo sin nombre'}
+                                                            <span className="text-truncate" style={{ maxWidth: '120px' }}>
+                                                                {mozo.mozo?.nombre || 'Mozo sin nombre'}
+                                                            </span>
+                                                            <Badge bg="warning" text="dark" className="ms-auto d-sm-none">
+                                                                {mozo.total_pedidos || 0}
+                                                            </Badge>
                                                         </div>
                                                     </td>
-                                                    <td>
-                                                        <Badge bg="warning">
+                                                    <td className="border-0 text-center d-none d-sm-table-cell">
+                                                        <Badge bg="warning" text="dark">
                                                             {mozo.total_pedidos || 0}
                                                         </Badge>
                                                     </td>
-                                                    <td className="text-success fw-bold">
+                                                    <td className="border-0 text-end text-success fw-bold text-nowrap">
                                                         S/{parseFloat(mozo.total_ventas || 0).toFixed(2)}
                                                     </td>
                                                 </tr>

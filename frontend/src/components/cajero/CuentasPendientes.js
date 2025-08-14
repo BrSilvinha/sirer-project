@@ -390,34 +390,39 @@ const CuentasPendientes = () => {
             {/* Header limpio */}
             <Row className="mb-4">
                 <Col>
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 className="mb-1">
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                        <div className="mb-3 mb-md-0">
+                            <h2 className="mb-1 fs-3 fs-md-2">
                                 <i className="fas fa-cash-register text-success me-2"></i>
-                                Cuentas por Cobrar
+                                <span className="d-none d-sm-inline">Cuentas por Cobrar</span>
+                                <span className="d-sm-none">Cuentas</span>
                             </h2>
-                            <p className="text-muted mb-0">
-                                Procesa los pagos de las mesas
+                            <p className="text-muted mb-0 small">
+                                <span className="d-none d-sm-inline">Procesa los pagos de las mesas</span>
+                                <span className="d-sm-none">Procesar pagos</span>
                             </p>
                         </div>
                         
-                        <div className="d-flex gap-2">
-                            <ButtonGroup size="sm">
+                        <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+                            <ButtonGroup size="sm" className="w-100 w-sm-auto">
                                 <Button 
                                     variant={filtroMonto === 'todos' ? 'success' : 'outline-success'}
                                     onClick={() => setFiltroMonto('todos')}
+                                    className="flex-fill flex-sm-shrink-0"
                                 >
                                     Todas
                                 </Button>
                                 <Button 
                                     variant={filtroMonto === 'menores' ? 'success' : 'outline-success'}
                                     onClick={() => setFiltroMonto('menores')}
+                                    className="flex-fill flex-sm-shrink-0"
                                 >
                                     &lt; S/ 50
                                 </Button>
                                 <Button 
                                     variant={filtroMonto === 'mayores' ? 'success' : 'outline-success'}
                                     onClick={() => setFiltroMonto('mayores')}
+                                    className="flex-fill flex-sm-shrink-0"
                                 >
                                     ≥ S/ 50
                                 </Button>
@@ -431,57 +436,66 @@ const CuentasPendientes = () => {
                                     fetchMesasConCuentas(true);
                                 }}
                                 disabled={loading}
+                                className="w-100 w-sm-auto"
                             >
                                 <i className="fas fa-sync-alt me-1"></i>
-                                {loading ? 'Actualizando...' : 'Actualizar'}
+                                <span className="d-none d-sm-inline">
+                                    {loading ? 'Actualizando...' : 'Actualizar'}
+                                </span>
+                                <span className="d-sm-none">Sync</span>
                             </Button>
                         </div>
                     </div>
 
                     {/* Estadísticas limpias */}
                     <Row className="mt-3">
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-table fa-2x text-primary mb-2"></i>
-                                    <div className="h3 mb-0 text-primary">{estadisticas.total_mesas}</div>
-                                    <div className="small text-muted">Mesas Pendientes</div>
+                                    <i className="fas fa-table fa-lg fa-md-2x text-primary mb-2"></i>
+                                    <div className="h5 h3-md mb-0 text-primary">{estadisticas.total_mesas}</div>
+                                    <div className="small text-muted d-none d-sm-block">Mesas Pendientes</div>
+                                    <div className="small text-muted d-sm-none">Pendientes</div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-success bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-dollar-sign fa-2x text-success mb-2"></i>
-                                    <div className="h3 mb-0 text-success">
-                                        S/ {estadisticas.total_a_cobrar.toFixed(2)}
+                                    <i className="fas fa-dollar-sign fa-lg fa-md-2x text-success mb-2"></i>
+                                    <div className="h6 h3-md mb-0 text-success">
+                                        S/ {estadisticas.total_a_cobrar.toFixed(0)}
+                                        <small className="d-block d-md-none">.{(estadisticas.total_a_cobrar % 1).toFixed(2).substring(2)}</small>
                                     </div>
-                                    <div className="small text-muted">Total a Cobrar</div>
+                                    <div className="small text-muted d-none d-sm-block">Total a Cobrar</div>
+                                    <div className="small text-muted d-sm-none">Total</div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-info bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-chart-line fa-2x text-info mb-2"></i>
-                                    <div className="h3 mb-0 text-info">
-                                        S/ {estadisticas.promedio_cuenta.toFixed(2)}
+                                    <i className="fas fa-chart-line fa-lg fa-md-2x text-info mb-2"></i>
+                                    <div className="h6 h3-md mb-0 text-info">
+                                        S/ {estadisticas.promedio_cuenta.toFixed(0)}
                                     </div>
-                                    <div className="small text-muted">Promedio por Mesa</div>
+                                    <div className="small text-muted d-none d-sm-block">Promedio por Mesa</div>
+                                    <div className="small text-muted d-sm-none">Promedio</div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-crown fa-2x text-warning mb-2"></i>
-                                    <div className="h3 mb-0 text-warning">
+                                    <i className="fas fa-crown fa-lg fa-md-2x text-warning mb-2"></i>
+                                    <div className="h6 h3-md mb-0 text-warning">
                                         {estadisticas.mesa_mayor ? 
-                                            `Mesa ${estadisticas.mesa_mayor.mesa.numero}` : 
+                                            `M${estadisticas.mesa_mayor.mesa.numero}` : 
                                             'N/A'
                                         }
                                     </div>
-                                    <div className="small text-muted">Cuenta Mayor</div>
+                                    <div className="small text-muted d-none d-sm-block">Cuenta Mayor</div>
+                                    <div className="small text-muted d-sm-none">Mayor</div>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -519,7 +533,7 @@ const CuentasPendientes = () => {
             ) : (
                 <Row>
                     {mesasConCuentas.map((mesaConCuenta) => (
-                        <Col lg={4} md={6} key={mesaConCuenta.mesa.id} className="mb-4">
+                        <Col xs={12} sm={6} lg={4} key={mesaConCuenta.mesa.id} className="mb-4">
                             <Card className="h-100 border-0 shadow-sm border-success border-2">
                                 <Card.Header className="bg-success text-white">
                                     <div className="d-flex justify-content-between align-items-center">
@@ -567,13 +581,13 @@ const CuentasPendientes = () => {
                                         </div>
                                     </div>
 
-                                    <div className="mb-3">
+                                    <div className="mb-3 d-none d-sm-block">
                                         <strong className="text-muted small">PRODUCTOS:</strong>
                                         <div className="mt-1">
                                             {mesaConCuenta.cuenta.resumen.productos.slice(0, 3).map((producto, index) => (
                                                 <div key={index} className="d-flex justify-content-between small">
-                                                    <span>• {producto.producto.nombre}</span>
-                                                    <span className="text-muted">
+                                                    <span className="text-truncate me-2">• {producto.producto.nombre}</span>
+                                                    <span className="text-muted text-nowrap">
                                                         {producto.cantidad}x - S/ {parseFloat(producto.subtotal).toFixed(2)}
                                                     </span>
                                                 </div>
@@ -583,6 +597,18 @@ const CuentasPendientes = () => {
                                                     + {mesaConCuenta.cuenta.resumen.productos.length - 3} productos más...
                                                 </small>
                                             )}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Vista móvil simplificada */}
+                                    <div className="mb-3 d-sm-none">
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <small className="text-muted">
+                                                {mesaConCuenta.cuenta.resumen.productos.length} productos
+                                            </small>
+                                            <small className="text-muted">
+                                                {mesaConCuenta.cuenta.resumen.total_items} items
+                                            </small>
                                         </div>
                                     </div>
 
@@ -605,7 +631,12 @@ const CuentasPendientes = () => {
             )}
 
             {/* Modal de procesamiento de pago - diseño limpio */}
-            <Modal show={showPagoModal} onHide={() => setShowPagoModal(false)} size="lg">
+            <Modal 
+                show={showPagoModal} 
+                onHide={() => setShowPagoModal(false)} 
+                size="lg"
+                fullscreen="sm-down"
+            >
                 <Modal.Header closeButton>
                     <Modal.Title>
                         <i className="fas fa-cash-register me-2"></i>
@@ -615,47 +646,59 @@ const CuentasPendientes = () => {
                 <Modal.Body>
                     {cuentaSeleccionada && (
                         <>
-                            <div className="bg-light p-3 rounded mb-4">
-                                <h6 className="mb-3">Resumen de la Cuenta:</h6>
-                                <Table size="sm" className="mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Cant.</th>
-                                            <th>Precio</th>
-                                            <th>Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {cuentaSeleccionada.cuenta.resumen.productos.map((producto, index) => (
-                                            <tr key={index}>
-                                                <td>{producto.producto.nombre}</td>
-                                                <td>{producto.cantidad}</td>
-                                                <td>S/ {parseFloat(producto.producto.precio).toFixed(2)}</td>
-                                                <td>S/ {parseFloat(producto.subtotal).toFixed(2)}</td>
+                            <div className="bg-light p-2 p-md-3 rounded mb-4">
+                                <h6 className="mb-3 fs-6 fs-md-5">Resumen de la Cuenta:</h6>
+                                <div className="table-responsive">
+                                    <Table size="sm" className="mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th className="text-truncate">Producto</th>
+                                                <th className="text-center">Cant.</th>
+                                                <th className="text-end d-none d-sm-table-cell">Precio</th>
+                                                <th className="text-end">Subtotal</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr className="table-success">
-                                            <th colSpan="3">TOTAL:</th>
-                                            <th>S/ {parseFloat(cuentaSeleccionada.cuenta.resumen.total_general).toFixed(2)}</th>
-                                        </tr>
-                                    </tfoot>
-                                </Table>
+                                        </thead>
+                                        <tbody>
+                                            {cuentaSeleccionada.cuenta.resumen.productos.map((producto, index) => (
+                                                <tr key={index}>
+                                                    <td className="text-truncate" style={{ maxWidth: '120px' }}>
+                                                        {producto.producto.nombre}
+                                                    </td>
+                                                    <td className="text-center">{producto.cantidad}</td>
+                                                    <td className="text-end d-none d-sm-table-cell text-nowrap">
+                                                        S/ {parseFloat(producto.producto.precio).toFixed(2)}
+                                                    </td>
+                                                    <td className="text-end text-nowrap">
+                                                        S/ {parseFloat(producto.subtotal).toFixed(2)}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="table-success">
+                                                <th colSpan="2" className="d-table-cell d-sm-none">TOTAL:</th>
+                                                <th colSpan="3" className="d-none d-sm-table-cell">TOTAL:</th>
+                                                <th className="text-end text-nowrap">
+                                                    S/ {parseFloat(cuentaSeleccionada.cuenta.resumen.total_general).toFixed(2)}
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </Table>
+                                </div>
                             </div>
 
                             <Row>
-                                <Col md={6}>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label><strong>Método de Pago:</strong></Form.Label>
+                                <Col xs={12} md={6} className="mb-3">
+                                    <Form.Group>
+                                        <Form.Label className="fw-bold small">Método de Pago:</Form.Label>
                                         <Form.Select
                                             value={metodoPago}
                                             onChange={(e) => setMetodoPago(e.target.value)}
+                                            size="sm"
                                         >
                                             <option value="efectivo">💵 Efectivo</option>
-                                            <option value="tarjeta_debito">💳 Tarjeta de Débito</option>
-                                            <option value="tarjeta_credito">💳 Tarjeta de Crédito</option>
+                                            <option value="tarjeta_debito">💳 T. Débito</option>
+                                            <option value="tarjeta_credito">💳 T. Crédito</option>
                                             <option value="transferencia">📱 Transferencia</option>
                                             <option value="yape">📱 Yape</option>
                                             <option value="plin">📱 Plin</option>
@@ -665,10 +708,10 @@ const CuentasPendientes = () => {
                                 </Col>
                                 
                                 {metodoPago === 'efectivo' && (
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label><strong>Monto Recibido:</strong></Form.Label>
-                                            <InputGroup>
+                                    <Col xs={12} md={6} className="mb-3">
+                                        <Form.Group>
+                                            <Form.Label className="fw-bold small">Monto Recibido:</Form.Label>
+                                            <InputGroup size="sm">
                                                 <InputGroup.Text>S/</InputGroup.Text>
                                                 <Form.Control
                                                     type="number"

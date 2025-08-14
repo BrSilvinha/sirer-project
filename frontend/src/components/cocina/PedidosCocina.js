@@ -263,31 +263,38 @@ const PedidosCocina = () => {
             {/* Header con estadísticas */}
             <Row className="mb-4">
                 <Col>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h2 className="mb-1">
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+                        <div className="mb-3 mb-md-0">
+                            <h2 className="mb-1 fs-3 fs-md-2">
                                 <i className="fas fa-fire text-warning me-2"></i>
-                                Cocina - Pedidos Activos
+                                <span className="d-none d-sm-inline">Cocina - Pedidos Activos</span>
+                                <span className="d-sm-none">Cocina</span>
                             </h2>
-                            <p className="text-muted mb-0">
-                                Gestiona todos los pedidos en preparación
+                            <p className="text-muted mb-0 small">
+                                <span className="d-none d-sm-inline">Gestiona todos los pedidos en preparación</span>
+                                <span className="d-sm-none">Pedidos en preparación</span>
                             </p>
                         </div>
                         
-                        <div className="d-flex gap-2">
+                        <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
                             <Button
                                 variant="outline-info"
                                 size="sm"
                                 onClick={() => setShowDisponibilidadModal(true)}
+                                className="w-100 w-sm-auto"
                             >
                                 <i className="fas fa-utensils me-1"></i>
-                                Productos
+                                <span className="d-none d-sm-inline">Productos</span>
+                                <span className="d-sm-none">Productos</span>
                             </Button>
                             
-                            <Dropdown>
-                                <Dropdown.Toggle variant="outline-secondary" size="sm">
+                            <Dropdown className="w-100 w-sm-auto">
+                                <Dropdown.Toggle variant="outline-secondary" size="sm" className="w-100">
                                     <i className="fas fa-filter me-1"></i>
-                                    {filtroEstado === 'activos' ? 'Activos' : 'Todos'}
+                                    <span className="d-none d-sm-inline">
+                                        {filtroEstado === 'activos' ? 'Activos' : 'Todos'}
+                                    </span>
+                                    <span className="d-sm-none">Filtro</span>
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     <Dropdown.Item onClick={() => setFiltroEstado('activos')}>
@@ -301,20 +308,24 @@ const PedidosCocina = () => {
                                 </Dropdown.Menu>
                             </Dropdown>
                             
-                            <ButtonGroup size="sm">
+                            <ButtonGroup size="sm" className="w-100 w-sm-auto">
                                 <Button 
                                     variant={ordenamiento === 'mas_antiguos' ? 'primary' : 'outline-primary'}
                                     onClick={() => setOrdenamiento('mas_antiguos')}
+                                    className="flex-fill flex-sm-shrink-0"
                                 >
                                     <i className="fas fa-sort-numeric-up me-1"></i>
-                                    Más Antiguos
+                                    <span className="d-none d-md-inline">Más Antiguos</span>
+                                    <span className="d-md-none">Antiguos</span>
                                 </Button>
                                 <Button 
                                     variant={ordenamiento === 'mas_recientes' ? 'primary' : 'outline-primary'}
                                     onClick={() => setOrdenamiento('mas_recientes')}
+                                    className="flex-fill flex-sm-shrink-0"
                                 >
                                     <i className="fas fa-sort-numeric-down me-1"></i>
-                                    Más Recientes
+                                    <span className="d-none d-md-inline">Más Recientes</span>
+                                    <span className="d-md-none">Recientes</span>
                                 </Button>
                             </ButtonGroup>
                         </div>
@@ -322,39 +333,43 @@ const PedidosCocina = () => {
 
                     {/* Estadísticas rápidas */}
                     <Row>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-danger bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-exclamation-circle fa-2x text-danger mb-2"></i>
-                                    <div className="h3 mb-0 text-danger">{estadisticas.nuevos}</div>
-                                    <div className="small text-muted">Pedidos Nuevos</div>
+                                    <i className="fas fa-exclamation-circle fa-lg fa-md-2x text-danger mb-2"></i>
+                                    <div className="h5 h3-md mb-0 text-danger">{estadisticas.nuevos}</div>
+                                    <div className="small text-muted d-none d-sm-block">Pedidos Nuevos</div>
+                                    <div className="small text-muted d-sm-none">Nuevos</div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-fire fa-2x text-warning mb-2"></i>
-                                    <div className="h3 mb-0 text-warning">{estadisticas.en_cocina}</div>
-                                    <div className="small text-muted">En Cocina</div>
+                                    <i className="fas fa-fire fa-lg fa-md-2x text-warning mb-2"></i>
+                                    <div className="h5 h3-md mb-0 text-warning">{estadisticas.en_cocina}</div>
+                                    <div className="small text-muted d-none d-sm-block">En Cocina</div>
+                                    <div className="small text-muted d-sm-none">Cocina</div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-success bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                    <div className="h3 mb-0 text-success">{estadisticas.preparados}</div>
-                                    <div className="small text-muted">Preparados</div>
+                                    <i className="fas fa-check-circle fa-lg fa-md-2x text-success mb-2"></i>
+                                    <div className="h5 h3-md mb-0 text-success">{estadisticas.preparados}</div>
+                                    <div className="small text-muted d-none d-sm-block">Preparados</div>
+                                    <div className="small text-muted d-sm-none">Listos</div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={3}>
+                        <Col xs={6} md={3} className="mb-3">
                             <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
                                 <Card.Body className="text-center py-3">
-                                    <i className="fas fa-clipboard-list fa-2x text-primary mb-2"></i>
-                                    <div className="h3 mb-0 text-primary">{estadisticas.total_activos}</div>
-                                    <div className="small text-muted">Total Activos</div>
+                                    <i className="fas fa-clipboard-list fa-lg fa-md-2x text-primary mb-2"></i>
+                                    <div className="h5 h3-md mb-0 text-primary">{estadisticas.total_activos}</div>
+                                    <div className="small text-muted d-none d-sm-block">Total Activos</div>
+                                    <div className="small text-muted d-sm-none">Total</div>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -380,7 +395,7 @@ const PedidosCocina = () => {
             ) : (
                 <Row>
                     {pedidos.map((pedido) => (
-                        <Col lg={4} md={6} key={pedido.id} className="mb-4">
+                        <Col xs={12} sm={6} lg={4} key={pedido.id} className="mb-4">
                             <Card 
                                 className={`h-100 border-0 shadow-sm border-${getEstadoColor(pedido.estado)} border-3`}
                                 style={{ 
@@ -424,14 +439,16 @@ const PedidosCocina = () => {
                                             </span>
                                         </div>
 
-                                        <div className="bg-light p-3 rounded">
+                                        <div className="bg-light p-2 p-md-3 rounded">
                                             {pedido.detalles?.map((detalle, index) => (
                                                 <div key={index} className="d-flex justify-content-between align-items-center mb-1">
-                                                    <div>
+                                                    <div className="flex-grow-1 me-2">
                                                         <strong>{detalle.cantidad}x</strong>{' '}
-                                                        <span className="text-dark">{detalle.producto?.nombre}</span>
+                                                        <span className="text-dark text-truncate d-inline-block" style={{ maxWidth: '120px' }}>
+                                                            {detalle.producto?.nombre}
+                                                        </span>
                                                     </div>
-                                                    <small className="text-muted">
+                                                    <small className="text-muted text-nowrap">
                                                         ${parseFloat(detalle.subtotal || 0).toFixed(2)}
                                                     </small>
                                                 </div>
@@ -455,17 +472,19 @@ const PedidosCocina = () => {
                                     )}
 
                                     <div className="mb-3">
-                                        <div className="d-flex justify-content-between">
+                                        <div className="d-flex justify-content-between align-items-center">
                                             <strong className="text-muted small">MOZO:</strong>
-                                            <span>{pedido.mozo?.nombre || 'N/A'}</span>
+                                            <span className="text-truncate ms-2" style={{ maxWidth: '120px' }}>
+                                                {pedido.mozo?.nombre || 'N/A'}
+                                            </span>
                                         </div>
-                                        <div className="d-flex justify-content-between">
+                                        <div className="d-flex justify-content-between align-items-center">
                                             <strong className="text-muted small">TOTAL:</strong>
                                             <span className="h6 text-success mb-0">
                                                 ${parseFloat(pedido.total || 0).toFixed(2)}
                                             </span>
                                         </div>
-                                        <div className="d-flex justify-content-between">
+                                        <div className="d-flex justify-content-between align-items-center d-none d-sm-flex">
                                             <strong className="text-muted small">HORA:</strong>
                                             <span>{new Date(pedido.created_at).toLocaleTimeString()}</span>
                                         </div>
@@ -523,6 +542,7 @@ const PedidosCocina = () => {
                 show={showDisponibilidadModal} 
                 onHide={() => setShowDisponibilidadModal(false)} 
                 size="lg"
+                fullscreen="sm-down"
             >
                 <Modal.Header closeButton>
                     <Modal.Title>
@@ -537,24 +557,34 @@ const PedidosCocina = () => {
                     
                     <Row>
                         {productos.map((producto) => (
-                            <Col lg={6} key={producto.id} className="mb-3">
+                            <Col xs={12} sm={6} lg={6} key={producto.id} className="mb-3">
                                 <Card className={`border-0 shadow-sm ${
                                     producto.disponible ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'
                                 }`}>
-                                    <Card.Body>
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 className="mb-1">{producto.nombre}</h6>
+                                    <Card.Body className="p-3 p-sm-4">
+                                        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                                            <div className="mb-2 mb-sm-0 flex-grow-1">
+                                                <h6 className="mb-1 text-truncate">{producto.nombre}</h6>
                                                 <small className="text-muted">
-                                                    {producto.categoria?.nombre} - ${producto.precio}
+                                                    <span className="d-none d-sm-inline">
+                                                        {producto.categoria?.nombre} - ${producto.precio}
+                                                    </span>
+                                                    <span className="d-sm-none">
+                                                        ${producto.precio}
+                                                    </span>
                                                 </small>
                                             </div>
-                                            <div className="d-flex align-items-center gap-2">
+                                            <div className="d-flex align-items-center gap-2 w-100 w-sm-auto">
                                                 <Badge 
                                                     bg={producto.disponible ? 'success' : 'danger'}
-                                                    className="px-2 py-1"
+                                                    className="px-2 py-1 flex-grow-1 flex-sm-shrink-0 text-center"
                                                 >
-                                                    {producto.disponible ? 'Disponible' : 'Agotado'}
+                                                    <span className="d-none d-sm-inline">
+                                                        {producto.disponible ? 'Disponible' : 'Agotado'}
+                                                    </span>
+                                                    <span className="d-sm-none">
+                                                        {producto.disponible ? 'OK' : 'X'}
+                                                    </span>
                                                 </Badge>
                                                 <Button
                                                     variant={producto.disponible ? 'outline-danger' : 'outline-success'}
@@ -563,6 +593,7 @@ const PedidosCocina = () => {
                                                         producto.id,
                                                         !producto.disponible
                                                     )}
+                                                    className="flex-shrink-0"
                                                 >
                                                     <i className={`fas ${
                                                         producto.disponible ? 'fa-times' : 'fa-check'
