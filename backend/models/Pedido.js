@@ -22,7 +22,7 @@ const Pedido = sequelize.define('Pedido', {
         }
     },
     estado: {
-        type: DataTypes.ENUM('nuevo', 'en_cocina', 'preparado', 'entregado', 'pagado'),
+        type: DataTypes.ENUM('nuevo', 'preparando', 'listo', 'entregado', 'pagado', 'cancelado'),
         defaultValue: 'nuevo'
     },
     total: {

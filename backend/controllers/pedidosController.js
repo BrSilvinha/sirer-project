@@ -181,7 +181,7 @@ const obtenerPedidosCocina = async (req, res) => {
         const pedidos = await Pedido.findAll({
             where: {
                 estado: {
-                    [Op.in]: ['nuevo', 'en_cocina']
+                    [Op.in]: ['nuevo', 'preparando']
                 }
             },
             include: [
@@ -406,7 +406,7 @@ const cambiarEstadoPedido = async (req, res) => {
         const { id } = req.params;
         const { estado } = req.body;
 
-        const estadosValidos = ['nuevo', 'en_cocina', 'preparado', 'entregado', 'pagado'];
+        const estadosValidos = ['nuevo', 'preparando', 'listo', 'entregado', 'pagado'];
         
         if (!estadosValidos.includes(estado)) {
             return res.status(400).json({
@@ -451,7 +451,7 @@ const cambiarEstadoPedido = async (req, res) => {
             console.log(`📡 Emitiendo evento por cambio de estado: ${estadoAnterior} → ${estado}`);
 
             switch (estado) {
-                case 'en_cocina':
+                case 'preparando':
                     // Notificar que pedido fue tomado por cocina
                     req.io.to('mozo').emit('pedido-tomado-cocina', {
                         pedido_id: pedido.id,
@@ -460,9 +460,9 @@ const cambiarEstadoPedido = async (req, res) => {
                     });
                     break;
 
-                case 'preparado':
+                case 'listo':
                     // Notificar a mozos que pedido está listo
-                    req.io.to('mozo').emit('pedido-preparado', {
+                    req.io.to('mozo').emit('pedido-listo', {
                         pedido: pedido.toJSON(),
                         estadoAnterior,
                         timestamp: new Date().toISOString()
@@ -1024,7 +1024,7 @@ const agregarProductosPedido = async (req, res) => {
         const nuevoTotal = parseFloat(pedido.total) + totalAdicional;
         await pedido.update({ 
             total: nuevoTotal,
-            estado: pedido.estado === 'entregado' ? 'en_cocina' : pedido.estado // Si estaba entregado, volver a cocina
+            estado: pedido.estado === 'entregado' ? 'preparando' : pedido.estado // Si estaba entregado, volver a cocina
         });
 
         // Obtener pedido actualizado
