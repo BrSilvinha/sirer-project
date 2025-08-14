@@ -78,9 +78,11 @@ const startServer = async () => {
         // Probar conexión a la base de datos
         await testConnection();
         
-        // Sincronizar modelos 
-        await sequelize.sync({ alter: false });
-        console.log('📊 Modelos sincronizados con la base de datos');
+        // Sincronizar modelos (solo en desarrollo)
+        if (process.env.NODE_ENV === 'development') {
+            await sequelize.sync({ alter: false });
+            console.log('📊 Modelos sincronizados con la base de datos');
+        }
 
         const PORT = process.env.PORT || 5000;
         
