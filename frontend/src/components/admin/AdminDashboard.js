@@ -60,17 +60,31 @@ const AdminHome = () => {
                 mesasPromise
             ]);
 
-            // Establecer datos o usar fallback
-            setDashboardData(dashboardResponse.data.data || generateFallbackDashboard());
-            setMesasStats(mesasResponse.data.data || generateFallbackMesasStats());
+            // Establecer datos reales solamente
+            setDashboardData(dashboardResponse.data.data || {
+                resumen: { ventas_hoy: "0.00", pedidos_hoy: 0, promedio_por_pedido: "0.00" },
+                pedidos_por_estado: [],
+                productos_mas_vendidos: [],
+                mozos_activos: []
+            });
+            setMesasStats(mesasResponse.data.data || {
+                total: 0, libres: 0, ocupadas: 0, cuenta_solicitada: 0, porcentaje_ocupacion: 0
+            });
 
         } catch (err) {
             console.error('Error general fetching dashboard data:', err);
             setError('Error al cargar los datos del dashboard');
             
-            // Usar datos de fallback en caso de error general
-            setDashboardData(generateFallbackDashboard());
-            setMesasStats(generateFallbackMesasStats());
+            // Usar datos vacíos en caso de error general
+            setDashboardData({
+                resumen: { ventas_hoy: "0.00", pedidos_hoy: 0, promedio_por_pedido: "0.00" },
+                pedidos_por_estado: [],
+                productos_mas_vendidos: [],
+                mozos_activos: []
+            });
+            setMesasStats({
+                total: 0, libres: 0, ocupadas: 0, cuenta_solicitada: 0, porcentaje_ocupacion: 0
+            });
         } finally {
             setLoading(false);
         }

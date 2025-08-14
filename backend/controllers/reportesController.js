@@ -21,87 +21,18 @@ const procesarFechas = (fecha_desde, fecha_hasta) => {
     return { fechaInicio, fechaFin };
 };
 
-// ✅ FUNCIÓN AUXILIAR: Generar datos de respaldo si no hay datos reales
-const generarDatosRespaldo = (tipo, fechaInicio, fechaFin) => {
-    const dias = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24));
-    
-    switch (tipo) {
-        case 'ventas':
-            return {
-                resumen_total: {
-                    total_ventas: (Math.random() * 1000 + 500).toFixed(2),
-                    total_pedidos: Math.floor(Math.random() * 20 + 10),
-                    promedio_pedido: (Math.random() * 50 + 25).toFixed(2)
-                },
-                ventas_por_periodo: Array.from({ length: dias }, (_, i) => {
-                    const fecha = new Date(fechaInicio);
-                    fecha.setDate(fecha.getDate() + i);
-                    const ventas = Math.random() * 200 + 100;
-                    const pedidos = Math.floor(Math.random() * 8 + 3);
-                    return {
-                        periodo: fecha.toISOString().split('T')[0],
-                        total_ventas: ventas.toFixed(2),
-                        total_pedidos: pedidos,
-                        promedio_pedido: (ventas / pedidos).toFixed(2)
-                    };
-                })
-            };
-        case 'productos':
-            return {
-                productos: [
-                    {
-                        producto: { id: 1, nombre: 'Pizza Margarita', categoria: { nombre: 'Pizzas' } },
-                        total_vendido: Math.floor(Math.random() * 20 + 10),
-                        ingresos_totales: (Math.random() * 300 + 150).toFixed(2),
-                        veces_pedido: Math.floor(Math.random() * 15 + 5),
-                        promedio_por_pedido: (Math.random() * 3 + 1).toFixed(2)
-                    },
-                    {
-                        producto: { id: 2, nombre: 'Hamburguesa Clásica', categoria: { nombre: 'Hamburguesas' } },
-                        total_vendido: Math.floor(Math.random() * 15 + 8),
-                        ingresos_totales: (Math.random() * 250 + 120).toFixed(2),
-                        veces_pedido: Math.floor(Math.random() * 12 + 4),
-                        promedio_por_pedido: (Math.random() * 2.5 + 1.2).toFixed(2)
-                    },
-                    {
-                        producto: { id: 3, nombre: 'Coca Cola', categoria: { nombre: 'Bebidas' } },
-                        total_vendido: Math.floor(Math.random() * 30 + 15),
-                        ingresos_totales: (Math.random() * 150 + 75).toFixed(2),
-                        veces_pedido: Math.floor(Math.random() * 20 + 8),
-                        promedio_por_pedido: (Math.random() * 2 + 1).toFixed(2)
-                    }
-                ]
-            };
-        case 'mozos':
-            return {
-                mozos: [
-                    {
-                        mozo: { id: 1, nombre: 'Carlos Rodríguez', email: 'carlos@sirer.com' },
-                        total_pedidos: Math.floor(Math.random() * 15 + 8),
-                        total_ventas: (Math.random() * 500 + 300).toFixed(2),
-                        promedio_por_pedido: (Math.random() * 40 + 25).toFixed(2)
-                    },
-                    {
-                        mozo: { id: 2, nombre: 'Ana García', email: 'ana@sirer.com' },
-                        total_pedidos: Math.floor(Math.random() * 12 + 6),
-                        total_ventas: (Math.random() * 400 + 250).toFixed(2),
-                        promedio_por_pedido: (Math.random() * 35 + 20).toFixed(2)
-                    }
-                ]
-            };
-        case 'mesas':
-            return {
-                mesas: Array.from({ length: 8 }, (_, i) => ({
-                    mesa: { id: i + 1, numero: i + 1, capacidad: Math.floor(Math.random() * 4 + 2) * 2 },
-                    total_pedidos: Math.floor(Math.random() * 10 + 3),
-                    ingresos_totales: (Math.random() * 300 + 150).toFixed(2),
-                    promedio_por_pedido: (Math.random() * 45 + 25).toFixed(2),
-                    ingresos_por_capacidad: (Math.random() * 80 + 40).toFixed(2)
-                }))
-            };
-        default:
-            return {};
-    }
+// ✅ FUNCIÓN AUXILIAR: Generar estructura vacía para datos reales solamente
+const generarEstructuraVacia = () => {
+    return {
+        resumen: {
+            ventas_hoy: "0.00",
+            pedidos_hoy: 0,
+            promedio_por_pedido: "0.00"
+        },
+        pedidos_por_estado: [],
+        productos_mas_vendidos: [],
+        mozos_activos: []
+    };
 };
 
 // Dashboard principal con métricas del día
@@ -267,12 +198,8 @@ const obtenerDashboard = async (req, res) => {
             },
             pedidos_por_estado: pedidosPorEstado,
             estado_mesas: estadoMesas,
-            productos_mas_vendidos: productosMasVendidos.length > 0 ? 
-                productosMasVendidos : 
-                generarDatosRespaldo('productos').productos.slice(0, 5),
-            mozos_activos: mozosActivos.length > 0 ? 
-                mozosActivos : 
-                generarDatosRespaldo('mozos').mozos
+            productos_mas_vendidos: productosMasVendidos,
+            mozos_activos: mozosActivos
         };
 
         console.log('✅ Dashboard generado exitosamente');
@@ -289,24 +216,14 @@ const obtenerDashboard = async (req, res) => {
         const dashboardRespaldo = {
             fecha: fechaHoy,
             resumen: {
-                ventas_hoy: "650.75",
-                pedidos_hoy: 18,
-                promedio_por_pedido: "36.15"
+                ventas_hoy: "0.00",
+                pedidos_hoy: 0,
+                promedio_por_pedido: "0.00"
             },
-            pedidos_por_estado: [
-                { estado: 'nuevo', cantidad: 3 },
-                { estado: 'en_cocina', cantidad: 2 },
-                { estado: 'preparado', cantidad: 1 },
-                { estado: 'entregado', cantidad: 5 },
-                { estado: 'pagado', cantidad: 7 }
-            ],
-            estado_mesas: [
-                { estado: 'libre', cantidad: 6 },
-                { estado: 'ocupada', cantidad: 4 },
-                { estado: 'cuenta_solicitada', cantidad: 2 }
-            ],
-            productos_mas_vendidos: generarDatosRespaldo('productos').productos.slice(0, 5),
-            mozos_activos: generarDatosRespaldo('mozos').mozos
+            pedidos_por_estado: [],
+            estado_mesas: { libres: 0, ocupadas: 0, cuenta_solicitada: 0 },
+            productos_mas_vendidos: [],
+            mozos_activos: []
         };
 
         res.json({
@@ -399,7 +316,7 @@ const obtenerReporteVentas = async (req, res) => {
                 promedio_pedido: promedioGeneral.toFixed(2)
             },
             ventas_por_periodo: ventasArray.length > 0 ? ventasArray : 
-                generarDatosRespaldo('ventas', fechaInicio, fechaFin).ventas_por_periodo
+                []
         };
 
         console.log('✅ Reporte de ventas generado');
@@ -511,7 +428,7 @@ const obtenerProductosMasVendidos = async (req, res) => {
                 desde: fechaInicio.toISOString().split('T')[0],
                 hasta: fechaFin.toISOString().split('T')[0]
             },
-            productos: productos.length > 0 ? productos : generarDatosRespaldo('productos').productos
+            productos: productos.length > 0 ? productos : []
         };
 
         console.log('✅ Reporte de productos generado');
@@ -608,7 +525,7 @@ const obtenerReporteMozos = async (req, res) => {
                 desde: fechaInicio.toISOString().split('T')[0],
                 hasta: fechaFin.toISOString().split('T')[0]
             },
-            mozos: mozos.length > 0 ? mozos : generarDatosRespaldo('mozos').mozos
+            mozos: mozos.length > 0 ? mozos : []
         };
 
         console.log('✅ Reporte de mozos generado');
@@ -706,7 +623,7 @@ const obtenerReporteMesas = async (req, res) => {
                 desde: fechaInicio.toISOString().split('T')[0],
                 hasta: fechaFin.toISOString().split('T')[0]
             },
-            mesas: mesas.length > 0 ? mesas : generarDatosRespaldo('mesas').mesas
+            mesas: mesas.length > 0 ? mesas : []
         };
 
         console.log('✅ Reporte de mesas generado');
