@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: sirer-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  - type: web
+    name: sirer-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    rootDir: frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false
