@@ -5,6 +5,7 @@ import {
 } from 'react-bootstrap';
 import { pedidosService, mesasService } from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
+import { playCashierSound, playPaymentSound } from '../../utils/audioNotifications';
 import toast from 'react-hot-toast';
 
 const CuentasPendientes = () => {
@@ -175,13 +176,21 @@ const CuentasPendientes = () => {
         };
 
         const handlePedidoListoCobrar = (data) => {
-            toast.success(`Mesa ${data.mesa} lista para cobrar - ${parseFloat(data.total).toFixed(2)}`);
+            playCashierSound();
+            toast.success(`Mesa ${data.mesa} lista para cobrar - S/ ${parseFloat(data.total).toFixed(2)}`, {
+                icon: '💰',
+                duration: 5000
+            });
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
 
         const handleCuentaSolicitada = (data) => {
-            toast.success(`Mesa ${data.mesa} solicita la cuenta`);
+            playCashierSound();
+            toast.success(`Mesa ${data.mesa} solicita la cuenta`, {
+                icon: '🧾',
+                duration: 4000
+            });
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };
@@ -200,7 +209,11 @@ const CuentasPendientes = () => {
         };
 
         const handleMesaLiberada = (data) => {
-            toast.success(`Mesa ${data.mesa} liberada - Pago procesado`);
+            playPaymentSound();
+            toast.success(`Mesa ${data.mesa} liberada - Pago procesado S/ ${data.total}`, {
+                icon: '✅',
+                duration: 4000
+            });
             // ✅ ACTUALIZACIÓN INMEDIATA
             fetchMesasConCuentas();
         };

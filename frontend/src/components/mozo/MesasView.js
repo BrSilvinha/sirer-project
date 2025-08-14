@@ -5,6 +5,7 @@ import {
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { mesasService, pedidosService } from '../../services/api';
+import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
 
 const MesasView = () => {
@@ -19,6 +20,7 @@ const MesasView = () => {
     const [filtroEstado, setFiltroEstado] = useState('todos');
     
     const navigate = useNavigate();
+    const { on, off } = useSocket();
 
     const fetchMesas = useCallback(async () => {
         try {
@@ -60,6 +62,48 @@ const MesasView = () => {
         
         return () => clearInterval(interval);
     }, [fetchMesas, fetchEstadisticas]);
+
+    // ✅ Listeners de WebSocket para actualizaciones en tiempo real
+    useEffect(() => {
+        const handleMesaLiberada = (data) => {
+            console.log('🏠 Mesa liberada:', data);
+            toast.success(`Mesa ${data.mesa} liberada - Total: S/ ${data.total}`);
+            fetchMesas();
+            fetchEstadisticas();
+        };
+
+        const handleMesaEstadoActualizada = (data) => {
+            console.log('🔄 Mesa estado actualizado:', data);
+            fetchMesas();
+            fetchEstadisticas();
+        };
+
+        const handleNuevoPedido = (data) => {
+            console.log('📝 Nuevo pedido:', data);
+            fetchMesas();
+            fetchEstadisticas();
+        };
+
+        const handlePedidoActualizado = (data) => {
+            console.log('📋 Pedido actualizado:', data);
+            fetchMesas();
+            fetchEstadisticas();
+        };
+
+        // Registrar listeners
+        on('mesa-liberada', handleMesaLiberada);
+        on('mesa-estado-actualizada', handleMesaEstadoActualizada);
+        on('nuevo-pedido', handleNuevoPedido);
+        on('pedido-actualizado', handlePedidoActualizado);
+
+        return () => {
+            // Cleanup listeners
+            off('mesa-liberada', handleMesaLiberada);
+            off('mesa-estado-actualizada', handleMesaEstadoActualizada);
+            off('nuevo-pedido', handleNuevoPedido);
+            off('pedido-actualizado', handlePedidoActualizado);
+        };
+    }, [on, off, fetchMesas, fetchEstadisticas]);
 
     const fetchPedidosMesa = useCallback(async (mesaId) => {
         try {

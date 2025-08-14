@@ -4,6 +4,8 @@ import {
     Spinner, Modal, ButtonGroup, Dropdown
 } from 'react-bootstrap';
 import { pedidosService, productosService } from '../../services/api';
+import { useSocket } from '../../context/SocketContext';
+import { playNewOrderSound, playOrderReadySound } from '../../utils/audioNotifications';
 import toast from 'react-hot-toast';
 
 const PedidosCocina = () => {
@@ -21,9 +23,11 @@ const PedidosCocina = () => {
         total_activos: 0
     });
 
-    // Sonidos de notificación (simulados con logs por ahora)
+    const { on, off } = useSocket();
+
+    // Sonidos de notificación
     const playNotificationSound = useCallback(() => {
-        // En producción, aquí iría la lógica para reproducir sonido
+        playNewOrderSound();
         console.log('🔔 Nuevo pedido recibido - Sonido de notificación');
     }, []);
 
@@ -98,6 +102,50 @@ const PedidosCocina = () => {
         const interval = setInterval(fetchPedidos, 10000);
         return () => clearInterval(interval);
     }, [fetchPedidos, fetchProductos]);
+
+    // ✅ Listeners de WebSocket para sonidos y actualizaciones
+    useEffect(() => {
+        const handleNuevoPedido = (data) => {
+            console.log('🍽️ Nuevo pedido para cocina:', data);
+            playNewOrderSound();
+            toast.success(`Nuevo pedido Mesa ${data.mesa_numero}`, {
+                icon: '🍽️',
+                duration: 5000
+            });
+            fetchPedidos();
+        };
+
+        const handlePedidoActualizado = (data) => {
+            console.log('📋 Pedido actualizado en cocina:', data);
+            if (data.estado === 'preparando') {
+                playOrderReadySound();
+            }
+            fetchPedidos();
+        };
+
+        const handlePedidoListo = (data) => {
+            console.log('✅ Pedido listo:', data);
+            playOrderReadySound();
+            toast.success(`Pedido Mesa ${data.mesa_numero} listo para entregar`, {
+                icon: '✅',
+                duration: 4000
+            });
+        };
+
+        // Registrar listeners
+        on('nuevo-pedido', handleNuevoPedido);
+        on('pedido-actualizado', handlePedidoActualizado);
+        on('pedido-listo', handlePedidoListo);
+        on('pedido-cocina', handleNuevoPedido); // Alias específico para cocina
+
+        return () => {
+            // Cleanup listeners
+            off('nuevo-pedido', handleNuevoPedido);
+            off('pedido-actualizado', handlePedidoActualizado);
+            off('pedido-listo', handlePedidoListo);
+            off('pedido-cocina', handleNuevoPedido);
+        };
+    }, [on, off, fetchPedidos]);
 
     const handleCambiarEstadoPedido = useCallback(async (pedidoId, nuevoEstado) => {
         setActualizandoEstado(pedidoId);
