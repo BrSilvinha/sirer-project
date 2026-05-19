@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productosService, pedidosService, mesasService } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const Spin = ({ color = '#6366f1' }) => (
@@ -16,6 +17,7 @@ const Spin = ({ color = '#6366f1' }) => (
 const PedidosForm = () => {
   const { mesaId } = useParams();
   const navigate = useNavigate();
+  const { C } = useTheme();
 
   const [mesa, setMesa] = useState(null);
   const [grupos, setGrupos] = useState([]);     // [{ categoria, productos[] }]
@@ -76,7 +78,7 @@ const PedidosForm = () => {
         productos: carrito.map(i => ({ producto_id: i.id, cantidad: i.cant })),
         observaciones: obs,
       });
-      toast.success('¡Pedido enviado a cocina! 🍗');
+      toast.success('¡Pedido creado exitosamente! 🍗');
       navigate('/dashboard/mozo');
     } catch (e) {
       toast.error(e.response?.data?.error || 'Error al enviar el pedido');
@@ -102,16 +104,16 @@ const PedidosForm = () => {
           onClick={() => navigate('/dashboard/mozo')}
           style={{
             width: 40, height: 40, borderRadius: 12,
-            background: '#fff', border: '1.5px solid #e5e7eb',
+            background: C.surface, border: `1.5px solid ${C.border}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, cursor: 'pointer', color: '#374151', flexShrink: 0,
+            fontSize: 18, cursor: 'pointer', color: C.text, flexShrink: 0,
           }}
         >
           ←
         </button>
         <div>
-          <div style={{ fontWeight: 800, fontSize: 20, color: '#1a1a2e' }}>Mesa {mesa?.numero}</div>
-          <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>Selecciona los productos</div>
+          <div style={{ fontWeight: 800, fontSize: 20, color: C.text }}>Mesa {mesa?.numero}</div>
+          <div style={{ fontSize: 12, color: C.textMuted, marginTop: 1 }}>Selecciona los productos</div>
         </div>
       </div>
 
@@ -146,19 +148,19 @@ const PedidosForm = () => {
               <div
                 key={p.id}
                 style={{
-                  background: '#fff', borderRadius: 16,
+                  background: C.surface, borderRadius: 16,
                   padding: '14px 12px',
-                  border: enCarrito ? '2px solid #6366f1' : '2px solid #f3f4f6',
+                  border: enCarrito ? '2px solid #6366f1' : `2px solid ${C.border}`,
                   boxShadow: enCarrito ? '0 2px 10px #6366f118' : '0 1px 6px rgba(0,0,0,0.06)',
                   display: 'flex', flexDirection: 'column', gap: 6,
                   transition: 'all 0.15s',
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', lineHeight: 1.3 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: C.text, lineHeight: 1.3 }}>
                   {p.nombre}
                 </div>
                 {p.descripcion && (
-                  <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.4 }}>
                     {p.descripcion}
                   </div>
                 )}
@@ -225,8 +227,8 @@ const PedidosForm = () => {
       {showCarrito && (
         <Overlay onClose={() => setShowCarrito(false)}>
           <SheetHandle />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid #f0f2f5' }}>
-            <span style={{ fontWeight: 800, fontSize: 18 }}>Tu pedido</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${C.borderLight}` }}>
+            <span style={{ fontWeight: 800, fontSize: 18, color: C.text }}>Tu pedido</span>
             <button onClick={() => setShowCarrito(false)} style={closeBtn}>×</button>
           </div>
 
@@ -234,11 +236,11 @@ const PedidosForm = () => {
             {carrito.map(item => (
               <div key={item.id} style={{
                 display: 'flex', alignItems: 'center', gap: 12,
-                padding: '10px 0', borderBottom: '1px solid #f9fafb',
+                padding: '10px 0', borderBottom: `1px solid ${C.borderLight}`,
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>{item.nombre}</div>
-                  <div style={{ fontSize: 12, color: '#9ca3af' }}>S/ {item.precio.toFixed(2)} c/u</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{item.nombre}</div>
+                  <div style={{ fontSize: 12, color: C.textMuted }}>S/ {item.precio.toFixed(2)} c/u</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <CntBtn color="#6366f1" onClick={() => cambiar(item.id, -1)}>−</CntBtn>
@@ -252,29 +254,29 @@ const PedidosForm = () => {
             ))}
 
             <textarea
-              placeholder="Observaciones para cocina (opcional)..."
+              placeholder="Observaciones del pedido (opcional)..."
               value={obs}
               onChange={e => setObs(e.target.value)}
               rows={2}
               style={{
                 width: '100%', marginTop: 14,
-                border: '1.5px solid #e5e7eb', borderRadius: 12,
-                padding: '10px 14px', fontSize: 13, color: '#374151',
-                resize: 'none', outline: 'none', background: '#f9fafb',
+                border: `1.5px solid ${C.border}`, borderRadius: 12,
+                padding: '10px 14px', fontSize: 13, color: C.text,
+                resize: 'none', outline: 'none', background: C.inputBg,
               }}
             />
 
             <div style={{
               display: 'flex', justifyContent: 'space-between',
               fontWeight: 800, fontSize: 18, margin: '14px 0',
-              color: '#1a1a2e',
+              color: C.text,
             }}>
               <span>Total:</span>
               <span style={{ color: '#16a34a' }}>S/ {total.toFixed(2)}</span>
             </div>
           </div>
 
-          <div style={{ padding: '12px 20px 24px', borderTop: '1px solid #f0f2f5' }}>
+          <div style={{ padding: '12px 20px 24px', borderTop: `1px solid ${C.borderLight}` }}>
             <button
               onClick={() => { setShowCarrito(false); setShowConfirm(true); }}
               style={{
@@ -298,24 +300,24 @@ const PedidosForm = () => {
           padding: 20, animation: 'fadeIn 0.18s ease',
         }}>
           <div style={{
-            background: '#fff', borderRadius: 24, padding: '28px 22px',
+            background: C.surface, borderRadius: 24, padding: '28px 22px',
             width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
           }}>
-            <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 4, color: '#1a1a2e' }}>
+            <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 4, color: C.text }}>
               Confirmar pedido
             </h3>
-            <p style={{ color: '#9ca3af', fontSize: 13, marginBottom: 18 }}>
+            <p style={{ color: C.textMuted, fontSize: 13, marginBottom: 18 }}>
               Mesa {mesa?.numero} · {totalItems} items
             </p>
 
             {carrito.map(i => (
-              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 7, color: '#374151' }}>
+              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 7, color: C.textSub }}>
                 <span>{i.cant}× {i.nombre}</span>
                 <span style={{ fontWeight: 700 }}>S/ {(i.precio * i.cant).toFixed(2)}</span>
               </div>
             ))}
 
-            <div style={{ borderTop: '2px solid #f0f2f5', margin: '14px 0 20px', paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 17 }}>
+            <div style={{ borderTop: `2px solid ${C.borderLight}`, margin: '14px 0 20px', paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 17, color: C.text }}>
               <span>Total:</span>
               <span style={{ color: '#16a34a' }}>S/ {total.toFixed(2)}</span>
             </div>
@@ -324,9 +326,9 @@ const PedidosForm = () => {
               <button
                 onClick={() => setShowConfirm(false)}
                 style={{
-                  flex: 1, padding: 15, background: '#f3f4f6',
+                  flex: 1, padding: 15, background: C.surfaceAlt2,
                   border: 'none', borderRadius: 14, fontWeight: 700,
-                  fontSize: 15, cursor: 'pointer', color: '#374151',
+                  fontSize: 15, cursor: 'pointer', color: C.text,
                 }}
               >
                 Cancelar
@@ -357,13 +359,15 @@ const PedidosForm = () => {
 };
 
 /* ── Helpers de UI ── */
-const Tab = ({ label, active, onClick }) => (
+const Tab = ({ label, active, onClick }) => {
+  const { C } = useTheme();
+  return (
   <button
     onClick={onClick}
     style={{
       padding: '8px 18px', borderRadius: 20, border: 'none',
-      background: active ? '#6366f1' : '#fff',
-      color: active ? '#fff' : '#6b7280',
+      background: active ? '#6366f1' : C.surface,
+      color: active ? '#fff' : C.textSub,
       fontWeight: active ? 700 : 500,
       fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap',
       boxShadow: active ? '0 2px 10px #6366f130' : '0 1px 4px rgba(0,0,0,0.08)',
@@ -372,7 +376,8 @@ const Tab = ({ label, active, onClick }) => (
   >
     {label}
   </button>
-);
+  );
+};
 
 const CntBtn = ({ color, onClick, children }) => (
   <button
@@ -389,12 +394,14 @@ const CntBtn = ({ color, onClick, children }) => (
   </button>
 );
 
-const Overlay = ({ onClose, children }) => (
+const Overlay = ({ onClose, children }) => {
+  const { C } = useTheme();
+  return (
   <div
     onClick={onClose}
     style={{
       position: 'fixed', inset: 0, zIndex: 1050,
-      background: 'rgba(0,0,0,0.55)',
+      background: C.overlay,
       display: 'flex', alignItems: 'flex-end',
       animation: 'fadeIn 0.2s ease',
     }}
@@ -402,7 +409,7 @@ const Overlay = ({ onClose, children }) => (
     <div
       onClick={e => e.stopPropagation()}
       style={{
-        width: '100%', background: '#fff',
+        width: '100%', background: C.surface,
         borderRadius: '22px 22px 0 0',
         maxHeight: '88vh', display: 'flex', flexDirection: 'column',
         animation: 'slideUp 0.28s ease',
@@ -411,7 +418,8 @@ const Overlay = ({ onClose, children }) => (
       {children}
     </div>
   </div>
-);
+  );
+};
 
 const SheetHandle = () => (
   <div style={{ textAlign: 'center', paddingTop: 10 }}>

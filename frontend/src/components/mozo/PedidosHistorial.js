@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { pedidosService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 /* ── Responsive ── */
@@ -16,7 +17,6 @@ const useIsDesktop = () => {
 
 const ESTADO = {
   nuevo:     { label:'Nuevo',     color:'#3b82f6', bg:'#eff6ff', border:'#bfdbfe', icon:'fa-circle-dot',   gradient:'linear-gradient(135deg,#2563eb,#3b82f6)' },
-  en_cocina: { label:'En Cocina', color:'#d97706', bg:'#fffbeb', border:'#fde68a', icon:'fa-fire',          gradient:'linear-gradient(135deg,#b45309,#f59e0b)' },
   preparado: { label:'Listo',     color:'#16a34a', bg:'#f0fdf4', border:'#86efac', icon:'fa-check-circle', gradient:'linear-gradient(135deg,#15803d,#22c55e)' },
   entregado: { label:'Entregado', color:'#6b7280', bg:'#f9fafb', border:'#d1d5db', icon:'fa-hand-holding', gradient:'linear-gradient(135deg,#4b5563,#6b7280)' },
   pagado:    { label:'Pagado',    color:'#7c3aed', bg:'#f5f3ff', border:'#c4b5fd', icon:'fa-credit-card',  gradient:'linear-gradient(135deg,#6d28d9,#7c3aed)' },
@@ -28,7 +28,16 @@ const CSS = `
   @keyframes spin    { to{transform:rotate(360deg)} }
   @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.5} }
   @keyframes modalIn { from{transform:scale(.96);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 `;
+
+const tiempoDesde = (fecha) => {
+  if (!fecha) return '';
+  const mins = Math.floor((Date.now() - new Date(fecha)) / 60000);
+  if (mins < 1) return 'Ahora';
+  if (mins < 60) return `${mins} min`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+};
 
 const Spin = ({ size=36, color='#dc2626' }) => (
   <div style={{ width:size, height:size, border:`3px solid #f0f2f5`, borderTop:`3px solid ${color}`, borderRadius:'50%', animation:'spin .75s linear infinite', flexShrink:0 }} />
@@ -58,7 +67,6 @@ const useHistorial = (user) => {
       setPedidos(data);
       setStats({
         total:    data.length,
-        proceso:  data.filter(p => ['nuevo','en_cocina','preparado'].includes(p.estado)).length,
         listos:   data.filter(p => p.estado === 'preparado').length,
         ingresos: data.filter(p => p.estado === 'pagado').reduce((s,p)=>s+parseFloat(p.total),0),
       });
@@ -82,6 +90,7 @@ const useHistorial = (user) => {
 
 /* ── Panel de detalle de pedido (reutilizable) ── */
 const DetallePedido = ({ pedido, onClose, onEntregado }) => {
+  const { C } = useTheme();
   if (!pedido) return null;
   const est   = ESTADO[pedido.estado] || { label:pedido.estado, color:'#9ca3af', bg:'#f9fafb', icon:'fa-circle', gradient:'#9ca3af' };
   const hora  = new Date(pedido.created_at).toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
@@ -112,9 +121,9 @@ const DetallePedido = ({ pedido, onClose, onEntregado }) => {
       {/* Chips info */}
       <div style={{ display:'flex', gap:10, marginBottom:16 }}>
         {[{icon:'fa-clock',label:hora},{icon:'fa-calendar',label:fecha},{icon:'fa-box',label:`${pedido.detalles?.length||0} ítems`}].map((c,i)=>(
-          <div key={i} style={{ flex:1, background:'#f8fafc', borderRadius:12, padding:'8px 6px', textAlign:'center', border:'1px solid #e2e8f0' }}>
-            <i className={`fas ${c.icon}`} style={{ color:'#94a3b8', fontSize:13, display:'block', marginBottom:3 }} />
-            <div style={{ fontSize:12, fontWeight:700, color:'#374151' }}>{c.label}</div>
+          <div key={i} style={{ flex:1, background:C.surfaceAlt, borderRadius:12, padding:'8px 6px', textAlign:'center', border:`1px solid ${C.border}` }}>
+            <i className={`fas ${c.icon}`} style={{ color:C.textMuted, fontSize:13, display:'block', marginBottom:3 }} />
+            <div style={{ fontSize:12, fontWeight:700, color:C.textSub }}>{c.label}</div>
           </div>
         ))}
       </div>
@@ -122,14 +131,14 @@ const DetallePedido = ({ pedido, onClose, onEntregado }) => {
       {/* Productos */}
       <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:1, marginBottom:10 }}>PRODUCTOS</div>
       {pedido.detalles?.length>0 ? (
-        <div style={{ background:'#f8fafc', borderRadius:16, border:'1px solid #e2e8f0', overflow:'hidden', marginBottom:14 }}>
+        <div style={{ background:C.surfaceAlt, borderRadius:16, border:`1px solid ${C.border}`, overflow:'hidden', marginBottom:14 }}>
           {pedido.detalles.map((d,i)=>(
-            <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', borderBottom:i<pedido.detalles.length-1?'1px solid #e2e8f0':'none' }}>
+            <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', borderBottom:i<pedido.detalles.length-1?`1px solid ${C.border}`:'none' }}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={{ width:28, height:28, borderRadius:8, background:'#e2e8f0', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#64748b' }}>{d.cantidad}×</div>
-                <span style={{ fontSize:14, color:'#374151', fontWeight:500 }}>{d.producto?.nombre}</span>
+                <div style={{ width:28, height:28, borderRadius:8, background:C.surfaceAlt2, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:C.textMuted }}>{d.cantidad}×</div>
+                <span style={{ fontSize:14, color:C.textSub, fontWeight:500 }}>{d.producto?.nombre}</span>
               </div>
-              <span style={{ fontSize:14, fontWeight:700, color:'#0f172a' }}>S/ {parseFloat(d.subtotal).toFixed(2)}</span>
+              <span style={{ fontSize:14, fontWeight:700, color:C.text }}>S/ {parseFloat(d.subtotal).toFixed(2)}</span>
             </div>
           ))}
         </div>
@@ -156,19 +165,20 @@ const DetallePedido = ({ pedido, onClose, onEntregado }) => {
 ════════════════════════════════════════ */
 
 const Sheet = ({ open, onClose, title, subtitle, children }) => {
+  const { C } = useTheme();
   if(!open) return null;
   return (
     <>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1050, background:'rgba(15,23,42,.65)', backdropFilter:'blur(4px)', animation:'fadeIn .2s ease' }} />
-      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1051, background:'#fff', borderRadius:'24px 24px 0 0', maxHeight:'90vh', display:'flex', flexDirection:'column', animation:'slideUp .3s cubic-bezier(.4,0,.2,1)', boxShadow:'0 -8px 40px rgba(0,0,0,.18)' }}>
-        <div style={{ display:'flex', justifyContent:'center', paddingTop:12 }}><div style={{ width:44, height:5, background:'#e2e8f0', borderRadius:3 }} /></div>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1050, background:C.overlay, backdropFilter:'blur(4px)', animation:'fadeIn .2s ease' }} />
+      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1051, background:C.surface, borderRadius:'24px 24px 0 0', maxHeight:'90vh', display:'flex', flexDirection:'column', animation:'slideUp .3s cubic-bezier(.4,0,.2,1)', boxShadow:'0 -8px 40px rgba(0,0,0,.18)' }}>
+        <div style={{ display:'flex', justifyContent:'center', paddingTop:12 }}><div style={{ width:44, height:5, background:C.border, borderRadius:3 }} /></div>
         {title&&(
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #f1f5f9' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:`1px solid ${C.borderLight}` }}>
             <div>
-              <div style={{ fontWeight:800, fontSize:19, color:'#0f172a' }}>{title}</div>
-              {subtitle&&<div style={{ fontSize:12, color:'#94a3b8', marginTop:2 }}>{subtitle}</div>}
+              <div style={{ fontWeight:800, fontSize:19, color:C.text }}>{title}</div>
+              {subtitle&&<div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>{subtitle}</div>}
             </div>
-            <button onClick={onClose} style={{ width:36, height:36, borderRadius:'50%', background:'#f1f5f9', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b', fontSize:16 }}><i className="fas fa-times" /></button>
+            <button onClick={onClose} style={{ width:36, height:36, borderRadius:'50%', background:C.surfaceAlt2, border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:C.textMuted, fontSize:16 }}><i className="fas fa-times" /></button>
           </div>
         )}
         <div style={{ flex:1, overflowY:'auto', padding:'16px 20px' }}>{children}</div>
@@ -179,45 +189,46 @@ const Sheet = ({ open, onClose, title, subtitle, children }) => {
 };
 
 const PedidoCardMobile = ({ pedido, onClick }) => {
-  const est   = ESTADO[pedido.estado]||{label:pedido.estado,color:'#9ca3af',bg:'#f9fafb',border:'#e2e8f0',icon:'fa-circle'};
-  const hora  = new Date(pedido.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
-  const fecha = new Date(pedido.created_at).toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
+  const est    = ESTADO[pedido.estado]||{label:pedido.estado,color:'#9ca3af',bg:'#f9fafb',border:'#e2e8f0',icon:'fa-circle',gradient:'#9ca3af'};
+  const hora   = new Date(pedido.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+  const tiempo = tiempoDesde(pedido.created_at);
   const [pressed,setPressed]=useState(false);
   const esListo=pedido.estado==='preparado';
+  const { C } = useTheme();
   return (
     <div onClick={onClick} onPointerDown={()=>setPressed(true)} onPointerUp={()=>setPressed(false)} onPointerLeave={()=>setPressed(false)}
-      style={{ background:'#fff', borderRadius:18, marginBottom:10, border:`1.5px solid ${esListo?'#86efac':'#e2e8f0'}`, boxShadow:pressed?'0 1px 4px rgba(0,0,0,.06)':esListo?'0 4px 16px rgba(22,163,74,.14)':'0 2px 10px rgba(0,0,0,.06)', cursor:'pointer', transform:pressed?'scale(.98)':'scale(1)', transition:'transform .1s, box-shadow .1s', overflow:'hidden', display:'flex' }}>
-      <div style={{ width:5, flexShrink:0, background:est.color, borderRadius:'18px 0 0 18px' }} />
-      <div style={{ flex:1, padding:'13px 14px', minWidth:0 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:36, height:36, borderRadius:10, background:est.bg, border:`1.5px solid ${est.border}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              <i className={`fas ${est.icon}`} style={{ color:est.color, fontSize:14 }} />
-            </div>
-            <div>
-              <div style={{ fontWeight:800, fontSize:14, color:'#0f172a', lineHeight:1.2 }}>Mesa {pedido.mesa?.numero}</div>
-              <div style={{ fontSize:12, color:'#94a3b8' }}>Pedido #{pedido.id}</div>
-            </div>
-          </div>
-          <div style={{ textAlign:'right' }}>
+      style={{ background:C.surface, borderRadius:20, marginBottom:10, border:`1.5px solid ${esListo?'#86efac':C.border}`, boxShadow:pressed?'0 1px 4px rgba(0,0,0,.06)':esListo?'0 6px 20px rgba(22,163,74,.16)':'0 2px 12px rgba(0,0,0,.06)', cursor:'pointer', transform:pressed?'scale(.98)':'scale(1)', transition:'transform .1s, box-shadow .1s', overflow:'hidden' }}>
+      {/* Barra de color superior */}
+      <div style={{ height:4, background:est.gradient }} />
+      <div style={{ padding:'13px 16px 14px', display:'flex', alignItems:'center', gap:12 }}>
+        {/* Ícono */}
+        <div style={{ width:46, height:46, borderRadius:14, background:est.bg, border:`1.5px solid ${est.border}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+          <i className={`fas ${est.icon}`} style={{ color:est.color, fontSize:18 }} />
+        </div>
+        {/* Info central */}
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:5 }}>
+            <div style={{ fontWeight:800, fontSize:15, color:C.text }}>Mesa {pedido.mesa?.numero}</div>
             <div style={{ fontWeight:900, fontSize:16, color:'#16a34a' }}>S/ {parseFloat(pedido.total).toFixed(2)}</div>
-            <div style={{ fontSize:11, color:'#94a3b8' }}>{pedido.detalles?.length||0} ítem{pedido.detalles?.length!==1?'s':''}</div>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ display:'inline-flex', alignItems:'center', gap:4, background:est.bg, border:`1px solid ${est.border}`, color:est.color, borderRadius:20, padding:'3px 9px', fontSize:11, fontWeight:700 }}>
+                <i className={`fas ${est.icon}`} style={{ fontSize:9 }} />{est.label}
+              </span>
+              {esListo&&<span style={{ background:'#dcfce7', border:'1px solid #86efac', color:'#16a34a', borderRadius:20, padding:'3px 8px', fontSize:10, fontWeight:700, animation:'pulse 2s infinite' }}><i className="fas fa-bell" style={{ marginRight:3, fontSize:9 }} />Listo</span>}
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, color:C.textMuted }}>
+              <span style={{ display:'flex', alignItems:'center', gap:3 }}>
+                <i className="fas fa-clock" style={{ fontSize:9 }} />{hora}
+              </span>
+              <span style={{ background:C.surfaceAlt, borderRadius:20, padding:'2px 7px', fontWeight:700, color:C.textMuted }}>
+                {tiempo}
+              </span>
+            </div>
           </div>
         </div>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <span style={{ display:'inline-flex', alignItems:'center', gap:4, background:est.bg, border:`1px solid ${est.border}`, color:est.color, borderRadius:20, padding:'3px 10px', fontSize:11, fontWeight:700 }}>
-              <i className={`fas ${est.icon}`} style={{ fontSize:9 }} />{est.label}
-            </span>
-            {esListo&&<span style={{ background:'#f0fdf4', border:'1px solid #86efac', color:'#16a34a', borderRadius:20, padding:'3px 8px', fontSize:10, fontWeight:700, animation:'pulse 2s infinite' }}><i className="fas fa-bell" style={{ marginRight:3, fontSize:9 }} />¡Listo!</span>}
-          </div>
-          <span style={{ fontSize:11, color:'#94a3b8', display:'flex', alignItems:'center', gap:4 }}>
-            <i className="fas fa-clock" style={{ fontSize:10 }} />{fecha} · {hora}
-          </span>
-        </div>
-      </div>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', paddingRight:14, color:'#cbd5e1' }}>
-        <i className="fas fa-chevron-right" style={{ fontSize:13 }} />
+        <i className="fas fa-chevron-right" style={{ color:'#cbd5e1', fontSize:12, flexShrink:0 }} />
       </div>
     </div>
   );
@@ -232,11 +243,8 @@ const MobileLayout = ({ d }) => {
     { value:'todos',  label:'Todo',   icon:'fa-history' },
   ];
   const ESTADOS_FILTRO=[
-    { value:'todos',     label:'Todos',    icon:'fa-list' },
-    { value:'en_cocina', label:'Cocina',   icon:'fa-fire' },
-    { value:'preparado', label:'Listos',   icon:'fa-check-circle' },
-    { value:'entregado', label:'Entregado',icon:'fa-hand-holding' },
-    { value:'pagado',    label:'Pagados',  icon:'fa-credit-card' },
+    { value:'todos',  label:'Todos',   icon:'fa-list'        },
+    { value:'pagado', label:'Pagados', icon:'fa-credit-card' },
   ];
 
   return (
@@ -254,19 +262,25 @@ const MobileLayout = ({ d }) => {
       )}
 
       {d.stats&&(
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:14 }}>
-          {[
-            { label:'Total',   value:d.stats.total,    color:'#3b82f6', bg:'#eff6ff', icon:'fa-clipboard-list' },
-            { label:'Proceso', value:d.stats.proceso,  color:'#d97706', bg:'#fffbeb', icon:'fa-fire'           },
-            { label:'Listos',  value:d.stats.listos,   color:'#16a34a', bg:'#f0fdf4', icon:'fa-check-circle'   },
-            { label:`S/${d.stats.ingresos.toFixed(0)}`,value:null,color:'#7c3aed',bg:'#f5f3ff',icon:'fa-coins',isI:true },
-          ].map((s,i)=>(
-            <div key={i} style={{ background:s.bg, borderRadius:14, padding:'10px 6px', textAlign:'center', border:`1.5px solid ${s.color}25` }}>
-              <i className={`fas ${s.icon}`} style={{ fontSize:14, color:s.color, display:'block', marginBottom:3 }} />
-              <div style={{ fontSize:s.isI?13:22, fontWeight:900, color:s.color, lineHeight:1 }}>{s.isI?s.label:s.value}</div>
-              <div style={{ fontSize:9, color:s.color+'99', fontWeight:700, marginTop:3 }}>{s.isI?'INGRESOS':s.label.toUpperCase()}</div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:14 }}>
+          <div style={{ background:'#eff6ff', borderRadius:18, padding:'16px 14px', border:'1.5px solid #bfdbfe', display:'flex', alignItems:'center', gap:12 }}>
+            <div style={{ width:44, height:44, borderRadius:14, background:'linear-gradient(135deg,#2563eb,#3b82f6)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <i className="fas fa-clipboard-list" style={{ color:'#fff', fontSize:18 }} />
             </div>
-          ))}
+            <div>
+              <div style={{ fontSize:28, fontWeight:900, color:'#2563eb', lineHeight:1 }}>{d.stats.total}</div>
+              <div style={{ fontSize:11, color:'#60a5fa', fontWeight:700, marginTop:2, letterSpacing:.5 }}>PEDIDOS</div>
+            </div>
+          </div>
+          <div style={{ background:'#f5f3ff', borderRadius:18, padding:'16px 14px', border:'1.5px solid #c4b5fd', display:'flex', alignItems:'center', gap:12 }}>
+            <div style={{ width:44, height:44, borderRadius:14, background:'linear-gradient(135deg,#6d28d9,#7c3aed)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <i className="fas fa-coins" style={{ color:'#fff', fontSize:18 }} />
+            </div>
+            <div>
+              <div style={{ fontSize:20, fontWeight:900, color:'#7c3aed', lineHeight:1 }}>S/{d.stats.ingresos.toFixed(0)}</div>
+              <div style={{ fontSize:11, color:'#a78bfa', fontWeight:700, marginTop:2, letterSpacing:.5 }}>INGRESOS</div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -351,12 +365,8 @@ const DesktopLayout = ({ d }) => {
     { value:'todos',  label:'Todo',   icon:'fa-history' },
   ];
   const ESTADOS_FILTRO=[
-    { value:'todos',     label:'Todos los estados', icon:'fa-list',         color:'#0f172a' },
-    { value:'nuevo',     label:'Nuevo',             icon:'fa-circle-dot',   color:'#3b82f6' },
-    { value:'en_cocina', label:'En Cocina',         icon:'fa-fire',         color:'#d97706' },
-    { value:'preparado', label:'Listo',             icon:'fa-check-circle', color:'#16a34a' },
-    { value:'entregado', label:'Entregado',         icon:'fa-hand-holding', color:'#6b7280' },
-    { value:'pagado',    label:'Pagado',            icon:'fa-credit-card',  color:'#7c3aed' },
+    { value:'todos',  label:'Todos los pedidos', icon:'fa-list',        color:'#0f172a' },
+    { value:'pagado', label:'Solo pagados',       icon:'fa-credit-card', color:'#7c3aed' },
   ];
 
   const hora  = p => new Date(p.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
@@ -375,18 +385,15 @@ const DesktopLayout = ({ d }) => {
 
         {/* Stats */}
         {d.stats&&(
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:24 }}>
-            {[
-              { label:'Total',    value:d.stats.total,    color:'#60a5fa', bg:'rgba(96,165,250,.12)'  },
-              { label:'Proceso',  value:d.stats.proceso,  color:'#fbbf24', bg:'rgba(251,191,36,.12)'  },
-              { label:'Listos',   value:d.stats.listos,   color:'#4ade80', bg:'rgba(74,222,128,.12)'  },
-              { label:`S/${d.stats.ingresos.toFixed(0)}`,value:null,color:'#c084fc',bg:'rgba(192,132,252,.12)',isI:true },
-            ].map((s,i)=>(
-              <div key={i} style={{ background:s.bg, borderRadius:12, padding:'10px 8px', textAlign:'center', border:`1px solid ${s.color}25` }}>
-                <div style={{ fontSize:s.isI?13:20, fontWeight:900, color:s.color, lineHeight:1 }}>{s.isI?s.label:s.value}</div>
-                <div style={{ fontSize:9, color:s.color+'aa', fontWeight:700, marginTop:3 }}>{s.isI?'INGRESOS':s.label.toUpperCase()}</div>
-              </div>
-            ))}
+          <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:24 }}>
+            <div style={{ background:'rgba(96,165,250,.12)', borderRadius:12, padding:'12px 14px', border:'1px solid rgba(96,165,250,.2)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontSize:11, color:'#60a5fa', fontWeight:700, letterSpacing:.5 }}>PEDIDOS</span>
+              <span style={{ fontSize:22, fontWeight:900, color:'#60a5fa' }}>{d.stats.total}</span>
+            </div>
+            <div style={{ background:'rgba(192,132,252,.12)', borderRadius:12, padding:'12px 14px', border:'1px solid rgba(192,132,252,.2)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontSize:11, color:'#c084fc', fontWeight:700, letterSpacing:.5 }}>INGRESOS</span>
+              <span style={{ fontSize:16, fontWeight:900, color:'#c084fc' }}>S/{d.stats.ingresos.toFixed(0)}</span>
+            </div>
           </div>
         )}
 
@@ -494,6 +501,7 @@ const DesktopLayout = ({ d }) => {
                     </div>
                     <div style={{ fontSize:13, color:'#64748b', display:'flex', alignItems:'center', gap:5 }}>
                       <i className="fas fa-clock" style={{ fontSize:11 }} />{fecha(p)} · {hora(p)}
+                      <span style={{ background:'#f1f5f9', borderRadius:20, padding:'2px 7px', fontSize:11, fontWeight:700, color:'#64748b' }}>{tiempoDesde(p.created_at)}</span>
                     </div>
                     <div style={{ fontSize:13, color:'#64748b' }}>{p.detalles?.length||0} ítem{p.detalles?.length!==1?'s':''}</div>
                     <div style={{ fontWeight:800, fontSize:15, color:'#16a34a' }}>S/ {parseFloat(p.total).toFixed(2)}</div>

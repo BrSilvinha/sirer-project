@@ -5,6 +5,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './components/Login';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Dashboard from './components/common/Dashboard';
@@ -17,6 +18,7 @@ import './App.css';                                    // 4. Estilos personaliza
 
 function App() {
     return (
+        <ThemeProvider>
         <div className="App">
             {/* 🍽️ Configuración de notificaciones con colores del menú */}
             <Toaster
@@ -94,6 +96,7 @@ function App() {
                 </AuthProvider>
             </Router>
         </div>
+        </ThemeProvider>
     );
 }
 

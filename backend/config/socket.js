@@ -8,9 +8,7 @@ class SocketManager {
         this.connectedUsers = new Map(); // userId -> { socket, user }
         this.roomUsers = {
             administrador: new Set(),
-            mozo: new Set(),
-            cocina: new Set(),
-            cajero: new Set()
+            mozo: new Set()
         };
     }
 
@@ -99,12 +97,6 @@ class SocketManager {
             case 'mozo':
                 this.setupMozoEvents(socket, user);
                 break;
-            case 'cocina':
-                this.setupCocinaEvents(socket, user);
-                break;
-            case 'cajero':
-                this.setupCajeroEvents(socket, user);
-                break;
             case 'administrador':
                 this.setupAdminEvents(socket, user);
                 break;
@@ -143,86 +135,6 @@ class SocketManager {
                 pedidos: data.pedidos,
                 total: data.total,
                 mozo: user.nombre,
-                timestamp: new Date().toISOString()
-            });
-        });
-    }
-
-    setupCocinaEvents(socket, user) {
-        // Evento cuando cocina toma un pedido
-        socket.on('tomar-pedido', (data) => {
-            console.log(`👨‍🍳 Cocina tomó pedido ${data.pedidoId}`);
-            
-            this.emitToRole('mozo', 'pedido-tomado-cocina', {
-                pedidoId: data.pedidoId,
-                mesa: data.mesa,
-                timestamp: new Date().toISOString()
-            });
-        });
-
-        // Evento cuando cocina marca pedido como preparado
-        socket.on('pedido-preparado', (data) => {
-            console.log(`🔔 Pedido ${data.pedidoId} preparado por cocina`);
-            
-            // Notificar al mozo específico
-            if (data.mozoId) {
-                this.emitToUser(data.mozoId, 'pedido-listo', {
-                    pedidoId: data.pedidoId,
-                    mesa: data.mesa,
-                    productos: data.productos,
-                    timestamp: new Date().toISOString()
-                });
-            }
-
-            // Notificar a todos los mozos como respaldo
-            this.emitToRole('mozo', 'pedido-disponible-para-entregar', {
-                pedidoId: data.pedidoId,
-                mesa: data.mesa,
-                timestamp: new Date().toISOString()
-            });
-        });
-
-        // Evento cuando cambia disponibilidad de producto
-        socket.on('cambiar-disponibilidad-producto', (data) => {
-            console.log(`🥘 Producto ${data.productoNombre} marcado como ${data.disponible ? 'disponible' : 'agotado'}`);
-            
-            // Notificar a todos los mozos
-            this.emitToRole('mozo', 'producto-disponibilidad-actualizada', {
-                productoId: data.productoId,
-                productoNombre: data.productoNombre,
-                disponible: data.disponible,
-                timestamp: new Date().toISOString()
-            });
-
-            // Notificar a administradores
-            this.emitToRole('administrador', 'inventario-actualizado', {
-                productoId: data.productoId,
-                disponible: data.disponible,
-                actualizadoPor: user.nombre,
-                timestamp: new Date().toISOString()
-            });
-        });
-    }
-
-    setupCajeroEvents(socket, user) {
-        // Evento cuando se procesa un pago
-        socket.on('pago-procesado', (data) => {
-            console.log(`💰 Cajero ${user.nombre} procesó pago mesa ${data.mesa}`);
-            
-            // Notificar a todos sobre mesa liberada
-            this.io.emit('mesa-liberada', {
-                mesa: data.mesa,
-                total: data.total,
-                metodoPago: data.metodoPago,
-                cajero: user.nombre,
-                timestamp: new Date().toISOString()
-            });
-
-            // Actualizar estadísticas en tiempo real
-            this.emitToRole('administrador', 'venta-realizada', {
-                mesa: data.mesa,
-                total: data.total,
-                metodoPago: data.metodoPago,
                 timestamp: new Date().toISOString()
             });
         });
@@ -267,9 +179,8 @@ class SocketManager {
     }
 
     handleDisconnection(socket, user) {
-        // Remover de registros
         this.connectedUsers.delete(user.id);
-        this.roomUsers[user.rol].delete(user.id);
+        if (this.roomUsers[user.rol]) this.roomUsers[user.rol].delete(user.id);
 
         // Emitir estadísticas actualizadas
         this.emitConnectionStats();
@@ -296,9 +207,7 @@ class SocketManager {
             totalConnected: this.connectedUsers.size,
             byRole: {
                 administrador: this.roomUsers.administrador.size,
-                mozo: this.roomUsers.mozo.size,
-                cocina: this.roomUsers.cocina.size,
-                cajero: this.roomUsers.cajero.size
+                mozo: this.roomUsers.mozo.size
             },
             timestamp: new Date().toISOString()
         };
@@ -308,11 +217,8 @@ class SocketManager {
 
     // Métodos para uso desde controladores
     notifyNewOrder(pedidoData) {
-        console.log(`🔔 Nuevo pedido ${pedidoData.id} para mesa ${pedidoData.mesa.numero}`);
-        
-        this.emitToRole('cocina', 'nuevo-pedido', {
+        this.emitToAll('nuevo-pedido', {
             pedido: pedidoData,
-            sonido: true, // Trigger para sonido en frontend
             timestamp: new Date().toISOString()
         });
     }

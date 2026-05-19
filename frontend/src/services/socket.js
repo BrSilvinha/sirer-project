@@ -109,17 +109,8 @@ class SocketService {
             case 'mozo':
                 this.setupMozoEvents();
                 break;
-            case 'cocina':
-                this.setupCocinaEvents();
-                break;
-            case 'cajero':
-                this.setupCajeroEvents();
-                break;
             case 'administrador':
                 this.setupAdminEvents();
-                break;
-            default:
-                console.log(`Rol ${this.user.rol} no tiene eventos específicos configurados`);
                 break;
         }
     }
@@ -171,70 +162,6 @@ class SocketService {
             });
             
             this.triggerCallback('producto-disponibilidad-actualizada', data);
-        });
-    }
-
-    // 👨‍🍳 Eventos para cocina
-    setupCocinaEvents() {
-        // Nuevo pedido recibido
-        this.socket.on('nuevo-pedido', (data) => {
-            console.log('🔔 Nuevo pedido recibido:', data);
-            
-            // Sonido de notificación
-            if (data.sonido) {
-                this.playNotificationSound();
-            }
-            
-            // Notificación visual prominente
-            toast.success(
-                `🔥 NUEVO PEDIDO - Mesa ${data.pedido.mesa.numero}`,
-                { 
-                    duration: 10000,
-                    icon: '🔔',
-                    style: {
-                        background: '#ff6b6b',
-                        color: 'white',
-                        fontSize: '16px',
-                        fontWeight: 'bold'
-                    }
-                }
-            );
-            
-            // Callback para actualizar UI
-            this.triggerCallback('nuevo-pedido', data);
-        });
-    }
-
-    // 💰 Eventos para cajeros
-    setupCajeroEvents() {
-        // Pedido listo para cobrar
-        this.socket.on('pedido-listo-para-cobrar', (data) => {
-            console.log('💳 Pedido listo para cobrar:', data);
-            
-            toast.success(
-                `💳 Mesa ${data.mesa} lista para cobrar - S/${data.total}`,
-                { 
-                    duration: 6000,
-                    icon: '💰'
-                }
-            );
-            
-            this.triggerCallback('pedido-listo-para-cobrar', data);
-        });
-
-        // Cuenta solicitada
-        this.socket.on('cuenta-solicitada', (data) => {
-            console.log('🧾 Cuenta solicitada:', data);
-            
-            toast.success(
-                `🧾 Mesa ${data.mesa} solicita la cuenta - S/${data.total}`,
-                { 
-                    duration: 8000,
-                    icon: '🧾'
-                }
-            );
-            
-            this.triggerCallback('cuenta-solicitada', data);
         });
     }
 
@@ -410,36 +337,6 @@ class SocketService {
     requestBill(mesa, pedidos, total) {
         if (this.user?.rol === 'mozo') {
             this.emit('solicitar-cuenta', { mesa, pedidos, total });
-        }
-    }
-
-    // 👨‍🍳 Métodos específicos para cocina
-    takeOrder(pedidoId, mesa) {
-        if (this.user?.rol === 'cocina') {
-            this.emit('tomar-pedido', { pedidoId, mesa });
-        }
-    }
-
-    markOrderReady(pedidoId, mesa, productos, mozoId) {
-        if (this.user?.rol === 'cocina') {
-            this.emit('pedido-preparado', { pedidoId, mesa, productos, mozoId });
-        }
-    }
-
-    changeProductAvailability(productoId, productoNombre, disponible) {
-        if (this.user?.rol === 'cocina') {
-            this.emit('cambiar-disponibilidad-producto', { 
-                productoId, 
-                productoNombre, 
-                disponible 
-            });
-        }
-    }
-
-    // 💰 Métodos específicos para cajeros
-    processPayment(mesa, total, metodoPago) {
-        if (this.user?.rol === 'cajero') {
-            this.emit('pago-procesado', { mesa, total, metodoPago });
         }
     }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import AdminDashboard from '../admin/AdminDashboard';
 import MozoDashboard from '../mozo/MozoDashboard';
 
@@ -77,6 +78,7 @@ const useIsDesktop = () => {
 ══════════════════════════════════════════ */
 const TopBarDesktop = ({ user, logout, navItems, location }) => {
   const rol = ROL_CFG[user.rol] || ROL_CFG.mozo;
+  const { isDark, toggle } = useTheme();
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0,
@@ -133,6 +135,17 @@ const TopBarDesktop = ({ user, logout, navItems, location }) => {
           </div>
         </div>
         <div style={{ width: 1, height: 28, background: T.dark3 }} />
+        <button onClick={toggle} title={isDark ? 'Modo día' : 'Modo noche'} style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: isDark ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.08)',
+          border: `1px solid ${isDark ? 'rgba(251,191,36,.3)' : 'rgba(255,255,255,.15)'}`,
+          color: isDark ? '#fbbf24' : '#94a3b8',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 14, flexShrink: 0,
+        }}>
+          <i className={`fas ${isDark ? 'fa-sun' : 'fa-moon'}`} />
+        </button>
+        <div style={{ width: 1, height: 28, background: T.dark3 }} />
         <button onClick={logout} style={{
           background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.3)',
           borderRadius: 9, color: '#f87171', padding: '7px 12px',
@@ -154,6 +167,7 @@ const TopBarDesktop = ({ user, logout, navItems, location }) => {
 const TopBarMobile = ({ user, logout }) => {
   const rol = ROL_CFG[user.rol] || ROL_CFG.mozo;
   const initials = (user.nombre || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const { isDark, toggle } = useTheme();
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0,
@@ -172,11 +186,14 @@ const TopBarMobile = ({ user, logout }) => {
         </div>
       </div>
 
-      {/* Avatar + logout */}
+      {/* Avatar + toggle + logout */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${rol.color}20`, border: `1.5px solid ${rol.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <span style={{ fontSize: 11, fontWeight: 900, color: rol.color }}>{initials}</span>
         </div>
+        <button onClick={toggle} title={isDark ? 'Modo día' : 'Modo noche'} style={{ width: 32, height: 32, borderRadius: 9, background: isDark ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.08)', border: `1px solid ${isDark ? 'rgba(251,191,36,.3)' : 'rgba(255,255,255,.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: isDark ? '#fbbf24' : '#94a3b8', flexShrink: 0, fontSize: 13 }}>
+          <i className={`fas ${isDark ? 'fa-sun' : 'fa-moon'}`} />
+        </button>
         <button onClick={logout} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(239,68,68,.15)', border: '1px solid rgba(239,68,68,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#f87171', flexShrink: 0 }}>
           <i className="fas fa-sign-out-alt" style={{ fontSize: 13 }} />
         </button>
@@ -191,10 +208,11 @@ const TopBarMobile = ({ user, logout }) => {
 ══════════════════════════════════════════ */
 const BottomNav = ({ navItems, location }) => {
   const many = navItems.length > 3;
+  const { C } = useTheme();
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: '#fff', borderTop: `1px solid ${T.border}`,
+      background: C.surface, borderTop: `1px solid ${C.border}`,
       display: 'flex', zIndex: 200,
       paddingBottom: 'var(--safe-b)',
       boxShadow: '0 -4px 20px rgba(0,0,0,.08)',
@@ -206,7 +224,7 @@ const BottomNav = ({ navItems, location }) => {
             flex: 1, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             padding: '10px 2px 8px', textDecoration: 'none',
-            color: active ? T.primary : T.muted,
+            color: active ? T.primary : C.textMuted,
             position: 'relative', minWidth: 0,
             transition: 'color 0.15s',
           }}>
@@ -253,11 +271,12 @@ const AppLayout = ({ user, logout }) => {
   const location = useLocation();
   const isDesktop = useIsDesktop();
   const navItems = NAV[user.rol] || [];
+  const { C } = useTheme();
 
   /* ── Desktop: top bar + contenido full-width ── */
   if (isDesktop) {
     return (
-      <div style={{ minHeight: '100vh', background: T.bg }}>
+      <div style={{ minHeight: '100vh', background: C.bg }}>
         <TopBarDesktop user={user} logout={logout} navItems={navItems} location={location} />
         <main style={{ paddingTop: 58, minHeight: '100vh' }}>
           <AppRoutes user={user} />
@@ -268,7 +287,7 @@ const AppLayout = ({ user, logout }) => {
 
   /* ── Mobile: top bar + bottom nav ── */
   return (
-    <div style={{ minHeight: '100vh', background: T.bg, paddingTop: 56, paddingBottom: 66 }}>
+    <div style={{ minHeight: '100vh', background: C.bg, paddingTop: 56, paddingBottom: 66 }}>
       <TopBarMobile user={user} logout={logout} />
       <main>
         <AppRoutes user={user} />

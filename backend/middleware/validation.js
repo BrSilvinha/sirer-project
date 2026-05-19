@@ -25,7 +25,7 @@ const validateUsuario = [
         .isLength({ min: 6 })
         .withMessage('La contraseña debe tener al menos 6 caracteres'),
     body('rol')
-        .isIn(['administrador', 'mozo', 'cocina', 'cajero'])
+        .isIn(['administrador', 'mozo'])
         .withMessage('Rol inválido'),
     handleValidationErrors
 ];

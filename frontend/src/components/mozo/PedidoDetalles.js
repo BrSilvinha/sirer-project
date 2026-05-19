@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pedidosService } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const CSS = `
@@ -11,15 +12,13 @@ const CSS = `
 
 const ESTADO = {
   nuevo:     { label:'Nuevo',      color:'#6366f1', bg:'#eef2ff', icon:'fa-plus-circle'  },
-  en_cocina: { label:'En Proceso', color:'#d97706', bg:'#fffbeb', icon:'fa-fire'         },
   preparado: { label:'Listo',      color:'#16a34a', bg:'#f0fdf4', icon:'fa-check-circle' },
   entregado: { label:'Entregado',  color:'#0ea5e9', bg:'#f0f9ff', icon:'fa-handshake'    },
   pagado:    { label:'Pagado',     color:'#64748b', bg:'#f8fafc', icon:'fa-receipt'       },
 };
 
 const SIGUIENTE = {
-  nuevo:     ['en_cocina'],
-  en_cocina: ['preparado'],
+  nuevo:     ['preparado'],
   preparado: ['entregado'],
   entregado: [],
   pagado:    [],
@@ -44,6 +43,7 @@ const Spin = () => (
 const PedidoDetalles = () => {
   const { pedidoId } = useParams();
   const navigate = useNavigate();
+  const { C } = useTheme();
   const [pedido, setPedido]       = useState(null);
   const [loading, setLoading]     = useState(true);
   const [cambiando, setCambiando] = useState(false);
@@ -144,10 +144,10 @@ const PedidoDetalles = () => {
         </button>
 
         {/* ── Lista de productos ── */}
-        <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e2e8f0', overflow: 'hidden', marginBottom: 16 }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ background: C.surface, borderRadius: 20, border: `1.5px solid ${C.border}`, overflow: 'hidden', marginBottom: 16 }}>
+          <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.borderLight}`, display: 'flex', alignItems: 'center', gap: 8 }}>
             <i className="fas fa-utensils" style={{ color: '#6366f1', fontSize: 14 }} />
-            <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>Productos</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>Productos</span>
             <span style={{ marginLeft: 'auto', background: '#eef2ff', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>{detalles.length} ítem{detalles.length !== 1 ? 's' : ''}</span>
           </div>
           {detalles.length === 0 ? (
@@ -158,23 +158,23 @@ const PedidoDetalles = () => {
           ) : (
             <div>
               {detalles.map((d, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < detalles.length - 1 ? '1px solid #f8fafc' : 'none' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < detalles.length - 1 ? `1px solid ${C.borderLight}` : 'none' }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900, fontSize: 14, color: '#6366f1' }}>
                     {d.cantidad}×
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {d.producto?.nombre || d.Producto?.nombre || 'Producto'}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>S/ {parseFloat(d.precio_unitario || d.producto?.precio || 0).toFixed(2)} c/u</div>
+                    <div style={{ fontSize: 11, color: C.textMuted }}>S/ {parseFloat(d.precio_unitario || d.producto?.precio || 0).toFixed(2)} c/u</div>
                   </div>
                   <div style={{ fontWeight: 800, fontSize: 14, color: '#16a34a', flexShrink: 0 }}>
                     S/ {parseFloat(d.subtotal).toFixed(2)}
                   </div>
                 </div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 18px', background: '#f8fafc', borderTop: '1.5px solid #e2e8f0' }}>
-                <span style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>Total</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 18px', background: C.surfaceAlt, borderTop: `1.5px solid ${C.border}` }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: C.text }}>Total</span>
                 <span style={{ fontWeight: 900, fontSize: 18, color: '#16a34a' }}>S/ {total.toFixed(2)}</span>
               </div>
             </div>
@@ -182,10 +182,10 @@ const PedidoDetalles = () => {
         </div>
 
         {/* ── Info del pedido ── */}
-        <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e2e8f0', overflow: 'hidden' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-info-circle" style={{ color: '#94a3b8', fontSize: 14 }} />
-            <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>Información</span>
+        <div style={{ background: C.surface, borderRadius: 20, border: `1.5px solid ${C.border}`, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.borderLight}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <i className="fas fa-info-circle" style={{ color: C.textMuted, fontSize: 14 }} />
+            <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>Información</span>
           </div>
           <div style={{ padding: '16px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             {[
@@ -194,11 +194,11 @@ const PedidoDetalles = () => {
               { label:'Fecha', value: new Date(pedido.createdAt || pedido.fecha).toLocaleDateString('es'),        icon:'fa-calendar' },
               { label:'Hora',  value: new Date(pedido.createdAt || pedido.fecha).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}), icon:'fa-clock' },
             ].map(r => (
-              <div key={r.label} style={{ background: '#f8fafc', borderRadius: 12, padding: '10px 12px' }}>
-                <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.6, marginBottom: 4 }}>
+              <div key={r.label} style={{ background: C.surfaceAlt, borderRadius: 12, padding: '10px 12px' }}>
+                <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 700, letterSpacing: 0.6, marginBottom: 4 }}>
                   <i className={`fas ${r.icon}`} style={{ marginRight: 5, color: '#6366f1' }} />{r.label.toUpperCase()}
                 </div>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.value}</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.value}</div>
               </div>
             ))}
           </div>

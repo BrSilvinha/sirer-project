@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 const resolveLogin = (input) => {
   const clean = input.trim();
@@ -28,6 +29,7 @@ const Login = () => {
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate  = useNavigate();
   const isDesktop = useIsDesktop();
+  const { C } = useTheme();
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) navigate('/dashboard', { replace: true });
@@ -54,25 +56,43 @@ const Login = () => {
 
   const canSubmit = credential && password && !submitting;
 
+  const wrapSt = {
+    position: 'relative', display: 'flex', alignItems: 'center',
+    border: `1.5px solid ${C.border}`, borderRadius: 14,
+    background: C.inputBg, transition: 'border-color 0.15s, box-shadow 0.15s',
+    overflow: 'hidden',
+  };
+
+  const inputSt = {
+    flex: 1, padding: '14px 14px 14px 0',
+    border: 'none', outline: 'none',
+    background: 'transparent', fontSize: 15,
+    color: C.text, fontFamily: 'inherit',
+  };
+
+  const labelSt = {
+    fontSize: 12, fontWeight: 700, color: C.textSub,
+    letterSpacing: 0.5, display: 'block', marginBottom: 8,
+    textTransform: 'uppercase',
+  };
+
   /* ────────── DESKTOP ────────── */
   if (isDesktop) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'inherit' }}>
 
-        {/* Panel izquierdo — branding */}
+        {/* Panel izquierdo — branding (siempre oscuro) */}
         <div style={{
           width: '44%', background: '#0f172a',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           padding: '60px 48px', position: 'relative', overflow: 'hidden',
         }}>
-          {/* Círculos decorativos */}
           <div style={{ position: 'absolute', top: -100, right: -100, width: 320, height: 320, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.1)' }} />
           <div style={{ position: 'absolute', top: -50,  right: -50,  width: 200, height: 200, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.08)', background: 'rgba(99,102,241,0.03)' }} />
           <div style={{ position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.07)' }} />
           <div style={{ position: 'absolute', bottom: -30, left: -30, width: 140, height: 140, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.06)', background: 'rgba(99,102,241,0.03)' }} />
 
-          {/* Logo */}
           <div style={{
             width: 90, height: 90, borderRadius: 26,
             background: 'linear-gradient(145deg, #4f46e5, #818cf8)',
@@ -87,13 +107,11 @@ const Login = () => {
             Sistema de Gestión de Restaurante
           </p>
 
-          {/* Divisor */}
           <div style={{ width: 48, height: 3, background: '#6366f1', borderRadius: 2, margin: '28px 0' }} />
 
-          {/* Features */}
           {[
             { icon: 'fa-table',     text: 'Control de mesas en tiempo real' },
-            { icon: 'fa-utensils',  text: 'Gestión de pedidos y cocina'      },
+            { icon: 'fa-utensils',  text: 'Gestión de pedidos por mesa'       },
             { icon: 'fa-chart-bar', text: 'Reportes y estadísticas'           },
           ].map(f => (
             <div key={f.icon} style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, width: '100%', maxWidth: 280 }}>
@@ -116,14 +134,14 @@ const Login = () => {
 
         {/* Panel derecho — formulario */}
         <div style={{
-          flex: 1, background: '#f8fafc',
+          flex: 1, background: C.bg,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '48px 40px',
         }}>
           <div style={{ width: '100%', maxWidth: 420 }}>
 
-            <h2 style={{ fontWeight: 800, fontSize: 28, color: '#0f172a', margin: '0 0 6px' }}>Bienvenido</h2>
-            <p style={{ color: '#94a3b8', fontSize: 15, margin: '0 0 32px' }}>Ingresa tus credenciales para continuar</p>
+            <h2 style={{ fontWeight: 800, fontSize: 28, color: C.text, margin: '0 0 6px' }}>Bienvenido</h2>
+            <p style={{ color: C.textMuted, fontSize: 15, margin: '0 0 32px' }}>Ingresa tus credenciales para continuar</p>
 
             {error && (
               <div style={{
@@ -140,9 +158,9 @@ const Login = () => {
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: 20 }}>
                 <label style={labelSt}>DNI o Correo electrónico</label>
-                <div style={{ ...wrapSt, borderColor: focused === 'cred' ? '#6366f1' : '#e2e8f0', boxShadow: focused === 'cred' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+                <div style={{ ...wrapSt, borderColor: focused === 'cred' ? '#6366f1' : C.border, boxShadow: focused === 'cred' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
                   <div style={iconBoxSt}>
-                    <i className="fas fa-id-card" style={{ color: focused === 'cred' ? '#6366f1' : '#94a3b8', fontSize: 15 }}></i>
+                    <i className="fas fa-id-card" style={{ color: focused === 'cred' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
                   </div>
                   <input
                     type="text"
@@ -156,7 +174,7 @@ const Login = () => {
                     style={inputSt}
                   />
                 </div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 5 }}>
+                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 5 }}>
                   <i className="fas fa-info-circle" style={{ marginRight: 4 }}></i>
                   Puedes ingresar tu DNI o correo electrónico
                 </div>
@@ -164,9 +182,9 @@ const Login = () => {
 
               <div style={{ marginBottom: 32 }}>
                 <label style={labelSt}>Contraseña</label>
-                <div style={{ ...wrapSt, borderColor: focused === 'pass' ? '#6366f1' : '#e2e8f0', boxShadow: focused === 'pass' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+                <div style={{ ...wrapSt, borderColor: focused === 'pass' ? '#6366f1' : C.border, boxShadow: focused === 'pass' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
                   <div style={iconBoxSt}>
-                    <i className="fas fa-lock" style={{ color: focused === 'pass' ? '#6366f1' : '#94a3b8', fontSize: 15 }}></i>
+                    <i className="fas fa-lock" style={{ color: focused === 'pass' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
                   </div>
                   <input
                     type={showPass ? 'text' : 'password'}
@@ -180,7 +198,7 @@ const Login = () => {
                     style={{ ...inputSt, paddingRight: 48 }}
                   />
                   <button type="button" onClick={() => setShowPass(v => !v)} style={eyeBtnSt}>
-                    <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} style={{ color: C.textMuted }}></i>
                   </button>
                 </div>
               </div>
@@ -203,7 +221,7 @@ const Login = () => {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0f172a', fontFamily: 'inherit' }}>
 
-      {/* Hero */}
+      {/* Hero (siempre oscuro) */}
       <div style={{ flex: '0 0 auto', padding: '70px 32px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -100, right: -100, width: 280, height: 280, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.1)' }} />
         <div style={{ position: 'absolute', top: -60,  right: -60,  width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.08)', background: 'rgba(99,102,241,0.04)' }} />
@@ -217,10 +235,10 @@ const Login = () => {
       </div>
 
       {/* Card formulario */}
-      <div style={{ flex: 1, background: '#fff', borderRadius: '28px 28px 0 0', padding: '32px 24px 48px', boxShadow: '0 -12px 48px rgba(0,0,0,0.3)', animation: 'slideUp 0.35s cubic-bezier(0.4,0,0.2,1)' }}>
+      <div style={{ flex: 1, background: C.surface, borderRadius: '28px 28px 0 0', padding: '32px 24px 48px', boxShadow: '0 -12px 48px rgba(0,0,0,0.3)', animation: 'slideUp 0.35s cubic-bezier(0.4,0,0.2,1)' }}>
 
-        <h2 style={{ fontWeight: 800, fontSize: 22, color: '#0f172a', margin: '0 0 4px' }}>Bienvenido</h2>
-        <p style={{ color: '#94a3b8', fontSize: 14, margin: '0 0 28px' }}>Ingresa tus credenciales para continuar</p>
+        <h2 style={{ fontWeight: 800, fontSize: 22, color: C.text, margin: '0 0 4px' }}>Bienvenido</h2>
+        <p style={{ color: C.textMuted, fontSize: 14, margin: '0 0 28px' }}>Ingresa tus credenciales para continuar</p>
 
         {error && (
           <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 12, padding: '11px 14px', color: '#dc2626', fontSize: 13, fontWeight: 600, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -232,9 +250,9 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
             <label style={labelSt}>DNI o Correo electrónico</label>
-            <div style={{ ...wrapSt, borderColor: focused === 'cred' ? '#6366f1' : '#e2e8f0', boxShadow: focused === 'cred' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+            <div style={{ ...wrapSt, borderColor: focused === 'cred' ? '#6366f1' : C.border, boxShadow: focused === 'cred' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
               <div style={iconBoxSt}>
-                <i className="fas fa-id-card" style={{ color: focused === 'cred' ? '#6366f1' : '#94a3b8', fontSize: 15 }}></i>
+                <i className="fas fa-id-card" style={{ color: focused === 'cred' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
               </div>
               <input
                 type="text"
@@ -249,7 +267,7 @@ const Login = () => {
                 style={inputSt}
               />
             </div>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 5 }}>
+            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 5 }}>
               <i className="fas fa-info-circle" style={{ marginRight: 4 }}></i>
               Puedes ingresar tu DNI o correo electrónico
             </div>
@@ -257,9 +275,9 @@ const Login = () => {
 
           <div style={{ marginBottom: 32 }}>
             <label style={labelSt}>Contraseña</label>
-            <div style={{ ...wrapSt, borderColor: focused === 'pass' ? '#6366f1' : '#e2e8f0', boxShadow: focused === 'pass' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+            <div style={{ ...wrapSt, borderColor: focused === 'pass' ? '#6366f1' : C.border, boxShadow: focused === 'pass' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
               <div style={iconBoxSt}>
-                <i className="fas fa-lock" style={{ color: focused === 'pass' ? '#6366f1' : '#94a3b8', fontSize: 15 }}></i>
+                <i className="fas fa-lock" style={{ color: focused === 'pass' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
               </div>
               <input
                 type={showPass ? 'text' : 'password'}
@@ -273,7 +291,7 @@ const Login = () => {
                 style={{ ...inputSt, paddingRight: 48 }}
               />
               <button type="button" onClick={() => setShowPass(v => !v)} style={eyeBtnSt}>
-                <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} style={{ color: C.textMuted }}></i>
               </button>
             </div>
           </div>
@@ -287,7 +305,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: 32, color: '#cbd5e1', fontSize: 12 }}>
+        <div style={{ textAlign: 'center', marginTop: 32, color: C.textMuted, fontSize: 12 }}>
           © 2025 SIRER · Todos los derechos reservados
         </div>
       </div>
@@ -295,36 +313,16 @@ const Login = () => {
   );
 };
 
-/* ── Estilos compartidos ── */
-const labelSt = {
-  fontSize: 12, fontWeight: 700, color: '#475569',
-  letterSpacing: 0.5, display: 'block', marginBottom: 8,
-  textTransform: 'uppercase',
-};
-
-const wrapSt = {
-  position: 'relative', display: 'flex', alignItems: 'center',
-  border: '1.5px solid #e2e8f0', borderRadius: 14,
-  background: '#f8fafc', transition: 'border-color 0.15s, box-shadow 0.15s',
-  overflow: 'hidden',
-};
-
+/* ── Estilos que NO dependen del tema ── */
 const iconBoxSt = {
   width: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-};
-
-const inputSt = {
-  flex: 1, padding: '14px 14px 14px 0',
-  border: 'none', outline: 'none',
-  background: 'transparent', fontSize: 15,
-  color: '#0f172a', fontFamily: 'inherit',
 };
 
 const eyeBtnSt = {
   position: 'absolute', right: 14, top: '50%',
   transform: 'translateY(-50%)',
   background: 'none', border: 'none',
-  color: '#94a3b8', cursor: 'pointer',
+  cursor: 'pointer',
   fontSize: 15, padding: 6, lineHeight: 1,
 };
 

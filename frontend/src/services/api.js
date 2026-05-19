@@ -185,7 +185,6 @@ export const pedidosService = {
         const params = incluirPagados ? { incluir_pagados: true } : {};
         return api.get(`/pedidos/mesa/${mesaId}`, { params });
     },
-    getCocina: () => api.get('/pedidos/cocina'),
     create: (pedido) => api.post('/pedidos', pedido),
     changeStatus: (id, estado) => api.patch(`/pedidos/${id}/estado`, { estado }),
     addProducts: (id, productos) => api.post(`/pedidos/${id}/productos`, { productos }),

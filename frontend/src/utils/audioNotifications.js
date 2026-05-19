@@ -51,7 +51,7 @@ class AudioNotifications {
         }
     }
 
-    // Sonido para nuevos pedidos en cocina (más urgente)
+    // Sonido para nuevos pedidos
     playNewOrderSound() {
         // Doble beep agudo
         this.playTone(800, 150, 0.8);
@@ -59,7 +59,7 @@ class AudioNotifications {
         setTimeout(() => this.playTone(600, 300, 0.6), 500);
     }
 
-    // Sonido para pedidos listos en cocina
+    // Sonido para pedidos listos
     playOrderReadySound() {
         // Triple beep suave
         this.playTone(500, 100, 0.5);

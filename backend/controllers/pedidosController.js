@@ -57,7 +57,7 @@ const obtenerPedidos = async (req, res) => {
             
             // Buscar por número de mesa
             searchConditions.push({
-                'S/mesa.numeroS/': {
+                '$mesa.numero$': {
                     [Op.like]: `%${busqueda}%`
                 }
             });
@@ -168,57 +168,6 @@ const obtenerPedidosPorMesa = async (req, res) => {
         });
     } catch (error) {
         console.error('Error obteniendo pedidos por mesa:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error interno del servidor'
-        });
-    }
-};
-
-// Obtener pedidos para cocina
-const obtenerPedidosCocina = async (req, res) => {
-    try {
-        const pedidos = await Pedido.findAll({
-            where: {
-                estado: {
-                    [Op.in]: ['nuevo', 'preparando']
-                }
-            },
-            include: [
-                {
-                    model: Mesa,
-                    as: 'mesa',
-                    attributes: ['id', 'numero', 'capacidad']
-                },
-                {
-                    model: Usuario,
-                    as: 'mozo',
-                    attributes: ['id', 'nombre']
-                },
-                {
-                    model: DetallePedido,
-                    as: 'detalles',
-                    include: [{
-                        model: Producto,
-                        as: 'producto',
-                        attributes: ['id', 'nombre', 'precio'],
-                        include: [{
-                            model: Categoria,
-                            as: 'categoria',
-                            attributes: ['id', 'nombre']
-                        }]
-                    }]
-                }
-            ],
-            order: [['created_at', 'ASC']] // Los más antiguos primero para cocina
-        });
-
-        res.json({
-            success: true,
-            data: pedidos
-        });
-    } catch (error) {
-        console.error('Error obteniendo pedidos de cocina:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor'
@@ -348,14 +297,6 @@ const crearPedido = async (req, res) => {
         if (req.io) {
             console.log('📡 Emitiendo eventos Socket.io para nuevo pedido...');
             
-            // 1. Notificar a COCINA - NUEVO PEDIDO (Principal)
-            req.io.to('cocina').emit('nuevo-pedido', {
-                pedido: pedidoCompleto,
-                sonido: true,
-                timestamp: new Date().toISOString()
-            });
-
-            // 2. ✅ AGREGADO: Notificar a CAJEROS sobre nueva actividad en mesa
             req.io.to('cajero').emit('actividad-mesa', {
                 mesa: pedidoCompleto.mesa,
                 accion: 'nuevo_pedido',
@@ -406,7 +347,7 @@ const cambiarEstadoPedido = async (req, res) => {
         const { id } = req.params;
         const { estado } = req.body;
 
-        const estadosValidos = ['nuevo', 'preparando', 'listo', 'entregado', 'pagado'];
+        const estadosValidos = ['nuevo', 'preparado', 'entregado', 'pagado'];
         
         if (!estadosValidos.includes(estado)) {
             return res.status(400).json({
@@ -451,24 +392,8 @@ const cambiarEstadoPedido = async (req, res) => {
             console.log(`📡 Emitiendo evento por cambio de estado: ${estadoAnterior} → ${estado}`);
 
             switch (estado) {
-                case 'preparando':
-                    // Notificar que pedido fue tomado por cocina
-                    req.io.to('mozo').emit('pedido-tomado-cocina', {
-                        pedido_id: pedido.id,
-                        mesa: pedido.mesa.numero,
-                        timestamp: new Date().toISOString()
-                    });
-                    break;
-
-                case 'listo':
-                    // Notificar a mozos que pedido está listo
-                    req.io.to('mozo').emit('pedido-listo', {
-                        pedido: pedido.toJSON(),
-                        estadoAnterior,
-                        timestamp: new Date().toISOString()
-                    });
-                    
-                    // También notificar pedido listo
+                case 'preparado':
+                    // Notificar a mozos que pedido está listo para entregar
                     req.io.to('mozo').emit('pedido-listo', {
                         pedidoId: pedido.id,
                         mesa: pedido.mesa.numero,
@@ -1024,7 +949,7 @@ const agregarProductosPedido = async (req, res) => {
         const nuevoTotal = parseFloat(pedido.total) + totalAdicional;
         await pedido.update({ 
             total: nuevoTotal,
-            estado: pedido.estado === 'entregado' ? 'preparando' : pedido.estado // Si estaba entregado, volver a cocina
+            estado: pedido.estado === 'entregado' ? 'nuevo' : pedido.estado
         });
 
         // Obtener pedido actualizado
@@ -1057,19 +982,8 @@ const agregarProductosPedido = async (req, res) => {
             ]
         });
 
-        // ✅ CORREGIDO: Emitir eventos de socket para productos agregados
         if (req.io) {
-            console.log('📡 Emitiendo eventos por productos agregados...');
-            
-            // 1. Notificar a COCINA sobre actualización de pedido
-            req.io.to('cocina').emit('pedido-actualizado', {
-                pedido: pedidoActualizado,
-                productos_agregados: productosValidados.length,
-                total_adicional: totalAdicional,
-                timestamp: new Date().toISOString()
-            });
-
-            // 2. ✅ AGREGADO: Notificar a CAJEROS sobre actualización de cuenta
+            // Notificar a CAJEROS sobre actualización de cuenta
             req.io.to('cajero').emit('cuenta-actualizada', {
                 mesa: pedidoActualizado.mesa,
                 pedido_id: pedidoActualizado.id,
@@ -1224,7 +1138,6 @@ const cancelarPedido = async (req, res) => {
 module.exports = {
     obtenerPedidos,
     obtenerPedidosPorMesa,
-    obtenerPedidosCocina,
     crearPedido,
     cambiarEstadoPedido,
     obtenerPedidoPorId,

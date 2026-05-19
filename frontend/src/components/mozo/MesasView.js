@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mesasService, pedidosService } from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 /* ── Responsive hook ── */
@@ -24,7 +25,6 @@ const EST = {
 
 const ESTADO_PEDIDO = {
   nuevo:     { label:'Nuevo',     color:'#3b82f6' },
-  en_cocina: { label:'En Cocina', color:'#f59e0b' },
   preparado: { label:'Listo',     color:'#10b981' },
   entregado: { label:'Entregado', color:'#6b7280' },
   pagado:    { label:'Pagado',    color:'#9ca3af' },
@@ -47,8 +47,17 @@ const useMesas = () => {
 
   const fetchMesas = useCallback(async () => {
     try {
-      const [mR, sR] = await Promise.all([mesasService.getAll(), mesasService.getStats()]);
-      setMesas(mR.data.data);
+      const [mR, sR, pR] = await Promise.all([
+        mesasService.getAll(),
+        mesasService.getStats(),
+        pedidosService.getAll({ limit: 200 }),
+      ]);
+      const pedidos = pR.data?.data || [];
+      const totalesMesa = {};
+      pedidos.filter(p => p.estado !== 'pagado').forEach(p => {
+        totalesMesa[p.mesa_id] = (totalesMesa[p.mesa_id] || 0) + parseFloat(p.total || 0);
+      });
+      setMesas(mR.data.data.map(m => ({ ...m, totalActivo: totalesMesa[m.id] || 0 })));
       setStats(sR.data.data);
     } catch { toast.error('Error al cargar mesas'); }
     finally  { setLoading(false); }
@@ -80,25 +89,26 @@ const Spin = ({ size=36, color='#6366f1' }) => (
 
 /* ── Bottom Sheet ── */
 const Sheet = ({ open, onClose, title, subtitle, children, footer }) => {
+  const { C } = useTheme();
   if (!open) return null;
   return (
     <>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1050, background:'rgba(15,23,42,.65)', backdropFilter:'blur(4px)', animation:'fadeIn .2s ease' }} />
-      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1051, background:'#fff', borderRadius:'24px 24px 0 0', maxHeight:'92vh', display:'flex', flexDirection:'column', animation:'slideUp .3s cubic-bezier(.4,0,.2,1)', boxShadow:'0 -8px 40px rgba(0,0,0,.18)' }}>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1050, background:C.overlay, backdropFilter:'blur(4px)', animation:'fadeIn .2s ease' }} />
+      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1051, background:C.surface, borderRadius:'24px 24px 0 0', maxHeight:'92vh', display:'flex', flexDirection:'column', animation:'slideUp .3s cubic-bezier(.4,0,.2,1)', boxShadow:'0 -8px 40px rgba(0,0,0,.18)' }}>
         <div style={{ display:'flex', justifyContent:'center', paddingTop:12 }}>
-          <div style={{ width:44, height:5, background:'#e2e8f0', borderRadius:3 }} />
+          <div style={{ width:44, height:5, background:C.border, borderRadius:3 }} />
         </div>
         {title && (
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #f1f5f9' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:`1px solid ${C.borderLight}` }}>
             <div>
-              <div style={{ fontWeight:800, fontSize:19, color:'#0f172a' }}>{title}</div>
-              {subtitle && <div style={{ fontSize:12, color:'#94a3b8', marginTop:2 }}>{subtitle}</div>}
+              <div style={{ fontWeight:800, fontSize:19, color:C.text }}>{title}</div>
+              {subtitle && <div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>{subtitle}</div>}
             </div>
-            <button onClick={onClose} style={{ width:36, height:36, borderRadius:'50%', background:'#f1f5f9', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b', fontSize:16 }}><i className="fas fa-times" /></button>
+            <button onClick={onClose} style={{ width:36, height:36, borderRadius:'50%', background:C.surfaceAlt2, border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:C.textMuted, fontSize:16 }}><i className="fas fa-times" /></button>
           </div>
         )}
         <div style={{ flex:1, overflowY:'auto', padding:'16px 20px' }}>{children}</div>
-        {footer && <div style={{ padding:'12px 20px', paddingBottom:'max(20px,env(safe-area-inset-bottom))', borderTop:'1px solid #f1f5f9' }}>{footer}</div>}
+        {footer && <div style={{ padding:'12px 20px', paddingBottom:'max(20px,env(safe-area-inset-bottom))', borderTop:`1px solid ${C.borderLight}` }}>{footer}</div>}
       </div>
     </>
   );
@@ -108,9 +118,10 @@ const Sheet = ({ open, onClose, title, subtitle, children, footer }) => {
 const MesaCardMobile = ({ mesa, onTap, onCobrar }) => {
   const e = EST[mesa.estado] || EST.libre;
   const [pressed, setPressed] = useState(false);
+  const { C } = useTheme();
   return (
     <div onClick={() => onTap(mesa)} onPointerDown={()=>setPressed(true)} onPointerUp={()=>setPressed(false)} onPointerLeave={()=>setPressed(false)}
-      style={{ borderRadius:20, background:'#fff', border:`1.5px solid ${e.border}`, overflow:'hidden', cursor:'pointer', userSelect:'none', transform:pressed?'scale(.95)':'scale(1)', transition:'transform .12s, box-shadow .12s', boxShadow:pressed?'0 2px 8px rgba(0,0,0,.08)':'0 4px 20px rgba(0,0,0,.09)' }}
+      style={{ borderRadius:20, background:C.surface, border:`1.5px solid ${e.border}`, overflow:'hidden', cursor:'pointer', userSelect:'none', transform:pressed?'scale(.95)':'scale(1)', transition:'transform .12s, box-shadow .12s', boxShadow:pressed?'0 2px 8px rgba(0,0,0,.08)':'0 4px 20px rgba(0,0,0,.09)' }}
     >
       <div style={{ background:e.gradient, padding:'18px 14px 14px', display:'flex', flexDirection:'column', alignItems:'center', gap:8, position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', top:-24, right:-18, width:80, height:80, borderRadius:'50%', background:'rgba(255,255,255,.12)' }} />
@@ -122,9 +133,15 @@ const MesaCardMobile = ({ mesa, onTap, onCobrar }) => {
         </div>
       </div>
       <div style={{ padding:'10px 12px 12px' }}>
-        <div style={{ fontSize:11, color:'#94a3b8', textAlign:'center', marginBottom:10, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+        <div style={{ fontSize:11, color:C.textMuted, textAlign:'center', marginBottom:mesa.estado !== 'libre' ? 8 : 10, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
           <i className="fas fa-users" style={{ fontSize:10 }} />{mesa.capacidad} personas
         </div>
+        {mesa.estado !== 'libre' && mesa.totalActivo > 0 && (
+          <div style={{ background:'linear-gradient(135deg,#16a34a,#22c55e)', borderRadius:10, padding:'7px 10px', marginBottom:8, display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+            <i className="fas fa-coins" style={{ color:'rgba(255,255,255,.85)', fontSize:11 }} />
+            <span style={{ fontWeight:900, fontSize:16, color:'#fff', letterSpacing:-.5 }}>S/ {mesa.totalActivo.toFixed(2)}</span>
+          </div>
+        )}
         {mesa.estado === 'libre' && (
           <div style={{ background:e.gradient, borderRadius:12, padding:'10px 0', color:'#fff', fontWeight:700, fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:7, boxShadow:'0 3px 10px rgba(22,163,74,.35)' }}>
             <i className="fas fa-play" style={{ fontSize:11 }} />Atender
@@ -153,6 +170,7 @@ const MesaCardMobile = ({ mesa, onTap, onCobrar }) => {
 /* ── Sheet pedidos (mobile) ── */
 const SheetPedidos = ({ mesa, pedidos, loading, onClose, onAgregar, onCobrar, onMarcarEntregado }) => {
   const e = mesa?(EST[mesa.estado]||EST.libre):EST.libre;
+  const { C } = useTheme();
   const total = pedidos.reduce((s,p)=>s+parseFloat(p.total||0),0);
   const pendientes = pedidos.filter(p=>p.estado==='preparado').length;
   return (
@@ -182,23 +200,23 @@ const SheetPedidos = ({ mesa, pedidos, loading, onClose, onAgregar, onCobrar, on
       {loading ? <div style={{ display:'flex', justifyContent:'center', padding:'50px 0' }}><Spin /></div>
        : pedidos.length===0 ? (
         <div style={{ textAlign:'center', padding:'50px 20px' }}>
-          <div style={{ width:72, height:72, borderRadius:'50%', background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
-            <i className="fas fa-clipboard" style={{ fontSize:28, color:'#cbd5e1' }} />
+          <div style={{ width:72, height:72, borderRadius:'50%', background:C.surfaceAlt2, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+            <i className="fas fa-clipboard" style={{ fontSize:28, color:C.textMuted }} />
           </div>
-          <div style={{ fontWeight:700, fontSize:16, color:'#475569' }}>Sin pedidos</div>
-          <div style={{ fontSize:13, color:'#94a3b8', marginTop:6 }}>Toca "Agregar más" para crear el primer pedido</div>
+          <div style={{ fontWeight:700, fontSize:16, color:C.textSub }}>Sin pedidos</div>
+          <div style={{ fontSize:13, color:C.textMuted, marginTop:6 }}>Toca "Agregar más" para crear el primer pedido</div>
         </div>
       ) : pedidos.map(p=>{
         const est=ESTADO_PEDIDO[p.estado]||{label:p.estado,color:'#9ca3af'};
         const esListo=p.estado==='preparado';
         return (
-          <div key={p.id} style={{ background:esListo?'#f0fdf4':'#f8fafc', borderRadius:16, border:`1.5px solid ${esListo?'#86efac':'#e2e8f0'}`, padding:'14px 16px', marginBottom:12 }}>
+          <div key={p.id} style={{ background:esListo?'#f0fdf4':C.surfaceAlt, borderRadius:16, border:`1.5px solid ${esListo?'#86efac':C.border}`, padding:'14px 16px', marginBottom:12 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <div style={{ width:30, height:30, borderRadius:10, background:est.color+'20', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <i className="fas fa-clipboard-list" style={{ color:est.color, fontSize:12 }} />
                 </div>
-                <span style={{ fontWeight:700, fontSize:14, color:'#0f172a' }}>Pedido #{p.id}</span>
+                <span style={{ fontWeight:700, fontSize:14, color:C.text }}>Pedido #{p.id}</span>
               </div>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <span style={{ background:est.color, color:'#fff', borderRadius:20, padding:'3px 10px', fontSize:11, fontWeight:700 }}>{est.label}</span>
@@ -206,9 +224,9 @@ const SheetPedidos = ({ mesa, pedidos, loading, onClose, onAgregar, onCobrar, on
               </div>
             </div>
             {p.detalles?.map((d,i)=>(
-              <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'#64748b', padding:'4px 0', borderTop:i>0?'1px solid #e2e8f0':'none' }}>
-                <span><span style={{ fontWeight:700, color:'#374151' }}>{d.cantidad}×</span> {d.producto?.nombre}</span>
-                <span style={{ fontWeight:600, color:'#374151' }}>S/{parseFloat(d.subtotal).toFixed(2)}</span>
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:C.textSub, padding:'4px 0', borderTop:i>0?`1px solid ${C.borderLight}`:'none' }}>
+                <span><span style={{ fontWeight:700, color:C.text }}>{d.cantidad}×</span> {d.producto?.nombre}</span>
+                <span style={{ fontWeight:600, color:C.textSub }}>S/{parseFloat(d.subtotal).toFixed(2)}</span>
               </div>
             ))}
             {esListo&&(
@@ -225,34 +243,29 @@ const SheetPedidos = ({ mesa, pedidos, loading, onClose, onAgregar, onCobrar, on
 
 /* ── Sheet cobro (reutilizable mobile/desktop) ── */
 const CobroPanel = ({ mesa, onClose, onPagado, isModal=false }) => {
-  const [cuenta, setCuenta]   = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [metodo, setMetodo]   = useState(null);
-  const [monto, setMonto]     = useState('');
-  const [procesando, setProcesando] = useState(false);
+  const [cuenta, setCuenta]       = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [procesando, setProcesando] = useState(null); // 'yape' | 'efectivo' | null
 
   useEffect(()=>{
     if(!mesa) return;
-    setLoading(true); setCuenta(null); setMetodo(null); setMonto('');
+    setLoading(true); setCuenta(null);
     pedidosService.getCuenta(mesa.id)
       .then(r=>setCuenta(r.data.data))
       .catch(()=>toast.error('Error al cargar la cuenta'))
       .finally(()=>setLoading(false));
   },[mesa]);
 
-  const total  = cuenta?parseFloat(cuenta.resumen.total_general):0;
-  const montoN = parseFloat(monto||0);
-  const vuelto = Math.max(0,montoN-total);
-  const insuf  = metodo==='efectivo'&&montoN>0&&montoN<total;
+  const total = cuenta ? parseFloat(cuenta.resumen.total_general) : 0;
 
-  const pagar = async()=>{
-    setProcesando(true);
-    try{
-      await pedidosService.procesarPago(mesa.id,{ metodo_pago:metodo, monto_recibido:metodo==='efectivo'?montoN:total, observaciones_pago:'' });
-      toast.success(metodo==='yape'?`Yape confirmado — S/ ${total.toFixed(2)}`:`Efectivo — Vuelto S/ ${vuelto.toFixed(2)}`,{duration:4000});
+  const pagar = async (metodo) => {
+    setProcesando(metodo);
+    try {
+      await pedidosService.procesarPago(mesa.id, { metodo_pago: metodo, monto_recibido: total, observaciones_pago: '' });
+      toast.success(metodo === 'yape' ? `Yape confirmado — S/ ${total.toFixed(2)}` : `Efectivo cobrado — S/ ${total.toFixed(2)}`, { duration: 4000 });
       onPagado();
-    }catch{ toast.error('Error al procesar el pago'); }
-    finally{ setProcesando(false); }
+    } catch { toast.error('Error al procesar el pago'); }
+    finally { setProcesando(null); }
   };
 
   const content = loading ? (
@@ -261,111 +274,66 @@ const CobroPanel = ({ mesa, onClose, onPagado, isModal=false }) => {
     </div>
   ) : (
     <>
-      <div style={{ background:'linear-gradient(135deg,#15803d,#16a34a,#22c55e)', borderRadius:20, padding:'24px 20px', textAlign:'center', color:'#fff', marginBottom:20, boxShadow:'0 6px 24px rgba(22,163,74,.35)', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:-30, right:-20, width:100, height:100, borderRadius:'50%', background:'rgba(255,255,255,.08)' }} />
-        <div style={{ fontSize:11, fontWeight:700, letterSpacing:2, opacity:.8, marginBottom:6 }}>TOTAL A COBRAR</div>
-        <div style={{ fontSize:48, fontWeight:900, letterSpacing:-2, lineHeight:1 }}>S/ {total.toFixed(2)}</div>
-        <div style={{ fontSize:12, opacity:.75, marginTop:8, display:'flex', justifyContent:'center', gap:12 }}>
-          <span><i className="fas fa-clipboard-list" style={{ marginRight:4 }} />{cuenta?.resumen.total_pedidos} pedido(s)</span>
-          <span><i className="fas fa-box" style={{ marginRight:4 }} />{cuenta?.resumen.total_items} ítems</span>
+      {/* Total hero */}
+      <div style={{ background:'linear-gradient(135deg,#15803d,#16a34a,#22c55e)', borderRadius:22, padding:'26px 20px', textAlign:'center', color:'#fff', marginBottom:18, boxShadow:'0 8px 28px rgba(22,163,74,.38)', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:-30, right:-20, width:110, height:110, borderRadius:'50%', background:'rgba(255,255,255,.08)' }} />
+        <div style={{ position:'absolute', bottom:-20, left:-10, width:80, height:80, borderRadius:'50%', background:'rgba(255,255,255,.05)' }} />
+        <div style={{ fontSize:11, fontWeight:700, letterSpacing:2, opacity:.8, marginBottom:6 }}>TOTAL A COBRAR · MESA {mesa?.numero}</div>
+        <div style={{ fontSize:56, fontWeight:900, letterSpacing:-2, lineHeight:1 }}>S/ {total.toFixed(2)}</div>
+        <div style={{ fontSize:12, opacity:.75, marginTop:10, display:'flex', justifyContent:'center', gap:14 }}>
+          <span style={{ background:'rgba(255,255,255,.18)', borderRadius:20, padding:'3px 10px' }}>
+            <i className="fas fa-clipboard-list" style={{ marginRight:5 }} />{cuenta?.resumen.total_pedidos} pedido{cuenta?.resumen.total_pedidos!==1?'s':''}
+          </span>
+          <span style={{ background:'rgba(255,255,255,.18)', borderRadius:20, padding:'3px 10px' }}>
+            <i className="fas fa-box" style={{ marginRight:5 }} />{cuenta?.resumen.total_items} ítem{cuenta?.resumen.total_items!==1?'s':''}
+          </span>
         </div>
       </div>
 
-      {cuenta?.resumen.productos?.length>0&&!metodo&&(
-        <div style={{ background:'#f8fafc', borderRadius:16, border:'1px solid #e2e8f0', padding:'14px 16px', marginBottom:20 }}>
-          <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:1, marginBottom:12 }}>DETALLE</div>
+      {/* Productos */}
+      {cuenta?.resumen.productos?.length>0&&(
+        <div style={{ borderRadius:18, border:'1.5px solid #e2e8f0', overflow:'hidden', marginBottom:18 }}>
+          <div style={{ padding:'10px 16px', background:'#f8fafc', borderBottom:'1px solid #e2e8f0', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:1 }}>DETALLE DE CONSUMO</div>
           {cuenta.resumen.productos.map((p,i)=>(
-            <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:14, color:'#374151', padding:'6px 0', borderBottom:i<cuenta.resumen.productos.length-1?'1px solid #e2e8f0':'none' }}>
-              <span>{p.cantidad}× {p.producto?.nombre||p.nombre}</span>
-              <span style={{ fontWeight:700 }}>S/ {parseFloat(p.subtotal).toFixed(2)}</span>
+            <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'11px 16px', borderBottom:i<cuenta.resumen.productos.length-1?'1px solid #f1f5f9':'none', background:'#fff' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:28, height:28, borderRadius:8, background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#64748b' }}>{p.cantidad}×</div>
+                <span style={{ fontSize:14, color:'#374151', fontWeight:500 }}>{p.producto?.nombre||p.nombre}</span>
+              </div>
+              <span style={{ fontWeight:800, fontSize:14, color:'#0f172a' }}>S/ {parseFloat(p.subtotal).toFixed(2)}</span>
             </div>
           ))}
         </div>
       )}
 
-      {!metodo&&(
-        <>
-          <div style={{ fontSize:12, fontWeight:700, color:'#94a3b8', textAlign:'center', letterSpacing:1, marginBottom:14 }}>MÉTODO DE PAGO</div>
-          <div style={{ display:'flex', gap:14 }}>
-            {[
-              { key:'yape', label:'YAPE', sub:'Pago digital', icon:'fa-mobile-alt', grad:'linear-gradient(135deg,#7c3aed,#a78bfa)', border:'#7c3aed', bg:'#f5f3ff', shadow:'rgba(124,58,237,.15)' },
-              { key:'efectivo', label:'EFECTIVO', sub:'Con vuelto', icon:'fa-money-bill-wave', grad:'linear-gradient(135deg,#16a34a,#22c55e)', border:'#16a34a', bg:'#f0fdf4', shadow:'rgba(22,163,74,.15)' },
-            ].map(m=>(
-              <button key={m.key} onClick={()=>{ setMetodo(m.key); if(m.key==='efectivo') setMonto(total.toFixed(2)); }}
-                style={{ flex:1, border:`2px solid ${m.border}`, borderRadius:20, padding:'20px 10px', background:m.bg, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:10, fontFamily:'inherit', boxShadow:`0 4px 16px ${m.shadow}` }}>
-                <div style={{ width:52, height:52, borderRadius:'50%', background:m.grad, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <i className={`fas ${m.icon}`} style={{ color:'#fff', fontSize:22 }} />
-                </div>
-                <div>
-                  <div style={{ fontWeight:900, color:m.border, fontSize:16 }}>{m.label}</div>
-                  <div style={{ fontSize:11, color:'#94a3b8' }}>{m.sub}</div>
-                </div>
-              </button>
-            ))}
+      {/* Botones de pago directos */}
+      <div style={{ fontSize:12, fontWeight:700, color:'#94a3b8', textAlign:'center', letterSpacing:1, marginBottom:14 }}>SELECCIONA EL MÉTODO DE PAGO</div>
+      <div style={{ display:'flex', gap:12, marginBottom:12 }}>
+        <button onClick={()=>pagar('yape')} disabled={!!procesando}
+          style={{ flex:1, border:'2.5px solid #7c3aed', borderRadius:22, padding:'22px 10px', background:procesando==='yape'?'#7c3aed':'#f5f3ff', cursor:procesando?'not-allowed':'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:10, fontFamily:'inherit', boxShadow:'0 5px 18px rgba(124,58,237,.18)', transition:'all .15s', opacity:procesando&&procesando!=='yape'?.45:1 }}>
+          <div style={{ width:56, height:56, borderRadius:'50%', background:'linear-gradient(135deg,#7c3aed,#a78bfa)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 14px rgba(124,58,237,.4)' }}>
+            {procesando==='yape' ? <i className="fas fa-spinner fa-spin" style={{ color:'#fff', fontSize:24 }} /> : <i className="fas fa-mobile-alt" style={{ color:'#fff', fontSize:24 }} />}
           </div>
-        </>
-      )}
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontWeight:900, color:procesando==='yape'?'#fff':'#7c3aed', fontSize:17 }}>YAPE</div>
+            <div style={{ fontSize:12, color:procesando==='yape'?'rgba(255,255,255,.8)':'#94a3b8', marginTop:2 }}>Pago digital</div>
+          </div>
+        </button>
 
-      {metodo==='efectivo'&&(
-        <>
-          <button onClick={()=>setMetodo(null)} style={{ background:'none', border:'none', color:'#94a3b8', fontSize:13, cursor:'pointer', marginBottom:16, padding:0, display:'flex', alignItems:'center', gap:6, fontFamily:'inherit' }}>
-            <i className="fas fa-arrow-left" style={{ fontSize:11 }} />Cambiar método
-          </button>
-          <div style={{ background:'#f0fdf4', border:'2px solid #86efac', borderRadius:18, padding:'18px 16px', marginBottom:16 }}>
-            <div style={{ fontSize:12, fontWeight:700, color:'#15803d', marginBottom:12, display:'flex', alignItems:'center', gap:6 }}>
-              <i className="fas fa-money-bill-wave" />MONTO RECIBIDO
-            </div>
-            <div style={{ display:'flex', alignItems:'center', background:'#fff', borderRadius:12, border:'1.5px solid #bbf7d0', overflow:'hidden' }}>
-              <span style={{ padding:'0 16px', fontWeight:900, color:'#16a34a', fontSize:20, borderRight:'1.5px solid #bbf7d0' }}>S/</span>
-              <input type="number" step="0.5" min={total} value={monto} onChange={e=>setMonto(e.target.value)} autoFocus
-                style={{ flex:1, border:'none', outline:'none', fontSize:26, fontWeight:900, textAlign:'right', padding:'12px 16px', color:'#0f172a' }} />
-            </div>
+        <button onClick={()=>pagar('efectivo')} disabled={!!procesando}
+          style={{ flex:1, border:'2.5px solid #16a34a', borderRadius:22, padding:'22px 10px', background:procesando==='efectivo'?'#16a34a':'#f0fdf4', cursor:procesando?'not-allowed':'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:10, fontFamily:'inherit', boxShadow:'0 5px 18px rgba(22,163,74,.18)', transition:'all .15s', opacity:procesando&&procesando!=='efectivo'?.45:1 }}>
+          <div style={{ width:56, height:56, borderRadius:'50%', background:'linear-gradient(135deg,#16a34a,#22c55e)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 14px rgba(22,163,74,.4)' }}>
+            {procesando==='efectivo' ? <i className="fas fa-spinner fa-spin" style={{ color:'#fff', fontSize:24 }} /> : <i className="fas fa-money-bill-wave" style={{ color:'#fff', fontSize:24 }} />}
           </div>
-          {montoN>0&&!insuf&&(
-            <div style={{ background:vuelto>0?'#fffbeb':'#f0fdf4', border:`2px solid ${vuelto>0?'#fcd34d':'#86efac'}`, borderRadius:16, padding:'16px 18px', display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:'#94a3b8' }}>VUELTO</div>
-                <div style={{ fontSize:28, fontWeight:900, color:vuelto>0?'#d97706':'#16a34a', lineHeight:1.1 }}>S/ {vuelto.toFixed(2)}</div>
-              </div>
-              <div style={{ width:48, height:48, borderRadius:'50%', background:vuelto>0?'#fef3c7':'#dcfce7', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <i className={`fas ${vuelto>0?'fa-coins':'fa-check'}`} style={{ color:vuelto>0?'#d97706':'#16a34a', fontSize:20 }} />
-              </div>
-            </div>
-          )}
-          {insuf&&(
-            <div style={{ background:'#fef2f2', border:'2px solid #fca5a5', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
-              <i className="fas fa-exclamation-circle" style={{ color:'#dc2626', fontSize:20 }} />
-              <div>
-                <div style={{ fontWeight:700, color:'#b91c1c', fontSize:14 }}>Monto insuficiente</div>
-                <div style={{ fontSize:12, color:'#ef4444' }}>Falta S/ {Math.max(0,total-montoN).toFixed(2)}</div>
-              </div>
-            </div>
-          )}
-          <button onClick={pagar} disabled={procesando||insuf||!monto}
-            style={{ width:'100%', padding:15, background:procesando||insuf||!monto?'#d1d5db':'linear-gradient(135deg,#16a34a,#22c55e)', color:procesando||insuf||!monto?'#9ca3af':'#fff', border:'none', borderRadius:16, fontWeight:800, fontSize:15, cursor:procesando||insuf||!monto?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'inherit', boxShadow:procesando||insuf||!monto?'none':'0 4px 16px rgba(22,163,74,.4)' }}>
-            {procesando?<><i className="fas fa-spinner fa-spin" />Procesando...</>:<><i className="fas fa-check" />Confirmar — S/ {total.toFixed(2)}</>}
-          </button>
-        </>
-      )}
-
-      {metodo==='yape'&&(
-        <>
-          <button onClick={()=>setMetodo(null)} style={{ background:'none', border:'none', color:'#94a3b8', fontSize:13, cursor:'pointer', marginBottom:16, padding:0, display:'flex', alignItems:'center', gap:6, fontFamily:'inherit' }}>
-            <i className="fas fa-arrow-left" style={{ fontSize:11 }} />Cambiar método
-          </button>
-          <div style={{ background:'linear-gradient(135deg,#7c3aed,#a78bfa)', borderRadius:20, padding:'30px 20px', textAlign:'center', marginBottom:20, boxShadow:'0 6px 24px rgba(124,58,237,.3)' }}>
-            <i className="fas fa-mobile-alt" style={{ color:'#fff', fontSize:52, display:'block', marginBottom:16 }} />
-            <div style={{ fontWeight:900, color:'#fff', fontSize:20, marginBottom:8 }}>Pago con Yape</div>
-            <div style={{ color:'rgba(255,255,255,.85)', fontSize:14, lineHeight:1.5 }}>
-              Confirma cuando el cliente haya yapado<br /><span style={{ fontWeight:900, fontSize:18 }}>S/ {total.toFixed(2)}</span>
-            </div>
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontWeight:900, color:procesando==='efectivo'?'#fff':'#16a34a', fontSize:17 }}>EFECTIVO</div>
+            <div style={{ fontSize:12, color:procesando==='efectivo'?'rgba(255,255,255,.8)':'#94a3b8', marginTop:2 }}>Pago en caja</div>
           </div>
-          <button onClick={pagar} disabled={procesando}
-            style={{ width:'100%', padding:15, background:procesando?'#d1d5db':'linear-gradient(135deg,#7c3aed,#a78bfa)', color:procesando?'#9ca3af':'#fff', border:'none', borderRadius:16, fontWeight:800, fontSize:15, cursor:procesando?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'inherit', boxShadow:procesando?'none':'0 4px 16px rgba(124,58,237,.4)' }}>
-            {procesando?<><i className="fas fa-spinner fa-spin" />Procesando...</>:<><i className="fas fa-check" />Confirmar Yape — S/ {total.toFixed(2)}</>}
-          </button>
-        </>
-      )}
+        </button>
+      </div>
+      <div style={{ fontSize:11, color:'#94a3b8', textAlign:'center', letterSpacing:.3 }}>
+        Toca el método para confirmar el cobro de S/ {total.toFixed(2)}
+      </div>
     </>
   );
 
@@ -378,6 +346,7 @@ const CobroPanel = ({ mesa, onClose, onPagado, isModal=false }) => {
 ════════════════════════════════════════ */
 const MobileLayout = ({ mesas, stats, loading, fetchMesas }) => {
   const navigate = useNavigate();
+  const { C } = useTheme();
   const [filtro, setFiltro]           = useState('todas');
   const [mesaPedidos, setMesaPedidos] = useState(null);
   const [pedidos, setPedidos]         = useState([]);
@@ -408,7 +377,7 @@ const MobileLayout = ({ mesas, stats, loading, fetchMesas }) => {
 
   const mesasFiltradas=mesas.filter(m=>filtro==='todas'||m.estado===filtro);
 
-  if(loading) return <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'65vh', gap:16 }}><Spin size={44} /><span style={{ color:'#94a3b8', fontSize:15 }}>Cargando mesas...</span></div>;
+  if(loading) return <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'65vh', gap:16 }}><Spin size={44} /><span style={{ color:C.textMuted, fontSize:15 }}>Cargando mesas...</span></div>;
 
   return (
     <div>
@@ -440,10 +409,10 @@ const MobileLayout = ({ mesas, stats, loading, fetchMesas }) => {
       </div>
       {mesasFiltradas.length===0 ? (
         <div style={{ textAlign:'center', padding:'64px 20px' }}>
-          <div style={{ width:80, height:80, borderRadius:'50%', background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
-            <i className="fas fa-chair" style={{ fontSize:32, color:'#cbd5e1' }} />
+          <div style={{ width:80, height:80, borderRadius:'50%', background:C.surfaceAlt2, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+            <i className="fas fa-chair" style={{ fontSize:32, color:C.textMuted }} />
           </div>
-          <div style={{ fontSize:16, fontWeight:700, color:'#475569' }}>Sin mesas</div>
+          <div style={{ fontSize:16, fontWeight:700, color:C.textSub }}>Sin mesas</div>
         </div>
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12 }}>
@@ -467,9 +436,10 @@ const MobileLayout = ({ mesas, stats, loading, fetchMesas }) => {
 const MesaCardDesk = ({ mesa, onTap, onCobrar }) => {
   const e = EST[mesa.estado]||EST.libre;
   const [hov, setHov] = useState(false);
+  const { C } = useTheme();
   return (
     <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ background:'#fff', borderRadius:20, border:`1.5px solid ${hov?e.color:e.border}`, overflow:'hidden', cursor:'pointer', transition:'all .2s', boxShadow:hov?`0 8px 32px ${e.color}25`:'0 2px 12px rgba(0,0,0,.06)', transform:hov?'translateY(-4px)':'none' }}>
+      style={{ background:C.surface, borderRadius:20, border:`1.5px solid ${hov?e.color:e.border}`, overflow:'hidden', cursor:'pointer', transition:'all .2s', boxShadow:hov?`0 8px 32px ${e.color}25`:'0 2px 12px rgba(0,0,0,.06)', transform:hov?'translateY(-4px)':'none' }}>
       {/* Tope de color */}
       <div style={{ height:6, background:e.gradient }} />
       <div style={{ padding:'20px 18px 18px' }}>
@@ -481,9 +451,15 @@ const MesaCardDesk = ({ mesa, onTap, onCobrar }) => {
             <i className={`fas ${e.icon}`} style={{ fontSize:10 }} />{e.label}
           </span>
         </div>
-        <div style={{ fontSize:13, color:'#94a3b8', display:'flex', alignItems:'center', gap:5, marginBottom:16 }}>
+        <div style={{ fontSize:13, color:C.textMuted, display:'flex', alignItems:'center', gap:5, marginBottom: mesa.estado !== 'libre' && mesa.totalActivo > 0 ? 10 : 16 }}>
           <i className="fas fa-users" style={{ fontSize:11 }} />{mesa.capacidad} personas
         </div>
+        {mesa.estado !== 'libre' && mesa.totalActivo > 0 && (
+          <div style={{ background:'linear-gradient(135deg,#16a34a,#22c55e)', borderRadius:12, padding:'9px 12px', marginBottom:12, display:'flex', alignItems:'center', justifyContent:'center', gap:7, boxShadow:'0 3px 10px rgba(22,163,74,.25)' }}>
+            <i className="fas fa-coins" style={{ color:'rgba(255,255,255,.85)', fontSize:12 }} />
+            <span style={{ fontWeight:900, fontSize:18, color:'#fff', letterSpacing:-.5 }}>S/ {mesa.totalActivo.toFixed(2)}</span>
+          </div>
+        )}
         {mesa.estado==='libre'&&(
           <button onClick={()=>onTap(mesa)} style={{ width:'100%', padding:'10px 0', background:e.gradient, border:'none', borderRadius:12, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:7, fontFamily:'inherit', boxShadow:`0 3px 10px ${e.color}40` }}>
             <i className="fas fa-play" style={{ fontSize:11 }} />Atender
@@ -511,18 +487,19 @@ const MesaCardDesk = ({ mesa, onTap, onCobrar }) => {
 
 /* ── Modal desktop ── */
 const Modal = ({ open, onClose, title, subtitle, children, width=520 }) => {
+  const { C } = useTheme();
   if(!open) return null;
   return (
     <>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1050, background:'rgba(15,23,42,.65)', backdropFilter:'blur(6px)', animation:'fadeIn .2s ease' }} />
+      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1050, background:C.overlay, backdropFilter:'blur(6px)', animation:'fadeIn .2s ease' }} />
       <div style={{ position:'fixed', inset:0, zIndex:1051, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-        <div style={{ background:'#fff', borderRadius:24, width:'100%', maxWidth:width, maxHeight:'85vh', display:'flex', flexDirection:'column', boxShadow:'0 24px 64px rgba(0,0,0,.22)', animation:'modalIn .25s ease' }}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'22px 24px', borderBottom:'1px solid #f1f5f9' }}>
+        <div style={{ background:C.surface, borderRadius:24, width:'100%', maxWidth:width, maxHeight:'85vh', display:'flex', flexDirection:'column', boxShadow:'0 24px 64px rgba(0,0,0,.22)', animation:'modalIn .25s ease' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'22px 24px', borderBottom:`1px solid ${C.borderLight}` }}>
             <div>
-              <div style={{ fontWeight:800, fontSize:20, color:'#0f172a' }}>{title}</div>
-              {subtitle&&<div style={{ fontSize:13, color:'#94a3b8', marginTop:2 }}>{subtitle}</div>}
+              <div style={{ fontWeight:800, fontSize:20, color:C.text }}>{title}</div>
+              {subtitle&&<div style={{ fontSize:13, color:C.textMuted, marginTop:2 }}>{subtitle}</div>}
             </div>
-            <button onClick={onClose} style={{ width:38, height:38, borderRadius:'50%', background:'#f1f5f9', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b' }}><i className="fas fa-times" /></button>
+            <button onClick={onClose} style={{ width:38, height:38, borderRadius:'50%', background:C.surfaceAlt2, border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:C.textMuted }}><i className="fas fa-times" /></button>
           </div>
           <div style={{ flex:1, overflowY:'auto', padding:'20px 24px' }}>{children}</div>
         </div>
@@ -533,6 +510,7 @@ const Modal = ({ open, onClose, title, subtitle, children, width=520 }) => {
 
 const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
   const navigate = useNavigate();
+  const { C } = useTheme();
   const [filtro, setFiltro]           = useState('todas');
   const [mesaModal, setMesaModal]     = useState(null);   // pedidos
   const [pedidos, setPedidos]         = useState([]);
@@ -565,7 +543,7 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
   const total = pedidos.reduce((s,p)=>s+parseFloat(p.total||0),0);
 
   return (
-    <div style={{ display:'flex', minHeight:'calc(100vh - 58px)', background:'#f1f5f9' }}>
+    <div style={{ display:'flex', minHeight:'calc(100vh - 58px)', background:C.bg }}>
       {/* ── Sidebar ── */}
       <aside style={{ width:260, flexShrink:0, background:'#0f172a', display:'flex', flexDirection:'column', padding:'24px 16px', gap:6 }}>
         {/* Header sidebar */}
@@ -617,8 +595,8 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:28 }}>
           <div>
-            <h1 style={{ fontWeight:900, fontSize:26, color:'#0f172a', margin:0 }}>Mesas del Restaurante</h1>
-            <p style={{ color:'#64748b', fontSize:14, margin:'4px 0 0' }}>
+            <h1 style={{ fontWeight:900, fontSize:26, color:C.text, margin:0 }}>Mesas del Restaurante</h1>
+            <p style={{ color:C.textSub, fontSize:14, margin:'4px 0 0' }}>
               {mesasFiltradas.length} mesa{mesasFiltradas.length!==1?'s':''} · Actualización automática cada 30s
             </p>
           </div>
@@ -657,21 +635,21 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
         {loadingPed ? <div style={{ display:'flex', justifyContent:'center', padding:'40px 0' }}><Spin /></div>
         : pedidos.length===0 ? (
           <div style={{ textAlign:'center', padding:'40px 0' }}>
-            <i className="fas fa-clipboard" style={{ fontSize:44, color:'#cbd5e1', display:'block', marginBottom:14 }} />
-            <div style={{ fontWeight:700, color:'#475569', fontSize:16 }}>Sin pedidos activos</div>
-            <div style={{ color:'#94a3b8', fontSize:13, marginTop:6 }}>Toca "Agregar más" para crear el primer pedido</div>
+            <i className="fas fa-clipboard" style={{ fontSize:44, color:C.textMuted, display:'block', marginBottom:14 }} />
+            <div style={{ fontWeight:700, color:C.textSub, fontSize:16 }}>Sin pedidos activos</div>
+            <div style={{ color:C.textMuted, fontSize:13, marginTop:6 }}>Toca "Agregar más" para crear el primer pedido</div>
           </div>
         ) : pedidos.map(p=>{
           const est=ESTADO_PEDIDO[p.estado]||{label:p.estado,color:'#9ca3af'};
           const esListo=p.estado==='preparado';
           return (
-            <div key={p.id} style={{ background:esListo?'#f0fdf4':'#f8fafc', borderRadius:16, border:`1.5px solid ${esListo?'#86efac':'#e2e8f0'}`, padding:'14px 16px', marginBottom:12 }}>
+            <div key={p.id} style={{ background:esListo?'#f0fdf4':C.surfaceAlt, borderRadius:16, border:`1.5px solid ${esListo?'#86efac':C.border}`, padding:'14px 16px', marginBottom:12 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                   <div style={{ width:30, height:30, borderRadius:10, background:est.color+'20', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <i className="fas fa-clipboard-list" style={{ color:est.color, fontSize:12 }} />
                   </div>
-                  <span style={{ fontWeight:700, fontSize:14, color:'#0f172a' }}>Pedido #{p.id}</span>
+                  <span style={{ fontWeight:700, fontSize:14, color:C.text }}>Pedido #{p.id}</span>
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                   <span style={{ background:est.color, color:'#fff', borderRadius:20, padding:'3px 10px', fontSize:11, fontWeight:700 }}>{est.label}</span>
@@ -679,9 +657,9 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
                 </div>
               </div>
               {p.detalles?.map((d,i)=>(
-                <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'#64748b', padding:'4px 0', borderTop:i>0?'1px solid #e2e8f0':'none' }}>
-                  <span><span style={{ fontWeight:700, color:'#374151' }}>{d.cantidad}×</span> {d.producto?.nombre}</span>
-                  <span style={{ fontWeight:600, color:'#374151' }}>S/{parseFloat(d.subtotal).toFixed(2)}</span>
+                <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:C.textSub, padding:'4px 0', borderTop:i>0?`1px solid ${C.borderLight}`:'none' }}>
+                  <span><span style={{ fontWeight:700, color:C.text }}>{d.cantidad}×</span> {d.producto?.nombre}</span>
+                  <span style={{ fontWeight:600, color:C.textSub }}>S/{parseFloat(d.subtotal).toFixed(2)}</span>
                 </div>
               ))}
               {esListo&&<button onClick={()=>handleEntregado(p.id)} style={{ marginTop:10, width:'100%', padding:'10px', background:'linear-gradient(135deg,#16a34a,#22c55e)', color:'#fff', border:'none', borderRadius:12, fontWeight:700, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:7, fontFamily:'inherit' }}><i className="fas fa-check" />Marcar como Entregado</button>}
