@@ -8,10 +8,10 @@ router.get('/', authenticateToken, mesasController.obtenerMesas);
 router.get('/estadisticas', authenticateToken, mesasController.obtenerEstadisticasMesas);
 router.get('/:id', authenticateToken, mesasController.obtenerMesaPorId);
 
-// Rutas para cambiar estado (mozos, cajeros, administradores)
-router.patch('/:id/estado', 
-    authenticateToken, 
-    authorizeRoles('mozo', 'cajero', 'administrador'),
+// Rutas para cambiar estado (mozos y administradores)
+router.patch('/:id/estado',
+    authenticateToken,
+    authorizeRoles('mozo', 'administrador'),
     mesasController.cambiarEstadoMesa
 );
 

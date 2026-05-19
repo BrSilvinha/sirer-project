@@ -9,10 +9,10 @@ router.get('/disponibles', authenticateToken, productosController.obtenerProduct
 router.get('/categoria/:categoria_id', authenticateToken, productosController.obtenerProductosPorCategoria);
 router.get('/:id', authenticateToken, productosController.obtenerProductoPorId);
 
-// Rutas para cambiar disponibilidad (administradores y cocina)
-router.patch('/:id/disponibilidad', 
-    authenticateToken, 
-    authorizeRoles('administrador', 'cocina'),
+// Rutas para cambiar disponibilidad (solo administradores)
+router.patch('/:id/disponibilidad',
+    authenticateToken,
+    authorizeRoles('administrador'),
     productosController.cambiarDisponibilidadProducto
 );
 

@@ -1,592 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { 
-    Container, Row, Col, Card, Badge, Button, 
-    Spinner, Alert, ListGroup, Modal, Form 
-} from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pedidosService } from '../../services/api';
 import toast from 'react-hot-toast';
 
+const CSS = `
+  @keyframes spin    { to{transform:rotate(360deg)} }
+  @keyframes fadeIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
+`;
+
+const ESTADO = {
+  nuevo:     { label:'Nuevo',      color:'#6366f1', bg:'#eef2ff', icon:'fa-plus-circle'  },
+  en_cocina: { label:'En Proceso', color:'#d97706', bg:'#fffbeb', icon:'fa-fire'         },
+  preparado: { label:'Listo',      color:'#16a34a', bg:'#f0fdf4', icon:'fa-check-circle' },
+  entregado: { label:'Entregado',  color:'#0ea5e9', bg:'#f0f9ff', icon:'fa-handshake'    },
+  pagado:    { label:'Pagado',     color:'#64748b', bg:'#f8fafc', icon:'fa-receipt'       },
+};
+
+const SIGUIENTE = {
+  nuevo:     ['en_cocina'],
+  en_cocina: ['preparado'],
+  preparado: ['entregado'],
+  entregado: [],
+  pagado:    [],
+};
+
+const tiempoDesde = (fecha) => {
+  if (!fecha) return null;
+  const mins = Math.floor((Date.now() - new Date(fecha)) / 60000);
+  if (mins < 1) return 'Ahora';
+  if (mins < 60) return `${mins} min`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+};
+
+/* ── Spinner ── */
+const Spin = () => (
+  <div style={{ width: 36, height: 36, border: '3px solid #eef2ff', borderTop: '3px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
+);
+
+/* ══════════════════════════════════════════
+   COMPONENTE PRINCIPAL
+══════════════════════════════════════════ */
 const PedidoDetalles = () => {
-    const { pedidoId } = useParams();
-    const navigate = useNavigate();
-    
-    const [pedido, setPedido] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [showCambiarEstadoModal, setShowCambiarEstadoModal] = useState(false);
-    const [nuevoEstado, setNuevoEstado] = useState('');
-    const [actualizando, setActualizando] = useState(false);
+  const { pedidoId } = useParams();
+  const navigate = useNavigate();
+  const [pedido, setPedido]       = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [cambiando, setCambiando] = useState(false);
 
-    useEffect(() => {
-        fetchPedidoDetalles();
-    }, [pedidoId]);
+  const fetch = useCallback(async () => {
+    try {
+      const r = await pedidosService.getById(pedidoId);
+      setPedido(r.data.data);
+    } catch {
+      toast.error('No se pudo cargar el pedido');
+      navigate('/dashboard/mozo/historial');
+    } finally {
+      setLoading(false);
+    }
+  }, [pedidoId, navigate]);
 
-    const fetchPedidoDetalles = async () => {
-        try {
-            setLoading(true);
-            
-            // Mock data por ahora - en producción sería: await pedidosService.getById(pedidoId)
-            const mockPedido = {
-                id: parseInt(pedidoId),
-                mesa: {
-                    id: 1,
-                    numero: 5,
-                    capacidad: 4
-                },
-                mozo: {
-                    id: 1,
-                    nombre: 'Juan Pérez'
-                },
-                estado: 'en_cocina',
-                fecha: new Date().toISOString(),
-                productos: [
-                    {
-                        id: 1,
-                        nombre: 'Pizza Margarita',
-                        precio: 25.90,
-                        cantidad: 1,
-                        subtotal: 25.90,
-                        categoria: 'Platos Principales'
-                    },
-                    {
-                        id: 2,
-                        nombre: 'Coca Cola',
-                        precio: 3.50,
-                        cantidad: 2,
-                        subtotal: 7.00,
-                        categoria: 'Bebidas'
-                    }
-                ],
-                total: 32.90,
-                observaciones: 'Sin cebolla en la pizza',
-                tiempos: {
-                    creado: new Date().toISOString(),
-                    enviado_cocina: new Date(Date.now() - 10 * 60000).toISOString(), // 10 min ago
-                    preparado: null,
-                    entregado: null,
-                    pagado: null
-                }
-            };
+  useEffect(() => { fetch(); }, [fetch]);
 
-            setPedido(mockPedido);
-            setError(null);
-        } catch (err) {
-            console.error('Error fetching pedido:', err);
-            setError('Error al cargar los detalles del pedido');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const cambiarEstado = async (nuevoEstado) => {
+    setCambiando(true);
+    try {
+      await pedidosService.changeStatus(pedidoId, nuevoEstado);
+      toast.success(`Pedido marcado como ${ESTADO[nuevoEstado]?.label}`);
+      fetch();
+    } catch {
+      toast.error('Error al actualizar el estado');
+    } finally {
+      setCambiando(false);
+    }
+  };
 
-    const handleCambiarEstado = async () => {
-        if (!nuevoEstado) return;
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 14 }}>
+      <style>{CSS}</style>
+      <Spin /><span style={{ color: '#94a3b8', fontSize: 15 }}>Cargando pedido...</span>
+    </div>
+  );
 
-        setActualizando(true);
-        try {
-            // En producción: await pedidosService.changeStatus(pedidoId, nuevoEstado)
-            
-            // Mock update
-            setPedido({
-                ...pedido,
-                estado: nuevoEstado,
-                tiempos: {
-                    ...pedido.tiempos,
-                    [nuevoEstado]: new Date().toISOString()
-                }
-            });
+  if (!pedido) return null;
 
-            toast.success(`Pedido marcado como ${getEstadoText(nuevoEstado).toLowerCase()}`);
-            setShowCambiarEstadoModal(false);
-            setNuevoEstado('');
-        } catch (error) {
-            toast.error('Error al actualizar el estado del pedido');
-        } finally {
-            setActualizando(false);
-        }
-    };
+  const est = ESTADO[pedido.estado] || ESTADO.nuevo;
+  const total = parseFloat(pedido.total || 0);
+  const siguientes = SIGUIENTE[pedido.estado] || [];
+  const detalles = pedido.detalles || pedido.DetallePedidos || [];
 
-    const getEstadoColor = (estado) => {
-        const colors = {
-            nuevo: 'primary',
-            en_cocina: 'warning',
-            preparado: 'info',
-            entregado: 'success',
-            pagado: 'secondary'
-        };
-        return colors[estado] || 'secondary';
-    };
+  return (
+    <>
+      <style>{CSS}</style>
 
-    const getEstadoText = (estado) => {
-        const texts = {
-            nuevo: 'Nuevo',
-            en_cocina: 'En Cocina',
-            preparado: 'Preparado',
-            entregado: 'Entregado',
-            pagado: 'Pagado'
-        };
-        return texts[estado] || estado;
-    };
+      {/* ── Encabezado ── */}
+      <div style={{ background: `linear-gradient(135deg,${est.color}dd,${est.color})`, padding: '20px 16px 16px', animation: 'fadeIn .3s ease' }}>
+        <button onClick={() => navigate('/dashboard/mozo/historial')} style={{ background: 'rgba(255,255,255,.2)', border: '1px solid rgba(255,255,255,.35)', borderRadius: 10, color: '#fff', padding: '7px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
+          <i className="fas fa-arrow-left" style={{ fontSize: 11 }} />Volver
+        </button>
 
-    const getEstadoIcon = (estado) => {
-        const icons = {
-            nuevo: 'fa-plus-circle',
-            en_cocina: 'fa-fire',
-            preparado: 'fa-check-circle',
-            entregado: 'fa-handshake',
-            pagado: 'fa-credit-card'
-        };
-        return icons[estado] || 'fa-circle';
-    };
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.7)', fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>PEDIDO</div>
+            <div style={{ fontWeight: 900, fontSize: 28, color: '#fff', lineHeight: 1 }}>#{pedido.id}</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>
+              Mesa {pedido.mesa?.numero || pedido.Mesa?.numero || '—'}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ background: 'rgba(255,255,255,.2)', borderRadius: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 7, border: '1px solid rgba(255,255,255,.3)' }}>
+              <i className={`fas ${est.icon}`} style={{ color: '#fff', fontSize: 14 }} />
+              <span style={{ fontWeight: 800, color: '#fff', fontSize: 14 }}>{est.label}</span>
+            </div>
+            <div style={{ fontWeight: 900, fontSize: 26, color: '#fff', marginTop: 8 }}>S/ {total.toFixed(2)}</div>
+          </div>
+        </div>
+      </div>
 
-    const getPosiblesEstados = (estadoActual) => {
-        const flujo = {
-            nuevo: ['en_cocina'],
-            en_cocina: ['preparado'],
-            preparado: ['entregado'],
-            entregado: ['pagado'],
-            pagado: []
-        };
-        return flujo[estadoActual] || [];
-    };
+      <div style={{ padding: '16px 16px 32px' }}>
 
-    const calcularTiempoTranscurrido = (fechaInicio) => {
-        if (!fechaInicio) return null;
-        
-        const ahora = new Date();
-        const inicio = new Date(fechaInicio);
-        const diferencia = Math.floor((ahora - inicio) / 1000 / 60); // minutos
-        
-        if (diferencia < 1) return 'Recién';
-        if (diferencia < 60) return `${diferencia} min`;
-        
-        const horas = Math.floor(diferencia / 60);
-        const minutos = diferencia % 60;
-        return `${horas}h ${minutos}m`;
-    };
+        {/* ── Botones de acción ── */}
+        {siguientes.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            {siguientes.map(sig => {
+              const s = ESTADO[sig];
+              return (
+                <button key={sig} onClick={() => cambiarEstado(sig)} disabled={cambiando}
+                  style={{ width: '100%', padding: '14px 0', background: cambiando ? '#d1d5db' : `linear-gradient(135deg,${s.color}cc,${s.color})`, color: '#fff', border: 'none', borderRadius: 16, fontWeight: 800, fontSize: 15, cursor: cambiando ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontFamily: 'inherit', boxShadow: cambiando ? 'none' : `0 4px 16px ${s.color}50`, animation: cambiando ? 'none' : 'fadeIn .3s ease' }}>
+                  {cambiando
+                    ? <><Spin /><span>Actualizando...</span></>
+                    : <><i className={`fas ${s.icon}`} />Marcar como {s.label}</>
+                  }
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-    if (loading) {
-        return (
-            <Container>
-                <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3">Cargando detalles del pedido...</p>
+        {/* ── Agregar productos ── */}
+        <button onClick={() => navigate(`/dashboard/mozo/pedidos/${pedido.mesa?.id || pedido.Mesa?.id}`)}
+          style={{ width: '100%', padding: '13px 0', background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: 14, color: '#6366f1', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', marginBottom: 20 }}>
+          <i className="fas fa-plus" />Agregar más productos
+        </button>
+
+        {/* ── Lista de productos ── */}
+        <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e2e8f0', overflow: 'hidden', marginBottom: 16 }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <i className="fas fa-utensils" style={{ color: '#6366f1', fontSize: 14 }} />
+            <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>Productos</span>
+            <span style={{ marginLeft: 'auto', background: '#eef2ff', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>{detalles.length} ítem{detalles.length !== 1 ? 's' : ''}</span>
+          </div>
+          {detalles.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '32px 16px', color: '#94a3b8' }}>
+              <i className="fas fa-clipboard" style={{ fontSize: 32, display: 'block', marginBottom: 10, opacity: .3 }} />
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Sin productos</div>
+            </div>
+          ) : (
+            <div>
+              {detalles.map((d, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < detalles.length - 1 ? '1px solid #f8fafc' : 'none' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900, fontSize: 14, color: '#6366f1' }}>
+                    {d.cantidad}×
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {d.producto?.nombre || d.Producto?.nombre || 'Producto'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>S/ {parseFloat(d.precio_unitario || d.producto?.precio || 0).toFixed(2)} c/u</div>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: '#16a34a', flexShrink: 0 }}>
+                    S/ {parseFloat(d.subtotal).toFixed(2)}
+                  </div>
                 </div>
-            </Container>
-        );
-    }
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 18px', background: '#f8fafc', borderTop: '1.5px solid #e2e8f0' }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>Total</span>
+                <span style={{ fontWeight: 900, fontSize: 18, color: '#16a34a' }}>S/ {total.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
-    if (error) {
-        return (
-            <Container>
-                <Alert variant="danger" className="mt-4">
-                    <Alert.Heading>Error</Alert.Heading>
-                    <p>{error}</p>
-                    <Button variant="outline-danger" onClick={() => navigate('/dashboard/mozo/historial')}>
-                        Volver al Historial
-                    </Button>
-                </Alert>
-            </Container>
-        );
-    }
-
-    if (!pedido) {
-        return (
-            <Container>
-                <Alert variant="warning" className="mt-4">
-                    <Alert.Heading>Pedido no encontrado</Alert.Heading>
-                    <p>El pedido solicitado no existe o no tienes permisos para verlo.</p>
-                    <Button variant="outline-warning" onClick={() => navigate('/dashboard/mozo/historial')}>
-                        Volver al Historial
-                    </Button>
-                </Alert>
-            </Container>
-        );
-    }
-
-    const posiblesEstados = getPosiblesEstados(pedido.estado);
-
-    return (
-        <Container fluid>
-            {/* Header */}
-            <Row className="mb-4">
-                <Col>
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <Button 
-                                variant="outline-secondary" 
-                                size="sm" 
-                                onClick={() => navigate('/dashboard/mozo/historial')}
-                                className="me-3"
-                            >
-                                <i className="fas fa-arrow-left me-1"></i>
-                                Volver
-                            </Button>
-                            <span>
-                                <h2 className="d-inline mb-0">Pedido #{pedido.id}</h2>
-                                <Badge bg={getEstadoColor(pedido.estado)} className="ms-3">
-                                    <i className={`fas ${getEstadoIcon(pedido.estado)} me-1`}></i>
-                                    {getEstadoText(pedido.estado)}
-                                </Badge>
-                            </span>
-                        </div>
-                        {posiblesEstados.length > 0 && (
-                            <Button 
-                                variant="primary"
-                                onClick={() => setShowCambiarEstadoModal(true)}
-                            >
-                                <i className="fas fa-edit me-2"></i>
-                                Cambiar Estado
-                            </Button>
-                        )}
-                    </div>
-                </Col>
-            </Row>
-
-            <Row>
-                {/* Información General */}
-                <Col lg={8}>
-                    {/* Información del pedido */}
-                    <Card className="border-0 shadow-sm mb-4">
-                        <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
-                                <i className="fas fa-info-circle me-2 text-primary"></i>
-                                Información del Pedido
-                            </h5>
-                        </Card.Header>
-                        <Card.Body>
-                            <Row>
-                                <Col md={6}>
-                                    <div className="mb-3">
-                                        <strong>Mesa:</strong>
-                                        <Badge bg="outline-primary" className="ms-2">
-                                            Mesa {pedido.mesa.numero}
-                                        </Badge>
-                                        <span className="text-muted ms-2">
-                                            ({pedido.mesa.capacidad} personas)
-                                        </span>
-                                    </div>
-                                    <div className="mb-3">
-                                        <strong>Mozo:</strong> {pedido.mozo.nombre}
-                                    </div>
-                                    <div className="mb-3">
-                                        <strong>Fecha y Hora:</strong><br/>
-                                        <span className="text-muted">
-                                            {new Date(pedido.fecha).toLocaleString()}
-                                        </span>
-                                    </div>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="mb-3">
-                                        <strong>Estado Actual:</strong>
-                                        <Badge bg={getEstadoColor(pedido.estado)} className="ms-2">
-                                            <i className={`fas ${getEstadoIcon(pedido.estado)} me-1`}></i>
-                                            {getEstadoText(pedido.estado)}
-                                        </Badge>
-                                    </div>
-                                    <div className="mb-3">
-                                        <strong>Total:</strong>
-                                        <span className="text-success h5 ms-2">
-                                            ${pedido.total.toFixed(2)}
-                                        </span>
-                                    </div>
-                                    <div className="mb-3">
-                                        <strong>Tiempo en {getEstadoText(pedido.estado)}:</strong>
-                                        <span className="text-info ms-2">
-                                            {calcularTiempoTranscurrido(pedido.tiempos[pedido.estado] || pedido.fecha)}
-                                        </span>
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            {pedido.observaciones && (
-                                <div className="mt-3 pt-3 border-top">
-                                    <strong>Observaciones:</strong>
-                                    <div className="bg-light p-3 rounded mt-2">
-                                        <i className="fas fa-sticky-note text-warning me-2"></i>
-                                        {pedido.observaciones}
-                                    </div>
-                                </div>
-                            )}
-                        </Card.Body>
-                    </Card>
-
-                    {/* Productos del pedido */}
-                    <Card className="border-0 shadow-sm mb-4">
-                        <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
-                                <i className="fas fa-utensils me-2 text-success"></i>
-                                Productos ({pedido.productos.length})
-                            </h5>
-                        </Card.Header>
-                        <Card.Body className="p-0">
-                            <ListGroup variant="flush">
-                                {pedido.productos.map((producto, index) => (
-                                    <ListGroup.Item key={index}>
-                                        <Row className="align-items-center">
-                                            <Col md={6}>
-                                                <div>
-                                                    <h6 className="mb-1">{producto.nombre}</h6>
-                                                    <small className="text-muted">
-                                                        <i className="fas fa-tag me-1"></i>
-                                                        {producto.categoria}
-                                                    </small>
-                                                </div>
-                                            </Col>
-                                            <Col md={2} className="text-center">
-                                                <Badge bg="light" text="dark" className="px-3 py-2">
-                                                    {producto.cantidad}x
-                                                </Badge>
-                                            </Col>
-                                            <Col md={2} className="text-center">
-                                                <span className="text-muted">
-                                                    ${producto.precio.toFixed(2)}
-                                                </span>
-                                            </Col>
-                                            <Col md={2} className="text-end">
-                                                <strong className="text-success">
-                                                    ${producto.subtotal.toFixed(2)}
-                                                </strong>
-                                            </Col>
-                                        </Row>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                            <div className="p-3 bg-light border-top">
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <strong className="text-lg">Total del Pedido:</strong>
-                                    <strong className="text-success h4 mb-0">
-                                        ${pedido.total.toFixed(2)}
-                                    </strong>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                {/* Panel lateral */}
-                <Col lg={4}>
-                    {/* Timeline del pedido */}
-                    <Card className="border-0 shadow-sm mb-4">
-                        <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
-                                <i className="fas fa-clock me-2 text-info"></i>
-                                Timeline del Pedido
-                            </h5>
-                        </Card.Header>
-                        <Card.Body>
-                            <div className="timeline">
-                                {[
-                                    { estado: 'nuevo', texto: 'Pedido Creado', tiempo: pedido.tiempos.creado },
-                                    { estado: 'en_cocina', texto: 'Enviado a Cocina', tiempo: pedido.tiempos.enviado_cocina },
-                                    { estado: 'preparado', texto: 'Preparado', tiempo: pedido.tiempos.preparado },
-                                    { estado: 'entregado', texto: 'Entregado', tiempo: pedido.tiempos.entregado },
-                                    { estado: 'pagado', texto: 'Pagado', tiempo: pedido.tiempos.pagado }
-                                ].map((item, index) => {
-                                    const esActual = pedido.estado === item.estado;
-                                    const yaCompletado = item.tiempo !== null;
-                                    const esPendiente = !yaCompletado && !esActual;
-
-                                    return (
-                                        <div key={index} className={`timeline-item ${esActual ? 'active' : ''} ${yaCompletado ? 'completed' : ''}`}>
-                                            <div className={`timeline-marker ${
-                                                yaCompletado ? 'bg-success' : 
-                                                esActual ? 'bg-primary' : 
-                                                'bg-light'
-                                            }`}>
-                                                <i className={`fas ${
-                                                    yaCompletado ? 'fa-check' : 
-                                                    esActual ? getEstadoIcon(item.estado) : 
-                                                    'fa-circle'
-                                                } text-white`}></i>
-                                            </div>
-                                            <div className="timeline-content">
-                                                <h6 className={`mb-1 ${esPendiente ? 'text-muted' : ''}`}>
-                                                    {item.texto}
-                                                </h6>
-                                                {item.tiempo && (
-                                                    <small className="text-muted">
-                                                        {new Date(item.tiempo).toLocaleTimeString()}
-                                                        <span className="ms-2">
-                                                            ({calcularTiempoTranscurrido(item.tiempo)})
-                                                        </span>
-                                                    </small>
-                                                )}
-                                                {esActual && !item.tiempo && (
-                                                    <small className="text-primary">
-                                                        <i className="fas fa-clock me-1"></i>
-                                                        En proceso...
-                                                    </small>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </Card.Body>
-                    </Card>
-
-                    {/* Acciones rápidas */}
-                    <Card className="border-0 shadow-sm">
-                        <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
-                                <i className="fas fa-bolt me-2 text-warning"></i>
-                                Acciones Rápidas
-                            </h5>
-                        </Card.Header>
-                        <Card.Body>
-                            <div className="d-grid gap-2">
-                                {posiblesEstados.map(estado => (
-                                    <Button
-                                        key={estado}
-                                        variant={`outline-${getEstadoColor(estado)}`}
-                                        onClick={() => {
-                                            setNuevoEstado(estado);
-                                            setShowCambiarEstadoModal(true);
-                                        }}
-                                    >
-                                        <i className={`fas ${getEstadoIcon(estado)} me-2`}></i>
-                                        Marcar como {getEstadoText(estado)}
-                                    </Button>
-                                ))}
-                                
-                                <Button
-                                    variant="outline-secondary"
-                                    onClick={() => navigate(`/dashboard/mozo/pedidos/${pedido.mesa.id}`)}
-                                >
-                                    <i className="fas fa-plus me-2"></i>
-                                    Agregar Items
-                                </Button>
-                                
-                                <Button
-                                    variant="outline-info"
-                                    onClick={() => window.print()}
-                                >
-                                    <i className="fas fa-print me-2"></i>
-                                    Imprimir Pedido
-                                </Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Modal para cambiar estado */}
-            <Modal show={showCambiarEstadoModal} onHide={() => setShowCambiarEstadoModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Cambiar Estado del Pedido</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p>¿Estás seguro de que quieres cambiar el estado del pedido?</p>
-                    
-                    <div className="mb-3">
-                        <strong>Estado actual:</strong>
-                        <Badge bg={getEstadoColor(pedido.estado)} className="ms-2">
-                            {getEstadoText(pedido.estado)}
-                        </Badge>
-                    </div>
-
-                    <Form.Group>
-                        <Form.Label><strong>Nuevo estado:</strong></Form.Label>
-                        <Form.Select
-                            value={nuevoEstado}
-                            onChange={(e) => setNuevoEstado(e.target.value)}
-                        >
-                            <option value="">Selecciona un estado...</option>
-                            {posiblesEstados.map(estado => (
-                                <option key={estado} value={estado}>
-                                    {getEstadoText(estado)}
-                                </option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-
-                    {nuevoEstado && (
-                        <div className="mt-3 p-3 bg-light rounded">
-                            <strong>Nuevo estado:</strong>
-                            <Badge bg={getEstadoColor(nuevoEstado)} className="ms-2">
-                                <i className={`fas ${getEstadoIcon(nuevoEstado)} me-1`}></i>
-                                {getEstadoText(nuevoEstado)}
-                            </Badge>
-                        </div>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowCambiarEstadoModal(false)}>
-                        Cancelar
-                    </Button>
-                    <Button 
-                        variant="primary" 
-                        onClick={handleCambiarEstado}
-                        disabled={!nuevoEstado || actualizando}
-                    >
-                        {actualizando ? (
-                            <>
-                                <Spinner animation="border" size="sm" className="me-2" />
-                                Actualizando...
-                            </>
-                        ) : (
-                            <>
-                                <i className="fas fa-check me-2"></i>
-                                Confirmar Cambio
-                            </>
-                        )}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Estilos para el timeline */}
-            <style jsx>{`
-                .timeline {
-                    position: relative;
-                    padding-left: 30px;
-                }
-
-                .timeline::before {
-                    content: '';
-                    position: absolute;
-                    left: 15px;
-                    top: 0;
-                    bottom: 0;
-                    width: 2px;
-                    background: #dee2e6;
-                }
-
-                .timeline-item {
-                    position: relative;
-                    margin-bottom: 20px;
-                }
-
-                .timeline-marker {
-                    position: absolute;
-                    left: -22px;
-                    top: 0;
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 2px solid #fff;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
-
-                .timeline-content {
-                    margin-left: 15px;
-                }
-
-                .timeline-item.active .timeline-marker {
-                    animation: pulse 2s infinite;
-                }
-
-                @keyframes pulse {
-                    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
-                    70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
-                    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
-                }
-            `}</style>
-        </Container>
-    );
+        {/* ── Info del pedido ── */}
+        <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e2e8f0', overflow: 'hidden' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <i className="fas fa-info-circle" style={{ color: '#94a3b8', fontSize: 14 }} />
+            <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>Información</span>
+          </div>
+          <div style={{ padding: '16px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            {[
+              { label:'Mesa',  value:`Mesa ${pedido.mesa?.numero || pedido.Mesa?.numero || '—'}`,                icon:'fa-table'    },
+              { label:'Mozo',  value: pedido.mozo?.nombre || pedido.Usuario?.nombre || '—',                      icon:'fa-user-tie' },
+              { label:'Fecha', value: new Date(pedido.createdAt || pedido.fecha).toLocaleDateString('es'),        icon:'fa-calendar' },
+              { label:'Hora',  value: new Date(pedido.createdAt || pedido.fecha).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}), icon:'fa-clock' },
+            ].map(r => (
+              <div key={r.label} style={{ background: '#f8fafc', borderRadius: 12, padding: '10px 12px' }}>
+                <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.6, marginBottom: 4 }}>
+                  <i className={`fas ${r.icon}`} style={{ marginRight: 5, color: '#6366f1' }} />{r.label.toUpperCase()}
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.value}</div>
+              </div>
+            ))}
+          </div>
+          {pedido.observaciones && (
+            <div style={{ padding: '0 18px 16px' }}>
+              <div style={{ background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 12, padding: '12px 14px', display: 'flex', gap: 10 }}>
+                <i className="fas fa-sticky-note" style={{ color: '#d97706', fontSize: 14, marginTop: 1, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 10, color: '#d97706', fontWeight: 700, letterSpacing: 0.6, marginBottom: 3 }}>OBSERVACIONES</div>
+                  <div style={{ fontSize: 13, color: '#92400e', fontWeight: 600 }}>{pedido.observaciones}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default PedidoDetalles;

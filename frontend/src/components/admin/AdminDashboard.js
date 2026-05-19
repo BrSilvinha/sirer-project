@@ -1,17 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Container, Row, Col, Card, Spinner, Alert, Badge } from 'react-bootstrap';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
-    PointElement,
-    LineElement,
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement,
+  Title, Tooltip, Legend, ArcElement, PointElement, LineElement,
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { reportesService, mesasService } from '../../services/api';
@@ -19,545 +10,229 @@ import MesasManagement from './MesasManagement';
 import ProductosManagement from './ProductosManagement';
 import UsuariosManagement from './UsuariosManagement';
 import ReportesManagement from './ReportesManagement';
+import toast from 'react-hot-toast';
 
-// Registrar componentes de Chart.js
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
-    PointElement,
-    LineElement
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
+
+/* ── Spinner ── */
+const Spin = () => (
+  <div style={{ width: 40, height: 40, border: '3px solid #eef2ff', borderTop: '3px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
 );
 
+/* ── Tarjeta stat ── */
+const StatCard = ({ label, value, sub, icon, color, bg }) => (
+  <div style={{ background: '#fff', borderRadius: 20, padding: '18px 16px', border: '1.5px solid #e2e8f0', boxShadow: '0 2px 10px rgba(0,0,0,.05)', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', right: -14, top: -14, width: 72, height: 72, borderRadius: '50%', background: color + '10' }} />
+    <div style={{ width: 42, height: 42, borderRadius: 13, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+      <i className={`fas ${icon}`} style={{ color, fontSize: 18 }} />
+    </div>
+    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+    <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>{value}</div>
+    {sub && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{sub}</div>}
+  </div>
+);
+
+/* ── Sección card ── */
+const SectionCard = ({ title, icon, iconColor, children }) => (
+  <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,.05)' }}>
+    <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 9 }}>
+      <i className={`fas ${icon}`} style={{ color: iconColor, fontSize: 15 }} />
+      <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{title}</span>
+    </div>
+    {children}
+  </div>
+);
+
+/* ── Empty state ── */
+const Empty = ({ icon, text }) => (
+  <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+    <i className={`fas ${icon}`} style={{ fontSize: 36, color: '#e2e8f0', display: 'block', marginBottom: 12 }} />
+    <div style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600 }}>{text}</div>
+  </div>
+);
+
+/* ══════════════════════════════════════════
+   ADMIN HOME
+══════════════════════════════════════════ */
 const AdminHome = () => {
-    const [dashboardData, setDashboardData] = useState(null);
-    const [mesasStats, setMesasStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [dash, setDash]   = useState(null);
+  const [mesas, setMesas] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // ✅ CORREGIDO: Mover fetchDashboardData fuera del useEffect para usar en dependency
-    const fetchDashboardData = useCallback(async () => {
-        try {
-            setError(null);
-            
-            // Llamadas independientes con manejo de errores
-            const dashboardPromise = reportesService.getDashboard().catch(err => {
-                console.error('Error en dashboard:', err);
-                return { data: { data: null } };
-            });
-            
-            const mesasPromise = mesasService.getStats().catch(err => {
-                console.error('Error en mesas stats:', err);
-                return { data: { data: null } };
-            });
-
-            const [dashboardResponse, mesasResponse] = await Promise.all([
-                dashboardPromise,
-                mesasPromise
-            ]);
-
-            // Establecer datos reales solamente
-            setDashboardData(dashboardResponse.data.data || {
-                resumen: { ventas_hoy: "0.00", pedidos_hoy: 0, promedio_por_pedido: "0.00" },
-                pedidos_por_estado: [],
-                productos_mas_vendidos: [],
-                mozos_activos: []
-            });
-            setMesasStats(mesasResponse.data.data || {
-                total: 0, libres: 0, ocupadas: 0, cuenta_solicitada: 0, porcentaje_ocupacion: 0
-            });
-
-        } catch (err) {
-            console.error('Error general fetching dashboard data:', err);
-            setError('Error al cargar los datos del dashboard');
-            
-            // Usar datos vacíos en caso de error general
-            setDashboardData({
-                resumen: { ventas_hoy: "0.00", pedidos_hoy: 0, promedio_por_pedido: "0.00" },
-                pedidos_por_estado: [],
-                productos_mas_vendidos: [],
-                mozos_activos: []
-            });
-            setMesasStats({
-                total: 0, libres: 0, ocupadas: 0, cuenta_solicitada: 0, porcentaje_ocupacion: 0
-            });
-        } finally {
-            setLoading(false);
-        }
-    }, []); // Sin dependencias porque no usa variables externas
-
-    // ✅ CORREGIDO: Agregar fetchDashboardData a las dependencias
-    useEffect(() => {
-        fetchDashboardData();
-        // Actualizar cada 30 segundos
-        const interval = setInterval(fetchDashboardData, 30000);
-        return () => clearInterval(interval);
-    }, [fetchDashboardData]);
-
-    // Función para generar datos de fallback del dashboard
-    const generateFallbackDashboard = () => {
-        return {
-            resumen: {
-                ventas_hoy: "0.00",
-                pedidos_hoy: 0,
-                promedio_por_pedido: "0.00"
-            },
-            pedidos_por_estado: [],
-            productos_mas_vendidos: [],
-            mozos_activos: []
-        };
-    };
-
-    // Función para generar datos de fallback de mesas
-    const generateFallbackMesasStats = () => {
-        return {
-            total: 0,
-            libres: 0,
-            ocupadas: 0,
-            cuenta_solicitada: 0,
-            porcentaje_ocupacion: 0
-        };
-    };
-
-    if (loading) {
-        return (
-            <Container>
-                <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3 text-muted">Cargando dashboard...</p>
-                </div>
-            </Container>
-        );
+  const fetch = useCallback(async () => {
+    try {
+      const [dR, mR] = await Promise.all([
+        reportesService.getDashboard().catch(() => ({ data: { data: null } })),
+        mesasService.getStats().catch(() => ({ data: { data: null } })),
+      ]);
+      setDash(dR.data.data || {
+        resumen: { ventas_hoy: '0.00', pedidos_hoy: 0, promedio_por_pedido: '0.00' },
+        pedidos_por_estado: [], productos_mas_vendidos: [], mozos_activos: [],
+      });
+      setMesas(mR.data.data || { total: 0, libres: 0, ocupadas: 0, cuenta_solicitada: 0, porcentaje_ocupacion: 0 });
+    } catch {
+      toast.error('Error al cargar el panel');
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    if (error && !dashboardData) {
-        return (
-            <Container>
-                <Alert variant="danger" className="mt-3">
-                    <Alert.Heading>Error</Alert.Heading>
-                    <p>{error}</p>
-                    <button 
-                        className="btn btn-outline-danger" 
-                        onClick={fetchDashboardData}
-                    >
-                        Reintentar
-                    </button>
-                </Alert>
-            </Container>
-        );
-    }
+  useEffect(() => { fetch(); const t = setInterval(fetch, 30000); return () => clearInterval(t); }, [fetch]);
 
-    // Configuración de gráficos con datos seguros
-    const ventasChartData = {
-        labels: ['Hoy'],
-        datasets: [
-            {
-                label: 'Ventas (S/)',
-                data: [parseFloat(dashboardData?.resumen?.ventas_hoy || 0)],
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-            },
-        ],
-    };
-
-    const mesasChartData = {
-        labels: ['Libres', 'Ocupadas', 'Cuenta Solicitada'],
-        datasets: [
-            {
-                data: [
-                    mesasStats?.libres || 0,
-                    mesasStats?.ocupadas || 0,
-                    mesasStats?.cuenta_solicitada || 0,
-                ],
-                backgroundColor: [
-                    'rgba(75, 192, 192, 0.6)',
-                    'rgba(255, 99, 132, 0.6)',
-                    'rgba(255, 205, 86, 0.6)',
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(255, 205, 86, 1)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    };
-
-    const pedidosChartData = {
-        labels: dashboardData?.pedidos_por_estado?.map(p => 
-            p.estado.replace('_', ' ').toUpperCase()
-        ) || [],
-        datasets: [
-            {
-                label: 'Cantidad de Pedidos',
-                data: dashboardData?.pedidos_por_estado?.map(p => parseInt(p.cantidad)) || [],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.5)',
-                    'rgba(54, 162, 235, 0.5)',
-                    'rgba(255, 205, 86, 0.5)',
-                    'rgba(75, 192, 192, 0.5)',
-                    'rgba(153, 102, 255, 0.5)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 205, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    };
-
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top',
-            },
-        },
-        maintainAspectRatio: false,
-    };
-
+  if (loading) {
     return (
-        <Container fluid>
-            {/* Alerta de error si hay problemas de conexión */}
-            {error && (
-                <Row className="mb-3">
-                    <Col>
-                        <Alert variant="warning" className="small">
-                            <i className="fas fa-exclamation-triangle me-2"></i>
-                            Algunos datos podrían no estar actualizados debido a problemas de conexión.
-                        </Alert>
-                    </Col>
-                </Row>
-            )}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 14 }}>
+        <style>{`@keyframes spin { to{transform:rotate(360deg)} }`}</style>
+        <Spin />
+        <span style={{ color: '#94a3b8', fontSize: 15 }}>Cargando panel...</span>
+      </div>
+    );
+  }
 
-            <Row className="mb-4">
-                <Col>
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 className="mb-1">Dashboard Administrativo</h2>
-                            <p className="text-muted mb-0">
-                                Última actualización: {new Date().toLocaleTimeString()}
-                            </p>
-                        </div>
-                        <Badge bg="success" className="px-3 py-2">
-                            <i className="fas fa-circle me-1"></i>
-                            Sistema Activo
-                        </Badge>
+  const ventas  = parseFloat(dash?.resumen?.ventas_hoy || 0);
+  const pedidos = dash?.resumen?.pedidos_hoy || 0;
+  const prom    = parseFloat(dash?.resumen?.promedio_por_pedido || 0);
+  const ocup    = mesas?.porcentaje_ocupacion || 0;
+
+  /* Charts */
+  const chartOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } };
+
+  const mesasChart = {
+    labels: ['Libres', 'Ocupadas', 'Cuenta'],
+    datasets: [{
+      data: [mesas?.libres || 0, mesas?.ocupadas || 0, mesas?.cuenta_solicitada || 0],
+      backgroundColor: ['rgba(22,163,74,.5)', 'rgba(220,38,38,.5)', 'rgba(217,119,6,.5)'],
+      borderColor:     ['#16a34a', '#dc2626', '#d97706'],
+      borderWidth: 2,
+    }],
+  };
+
+  const pedidosChart = {
+    labels: (dash?.pedidos_por_estado || []).map(p => p.estado.replace('_', ' ').toUpperCase()),
+    datasets: [{
+      label: 'Pedidos',
+      data: (dash?.pedidos_por_estado || []).map(p => parseInt(p.cantidad)),
+      backgroundColor: ['rgba(99,102,241,.5)', 'rgba(245,158,11,.5)', 'rgba(22,163,74,.5)', 'rgba(59,130,246,.5)', 'rgba(139,92,246,.5)'],
+      borderColor:     ['#6366f1', '#f59e0b', '#16a34a', '#3b82f6', '#8b5cf6'],
+      borderWidth: 2, borderRadius: 6,
+    }],
+  };
+
+  return (
+    <div style={{ padding: '20px 16px 32px', maxWidth: 1200, margin: '0 auto' }}>
+      <style>{`@keyframes spin { to{transform:rotate(360deg)} } @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }`}</style>
+
+      {/* Header */}
+      <div style={{ marginBottom: 24, animation: 'fadeIn .3s ease' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1 style={{ fontWeight: 900, fontSize: 22, color: '#0f172a', margin: 0 }}>Panel Administrativo</h1>
+            <p style={{ color: '#94a3b8', fontSize: 13, margin: '4px 0 0' }}>
+              <i className="fas fa-clock" style={{ marginRight: 6 }} />
+              {new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <button onClick={fetch} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: 12, color: '#6366f1', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <i className="fas fa-rotate-right" style={{ fontSize: 12 }} />Actualizar
+          </button>
+        </div>
+      </div>
+
+      {/* Stats grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 14, marginBottom: 24 }}>
+        <StatCard label="Ventas hoy"   value={`S/${ventas.toFixed(0)}`}  icon="fa-dollar-sign" color="#16a34a" bg="#f0fdf4" />
+        <StatCard label="Pedidos hoy"  value={pedidos}                   icon="fa-receipt"     color="#6366f1" bg="#eef2ff" />
+        <StatCard label="Promedio"     value={`S/${prom.toFixed(0)}`}    icon="fa-chart-line"  color="#d97706" bg="#fffbeb" />
+        <StatCard label="Ocupación"    value={`${ocup}%`}                icon="fa-table"       color="#0ea5e9" bg="#f0f9ff"
+          sub={`${mesas?.ocupadas || 0} de ${mesas?.total || 0} mesas`} />
+      </div>
+
+      {/* Charts row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 24 }}>
+        {/* Mesas doughnut */}
+        <SectionCard title="Estado de Mesas" icon="fa-table" iconColor="#6366f1">
+          <div style={{ padding: 16, height: 220 }}>
+            {(mesas?.total || 0) > 0
+              ? <Doughnut data={mesasChart} options={chartOpts} />
+              : <Empty icon="fa-table" text="Sin datos de mesas" />
+            }
+          </div>
+        </SectionCard>
+
+        {/* Pedidos bar */}
+        <SectionCard title="Pedidos por Estado" icon="fa-clipboard-list" iconColor="#16a34a">
+          <div style={{ padding: 16, height: 220 }}>
+            {(dash?.pedidos_por_estado?.length || 0) > 0
+              ? <Bar data={pedidosChart} options={{ ...chartOpts, plugins: { ...chartOpts.plugins, legend: { display: false } } }} />
+              : <Empty icon="fa-clipboard-list" text="Sin pedidos hoy" />
+            }
+          </div>
+        </SectionCard>
+      </div>
+
+      {/* Lists row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
+        {/* Top productos */}
+        <SectionCard title="Productos Más Vendidos" icon="fa-fire" iconColor="#ef4444">
+          {(dash?.productos_mas_vendidos?.length || 0) > 0 ? (
+            <div style={{ padding: '8px 0' }}>
+              {dash.productos_mas_vendidos.slice(0, 5).map((p, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < 4 ? '1px solid #f8fafc' : 'none' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: i === 0 ? '#fef3c7' : i === 1 ? '#f1f5f9' : '#fdf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 12, color: i === 0 ? '#d97706' : i === 1 ? '#64748b' : '#a855f7', flexShrink: 0 }}>
+                    {i + 1}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {p.producto?.nombre || 'Producto'}
                     </div>
-                </Col>
-            </Row>
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>×{p.total_vendido || 0} unidades</div>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: '#16a34a', flexShrink: 0 }}>
+                    S/{parseFloat(p.ingresos || p.ingresos_totales || 0).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : <Empty icon="fa-box-open" text="Sin datos de productos hoy" />}
+        </SectionCard>
 
-            {/* Métricas principales */}
-            <Row className="mb-4">
-                <Col lg={3} md={6} className="mb-3">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="bg-primary bg-gradient rounded-circle p-3">
-                                        <i className="fas fa-dollar-sign text-white fa-lg"></i>
-                                    </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                    <div className="text-muted small">Ventas Hoy</div>
-                                    <div className="h4 mb-0">
-                                        S/{dashboardData?.resumen?.ventas_hoy || '0.00'}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col lg={3} md={6} className="mb-3">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="bg-success bg-gradient rounded-circle p-3">
-                                        <i className="fas fa-receipt text-white fa-lg"></i>
-                                    </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                    <div className="text-muted small">Pedidos Hoy</div>
-                                    <div className="h4 mb-0">
-                                        {dashboardData?.resumen?.pedidos_hoy || 0}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col lg={3} md={6} className="mb-3">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="bg-info bg-gradient rounded-circle p-3">
-                                        <i className="fas fa-chart-line text-white fa-lg"></i>
-                                    </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                    <div className="text-muted small">Promedio por Pedido</div>
-                                    <div className="h4 mb-0">
-                                        S/{dashboardData?.resumen?.promedio_por_pedido || '0.00'}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col lg={3} md={6} className="mb-3">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="bg-warning bg-gradient rounded-circle p-3">
-                                        <i className="fas fa-percentage text-white fa-lg"></i>
-                                    </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                    <div className="text-muted small">Ocupación Mesas</div>
-                                    <div className="h4 mb-0">
-                                        {mesasStats?.porcentaje_ocupacion || 0}%
-                                    </div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Gráficos */}
-            <Row className="mb-4">
-                <Col md={6} lg={4} className="mb-3">
-                    <Card className="border-0 shadow-sm h-100">
-                        <Card.Header className="bg-white border-0">
-                            <h6 className="mb-0 d-flex align-items-center">
-                                <i className="fas fa-table me-2 text-primary"></i>
-                                <span className="d-none d-md-inline">Estado de Mesas</span>
-                                <span className="d-md-none">Mesas</span>
-                            </h6>
-                        </Card.Header>
-                        <Card.Body>
-                            <div style={{ height: '300px' }}>
-                                {mesasStats && (mesasStats.total > 0) ? (
-                                    <Doughnut data={mesasChartData} options={chartOptions} />
-                                ) : (
-                                    <div className="d-flex align-items-center justify-content-center h-100">
-                                        <div className="text-center text-muted">
-                                            <i className="fas fa-table fa-3x mb-3"></i>
-                                            <p>No hay datos de mesas</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col md={6} lg={4} className="mb-3">
-                    <Card className="border-0 shadow-sm h-100">
-                        <Card.Header className="bg-white border-0">
-                            <h6 className="mb-0 d-flex align-items-center">
-                                <i className="fas fa-clipboard-list me-2 text-success"></i>
-                                <span className="d-none d-md-inline">Pedidos por Estado</span>
-                                <span className="d-md-none">Pedidos</span>
-                            </h6>
-                        </Card.Header>
-                        <Card.Body>
-                            <div style={{ height: '300px' }}>
-                                {dashboardData?.pedidos_por_estado?.length > 0 ? (
-                                    <Bar data={pedidosChartData} options={chartOptions} />
-                                ) : (
-                                    <div className="d-flex align-items-center justify-content-center h-100">
-                                        <div className="text-center text-muted">
-                                            <i className="fas fa-clipboard-list fa-3x mb-3"></i>
-                                            <p>No hay pedidos hoy</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col sm={12} lg={4} className="mb-3">
-                    <Card className="border-0 shadow-sm h-100">
-                        <Card.Header className="bg-white border-0">
-                            <h6 className="mb-0 d-flex align-items-center">
-                                <i className="fas fa-chart-bar me-2 text-info"></i>
-                                <span className="d-none d-md-inline">Ventas del Día</span>
-                                <span className="d-md-none">Ventas</span>
-                            </h6>
-                        </Card.Header>
-                        <Card.Body>
-                            <div style={{ height: '300px' }}>
-                                {parseFloat(dashboardData?.resumen?.ventas_hoy || 0) > 0 ? (
-                                    <Bar data={ventasChartData} options={chartOptions} />
-                                ) : (
-                                    <div className="d-flex align-items-center justify-content-center h-100">
-                                        <div className="text-center text-muted">
-                                            <i className="fas fa-chart-bar fa-3x mb-3"></i>
-                                            <p>No hay ventas hoy</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Productos más vendidos y mozos activos */}
-            <Row>
-                <Col lg={6} className="mb-3">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
-                                <i className="fas fa-fire me-2 text-danger"></i>
-                                Productos Más Vendidos Hoy
-                            </h5>
-                        </Card.Header>
-                        <Card.Body>
-                            {dashboardData?.productos_mas_vendidos?.length > 0 ? (
-                                <div className="table-responsive">
-                                    <table className="table table-sm table-borderless">
-                                        <thead>
-                                            <tr>
-                                                <th className="border-bottom">Producto</th>
-                                                <th className="border-bottom text-center d-none d-sm-table-cell">Vendidos</th>
-                                                <th className="border-bottom text-end">Ingresos</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {dashboardData.productos_mas_vendidos.slice(0, 5).map((producto, index) => (
-                                                <tr key={index}>
-                                                    <td className="border-0">
-                                                        <div className="d-flex align-items-center">
-                                                            <div className="bg-primary rounded-circle me-2 flex-shrink-0" 
-                                                                 style={{ width: '8px', height: '8px' }}></div>
-                                                            <span className="text-truncate" style={{ maxWidth: '120px' }}>
-                                                                {producto.producto?.nombre || 'Producto sin nombre'}
-                                                            </span>
-                                                            <Badge bg="primary" className="ms-auto d-sm-none">
-                                                                {producto.total_vendido || 0}
-                                                            </Badge>
-                                                        </div>
-                                                    </td>
-                                                    <td className="border-0 text-center d-none d-sm-table-cell">
-                                                        <Badge bg="primary">
-                                                            {producto.total_vendido || 0}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="border-0 text-end text-success fw-bold text-nowrap">
-                                                        S/{parseFloat(producto.ingresos || 0).toFixed(2)}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-center py-4 text-muted">
-                                    <i className="fas fa-box-open fa-2x mb-3"></i>
-                                    <p>No hay datos de productos hoy</p>
-                                </div>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col lg={6} className="mb-3">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Header className="bg-white border-0">
-                            <h5 className="mb-0">
-                                <i className="fas fa-users me-2 text-warning"></i>
-                                Mozos Más Activos Hoy
-                            </h5>
-                        </Card.Header>
-                        <Card.Body>
-                            {dashboardData?.mozos_activos?.length > 0 ? (
-                                <div className="table-responsive">
-                                    <table className="table table-sm table-borderless">
-                                        <thead>
-                                            <tr>
-                                                <th className="border-bottom">Mozo</th>
-                                                <th className="border-bottom text-center d-none d-sm-table-cell">Pedidos</th>
-                                                <th className="border-bottom text-end">Ventas</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {dashboardData.mozos_activos.map((mozo, index) => (
-                                                <tr key={index}>
-                                                    <td className="border-0">
-                                                        <div className="d-flex align-items-center">
-                                                            <div className="bg-warning rounded-circle me-2 flex-shrink-0" 
-                                                                 style={{ width: '8px', height: '8px' }}></div>
-                                                            <span className="text-truncate" style={{ maxWidth: '120px' }}>
-                                                                {mozo.mozo?.nombre || 'Mozo sin nombre'}
-                                                            </span>
-                                                            <Badge bg="warning" text="dark" className="ms-auto d-sm-none">
-                                                                {mozo.total_pedidos || 0}
-                                                            </Badge>
-                                                        </div>
-                                                    </td>
-                                                    <td className="border-0 text-center d-none d-sm-table-cell">
-                                                        <Badge bg="warning" text="dark">
-                                                            {mozo.total_pedidos || 0}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="border-0 text-end text-success fw-bold text-nowrap">
-                                                        S/{parseFloat(mozo.total_ventas || 0).toFixed(2)}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-center py-4 text-muted">
-                                    <i className="fas fa-user-friends fa-2x mb-3"></i>
-                                    <p>No hay datos de mozos hoy</p>
-                                </div>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
-    );
+        {/* Mozos activos */}
+        <SectionCard title="Mozos Más Activos" icon="fa-user-tie" iconColor="#d97706">
+          {(dash?.mozos_activos?.length || 0) > 0 ? (
+            <div style={{ padding: '8px 0' }}>
+              {dash.mozos_activos.map((m, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < dash.mozos_activos.length - 1 ? '1px solid #f8fafc' : 'none' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#eef2ff', border: '1.5px solid #c7d2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <i className="fas fa-user-tie" style={{ color: '#6366f1', fontSize: 14 }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {m.mozo?.nombre || 'Mozo'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>{m.total_pedidos || 0} pedidos</div>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: '#16a34a', flexShrink: 0 }}>
+                    S/{parseFloat(m.total_ventas || 0).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : <Empty icon="fa-users" text="Sin actividad de mozos hoy" />}
+        </SectionCard>
+      </div>
+    </div>
+  );
 };
 
-// Componentes para las otras rutas
-const AdminMesas = () => <MesasManagement />;
-const AdminProductos = () => <ProductosManagement />;
-const AdminUsuarios = () => <UsuariosManagement />;
-const AdminReportes = () => <ReportesManagement />;
-
-// Router principal
-const AdminDashboard = () => {
-    return (
-        <Routes>
-            <Route path="/" element={<AdminHome />} />
-            <Route path="/mesas" element={<AdminMesas />} />
-            <Route path="/productos" element={<AdminProductos />} />
-            <Route path="/reportes" element={<AdminReportes />} />
-            <Route path="/usuarios" element={<AdminUsuarios />} />
-        </Routes>
-    );
-};
+/* ── Router principal del admin ── */
+const AdminDashboard = () => (
+  <Routes>
+    <Route path="/"          element={<AdminHome />} />
+    <Route path="/mesas"     element={<MesasManagement />} />
+    <Route path="/productos" element={<ProductosManagement />} />
+    <Route path="/reportes"  element={<ReportesManagement />} />
+    <Route path="/usuarios"  element={<UsuariosManagement />} />
+  </Routes>
+);
 
 export default AdminDashboard;

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { productosService, pedidosService, mesasService } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const Spin = ({ color = '#dc2626' }) => (
+const Spin = ({ color = '#6366f1' }) => (
   <div style={{
     width: 36, height: 36,
     border: '3px solid #f0f2f5',
@@ -148,8 +148,8 @@ const PedidosForm = () => {
                 style={{
                   background: '#fff', borderRadius: 16,
                   padding: '14px 12px',
-                  border: enCarrito ? '2px solid #dc2626' : '2px solid #f3f4f6',
-                  boxShadow: enCarrito ? '0 2px 10px #dc262618' : '0 1px 6px rgba(0,0,0,0.06)',
+                  border: enCarrito ? '2px solid #6366f1' : '2px solid #f3f4f6',
+                  boxShadow: enCarrito ? '0 2px 10px #6366f118' : '0 1px 6px rgba(0,0,0,0.06)',
                   display: 'flex', flexDirection: 'column', gap: 6,
                   transition: 'all 0.15s',
                 }}
@@ -168,7 +168,7 @@ const PedidosForm = () => {
                   </span>
                   {enCarrito ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <CntBtn color="#dc2626" onClick={() => cambiar(p.id, -1)}>−</CntBtn>
+                      <CntBtn color="#64748b" onClick={() => cambiar(p.id, -1)}>−</CntBtn>
                       <span style={{ fontWeight: 900, fontSize: 16, minWidth: 22, textAlign: 'center' }}>
                         {enCarrito.cant}
                       </span>
@@ -178,7 +178,7 @@ const PedidosForm = () => {
                     <button
                       onClick={() => agregar(p)}
                       style={{
-                        background: '#dc2626', color: '#fff', border: 'none',
+                        background: '#6366f1', color: '#fff', border: 'none',
                         borderRadius: 10, width: 34, height: 34,
                         fontSize: 20, fontWeight: 800, cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -201,7 +201,7 @@ const PedidosForm = () => {
           onClick={() => setShowCarrito(true)}
           style={{
             position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
-            background: 'linear-gradient(135deg, #b91c1c, #dc2626)',
+            background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
             color: '#fff', border: 'none', borderRadius: 50,
             padding: '14px 24px',
             fontSize: 15, fontWeight: 800, cursor: 'pointer',
@@ -212,7 +212,7 @@ const PedidosForm = () => {
         >
           🛒 Ver pedido ({totalItems})
           <span style={{
-            background: '#fff', color: '#dc2626',
+            background: '#fff', color: '#6366f1',
             borderRadius: 20, padding: '2px 12px',
             fontWeight: 900, fontSize: 14,
           }}>
@@ -241,7 +241,7 @@ const PedidosForm = () => {
                   <div style={{ fontSize: 12, color: '#9ca3af' }}>S/ {item.precio.toFixed(2)} c/u</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <CntBtn color="#dc2626" onClick={() => cambiar(item.id, -1)}>−</CntBtn>
+                  <CntBtn color="#6366f1" onClick={() => cambiar(item.id, -1)}>−</CntBtn>
                   <span style={{ fontWeight: 900, minWidth: 24, textAlign: 'center', fontSize: 16 }}>{item.cant}</span>
                   <CntBtn color="#16a34a" onClick={() => cambiar(item.id, 1)}>+</CntBtn>
                 </div>
@@ -362,11 +362,11 @@ const Tab = ({ label, active, onClick }) => (
     onClick={onClick}
     style={{
       padding: '8px 18px', borderRadius: 20, border: 'none',
-      background: active ? '#dc2626' : '#fff',
+      background: active ? '#6366f1' : '#fff',
       color: active ? '#fff' : '#6b7280',
       fontWeight: active ? 700 : 500,
       fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap',
-      boxShadow: active ? '0 2px 10px #dc262630' : '0 1px 4px rgba(0,0,0,0.08)',
+      boxShadow: active ? '0 2px 10px #6366f130' : '0 1px 4px rgba(0,0,0,0.08)',
       transition: 'all 0.15s', flexShrink: 0,
     }}
   >

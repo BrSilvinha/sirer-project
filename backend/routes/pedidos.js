@@ -4,16 +4,10 @@ const pedidosController = require('../controllers/pedidosController');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Rutas para obtener pedidos - CORREGIDAS para incluir mozos
-router.get('/', 
+router.get('/',
     authenticateToken,
-    authorizeRoles('administrador', 'cajero', 'mozo'), // ✅ AGREGADO: mozo
+    authorizeRoles('administrador', 'mozo'),
     pedidosController.obtenerPedidos
-);
-
-router.get('/cocina', 
-    authenticateToken,
-    authorizeRoles('cocina', 'administrador'),
-    pedidosController.obtenerPedidosCocina
 );
 
 router.get('/:id', 
@@ -21,9 +15,9 @@ router.get('/:id',
     pedidosController.obtenerPedidoPorId
 );
 
-router.get('/mesa/:mesa_id', 
+router.get('/mesa/:mesa_id',
     authenticateToken,
-    authorizeRoles('mozo', 'administrador', 'cajero'), // ✅ CORREGIDO: orden de roles
+    authorizeRoles('mozo', 'administrador'),
     pedidosController.obtenerPedidosPorMesa
 );
 
@@ -35,22 +29,22 @@ router.post('/',
 );
 
 // Rutas para cambiar estado de pedidos - CORREGIDAS
-router.patch('/:id/estado', 
+router.patch('/:id/estado',
     authenticateToken,
-    authorizeRoles('mozo', 'cocina', 'administrador'), // ✅ AGREGADO: mozo puede cambiar estados
+    authorizeRoles('mozo', 'administrador'),
     pedidosController.cambiarEstadoPedido
 );
 
-// Rutas para cajeros - gestión de cuentas y pagos
+// Cuenta y pagos — accesible por mozo y admin
 router.get('/cuenta/mesa/:mesa_id',
     authenticateToken,
-    authorizeRoles('cajero', 'administrador', 'mozo'),
+    authorizeRoles('mozo', 'administrador'),
     pedidosController.obtenerCuentaMesa
 );
 
 router.post('/pago/mesa/:mesa_id',
     authenticateToken,
-    authorizeRoles('cajero', 'administrador', 'mozo'),
+    authorizeRoles('mozo', 'administrador'),
     pedidosController.procesarPagoMesa
 );
 

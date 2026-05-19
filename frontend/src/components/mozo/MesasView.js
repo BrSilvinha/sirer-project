@@ -70,8 +70,8 @@ const useMesas = () => {
 };
 
 /* ── Spinner ── */
-const Spin = ({ size=36, color='#dc2626' }) => (
-  <div style={{ width:size, height:size, border:`3px solid #f0f2f5`, borderTop:`3px solid ${color}`, borderRadius:'50%', animation:'spin .75s linear infinite', flexShrink:0 }} />
+const Spin = ({ size=36, color='#6366f1' }) => (
+  <div style={{ width:size, height:size, border:`3px solid #eef2ff`, borderTop:`3px solid ${color}`, borderRadius:'50%', animation:'spin .75s linear infinite', flexShrink:0 }} />
 );
 
 /* ════════════════════════════════════════

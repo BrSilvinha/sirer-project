@@ -8,8 +8,7 @@ const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 // ✅ MIDDLEWARE: Todas las rutas requieren autenticación
 router.use(authenticateToken);
 
-// ✅ MIDDLEWARE: Solo admin, cajeros y mozos pueden acceder a reportes
-const requiresReportsAccess = authorizeRoles('administrador', 'cajero', 'mozo');
+const requiresReportsAccess = authorizeRoles('administrador', 'mozo');
 
 // ✅ RUTA PRINCIPAL: Dashboard con métricas del día
 router.get('/dashboard', 
