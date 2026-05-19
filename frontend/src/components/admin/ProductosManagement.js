@@ -1,850 +1,452 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-    Container, Row, Col, Card, Badge, Button, Modal, Form, 
-    Spinner, Alert, Table, ButtonGroup, InputGroup,
-    OverlayTrigger, Tooltip
-} from 'react-bootstrap';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { productosService, categoriasService } from '../../services/api';
 import toast from 'react-hot-toast';
 
+/* Paleta de colores por categoría (rota según índice) */
+const CAT_COLORS = ['#6366f1','#16a34a','#dc2626','#f59e0b','#0ea5e9','#8b5cf6','#ec4899','#14b8a6'];
+const catColor  = (id) => CAT_COLORS[(id ?? 0) % CAT_COLORS.length];
+const catLight  = (id) => catColor(id) + '18';
+
+const Spin = () => (
+  <div style={{ width: 44, height: 44, border: '4px solid #f1f5f9', borderTop: '4px solid #6366f1', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+);
+
+/* ── Toggle switch ── */
+const Toggle = ({ value, onChange }) => (
+  <div onClick={onChange} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+    <div style={{ width: 48, height: 28, borderRadius: 14, background: value ? '#16a34a' : '#d1d5db', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: 4, left: value ? 24 : 4, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }} />
+    </div>
+    <span style={{ fontWeight: 700, fontSize: 14, color: value ? '#16a34a' : '#94a3b8' }}>
+      {value ? 'Disponible' : 'Agotado'}
+    </span>
+  </div>
+);
+
+/* ── Sheet genérico ── */
+const Sheet = ({ open, onClose, title, children, footer }) => {
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(15,23,42,0.65)', display: 'flex', alignItems: 'flex-end', animation: 'fadeIn 0.18s ease' }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', background: '#fff', borderRadius: '26px 26px 0 0', maxHeight: '92vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.26s ease' }}>
+        <div style={{ textAlign: 'center', padding: '12px 0 4px' }}>
+          <div style={{ width: 36, height: 4, background: '#e2e8f0', borderRadius: 4, display: 'inline-block' }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 20px 14px', borderBottom: '1px solid #f1f5f9' }}>
+          <span style={{ fontWeight: 800, fontSize: 18, color: '#0f172a' }}>{title}</span>
+          <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: '50%', background: '#f1f5f9', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>{children}</div>
+        {footer && <div style={{ padding: '12px 20px 32px', borderTop: '1px solid #f1f5f9' }}>{footer}</div>}
+      </div>
+    </div>
+  );
+};
+
+/* Campo de formulario */
+const Field = ({ label, children }) => (
+  <div style={{ marginBottom: 18 }}>
+    <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: 0.8, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>{label}</label>
+    {children}
+  </div>
+);
+
+const inputSt = {
+  width: '100%', padding: '13px 14px', border: '1.5px solid #e2e8f0',
+  borderRadius: 12, fontSize: 15, outline: 'none', background: '#f8fafc',
+  color: '#0f172a', fontFamily: 'inherit', boxSizing: 'border-box',
+};
+
+/* ── Sheet detalle de producto ── */
+const ProductoSheet = ({ producto, categorias, onClose, onEdit, onDelete, onToggle }) => {
+  if (!producto) return null;
+  const color = catColor(producto.categoria?.id);
+  const light = catLight(producto.categoria?.id);
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(15,23,42,0.65)', display: 'flex', alignItems: 'flex-end', animation: 'fadeIn 0.18s ease' }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', background: '#fff', borderRadius: '26px 26px 0 0', animation: 'slideUp 0.26s ease', overflow: 'hidden' }}>
+        {/* Handle */}
+        <div style={{ textAlign: 'center', padding: '12px 0 4px' }}>
+          <div style={{ width: 36, height: 4, background: '#e2e8f0', borderRadius: 4, display: 'inline-block' }} />
+        </div>
+
+        {/* Hero */}
+        <div style={{ background: light, padding: '16px 20px 24px', textAlign: 'center' }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', boxShadow: `0 8px 24px ${color}55` }}>
+            <i className="fas fa-utensils" style={{ fontSize: 28, color: '#fff' }}></i>
+          </div>
+          <div style={{ fontWeight: 900, fontSize: 20, color: '#0f172a', marginBottom: 6 }}>{producto.nombre}</div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: color, color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
+            <i className="fas fa-tag" style={{ fontSize: 10 }}></i>
+            {producto.categoria?.nombre || 'Sin categoría'}
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: '#16a34a' }}>S/ {parseFloat(producto.precio || 0).toFixed(2)}</div>
+          {producto.descripcion && (
+            <div style={{ fontSize: 13, color: '#64748b', marginTop: 8, lineHeight: 1.5 }}>{producto.descripcion}</div>
+          )}
+        </div>
+
+        <div style={{ padding: '20px 20px 36px' }}>
+          {/* Toggle disponibilidad */}
+          <div style={{ background: '#f8fafc', borderRadius: 14, padding: '14px 16px', marginBottom: 16, border: '1.5px solid #f1f5f9' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 0.8, marginBottom: 10 }}>DISPONIBILIDAD</div>
+            <Toggle value={producto.disponible} onChange={() => onToggle(producto)} />
+          </div>
+
+          {/* Acciones */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onEdit} style={{ flex: 1, padding: '14px', borderRadius: 14, border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#334155', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <i className="fas fa-pen" style={{ fontSize: 13 }}></i>
+              Editar
+            </button>
+            <button onClick={() => onDelete(producto)} style={{ flex: 1, padding: '14px', borderRadius: 14, border: '1.5px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <i className="fas fa-trash" style={{ fontSize: 13 }}></i>
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── Tarjeta de producto ── */
+const ProductoCard = ({ producto, onTap }) => {
+  const [pressed, setPressed] = useState(false);
+  const color = catColor(producto.categoria?.id);
+  const light = catLight(producto.categoria?.id);
+
+  return (
+    <div
+      onClick={onTap}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      style={{
+        background: '#fff', borderRadius: 18, padding: '14px 16px', marginBottom: 10,
+        boxShadow: pressed ? '0 1px 6px rgba(0,0,0,0.06)' : '0 3px 14px rgba(0,0,0,0.07)',
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
+        transform: pressed ? 'scale(0.98)' : 'scale(1)',
+        transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+        opacity: producto.disponible ? 1 : 0.65,
+        border: '1.5px solid #f1f5f9',
+      }}
+    >
+      {/* Ícono */}
+      <div style={{ width: 50, height: 50, borderRadius: 14, background: light, border: `1.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <i className="fas fa-utensils" style={{ color, fontSize: 18 }}></i>
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 800, fontSize: 15, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{producto.nombre}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+          <span style={{ background: light, color, borderRadius: 20, padding: '2px 9px', fontSize: 11, fontWeight: 700 }}>
+            {producto.categoria?.nombre || 'Sin cat.'}
+          </span>
+          <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 800 }}>S/ {parseFloat(producto.precio || 0).toFixed(2)}</span>
+        </div>
+        <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: producto.disponible ? '#22c55e' : '#ef4444' }} />
+          <span style={{ fontSize: 11, color: producto.disponible ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
+            {producto.disponible ? 'Disponible' : 'Agotado'}
+          </span>
+        </div>
+      </div>
+
+      <i className="fas fa-chevron-right" style={{ color: '#cbd5e1', fontSize: 13, flexShrink: 0 }}></i>
+    </div>
+  );
+};
+
+/* ── Componente principal ── */
 const ProductosManagement = () => {
-    const [productos, setProductos] = useState([]);
-    const [categorias, setCategorias] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [showCategoriaModal, setShowCategoriaModal] = useState(false);
-    const [editingProducto, setEditingProducto] = useState(null);
-    const [view, setView] = useState('grid');
-    const [filtros, setFiltros] = useState({
-        categoria: 'todas',
-        disponibilidad: 'todos',
-        busqueda: ''
-    });
-    const [formData, setFormData] = useState({
-        nombre: '',
-        descripcion: '',
-        precio: '',
-        categoria_id: '',
-        disponible: true
-    });
-    const [categoriaForm, setCategoriaForm] = useState({
-        nombre: '',
-        descripcion: ''
-    });
-    const [estadisticas, setEstadisticas] = useState({
-        total: 0,
-        disponibles: 0,
-        agotados: 0,
-        por_categoria: []
-    });
-    const [error, setError] = useState(null);
+  const [productos,   setProductos]   = useState([]);
+  const [categorias,  setCategorias]  = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [saving,      setSaving]      = useState(false);
+  const [selected,    setSelected]    = useState(null);
+  const [showForm,    setShowForm]    = useState(false);
+  const [showCatForm, setShowCatForm] = useState(false);
+  const [editing,     setEditing]     = useState(null);
+  const [filtros,     setFiltros]     = useState({ categoria: 'todas', disponibilidad: 'todos', busqueda: '' });
+  const [formData,    setFormData]    = useState({ nombre: '', descripcion: '', precio: '', categoria_id: '', disponible: true });
+  const [catForm,     setCatForm]     = useState({ nombre: '', descripcion: '' });
 
-    // ✅ Función para cargar productos
-    const fetchProductos = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            
-            const response = await productosService.getAll();
-            const productosData = response.data.data || [];
-            
-            setProductos(productosData);
-            
-        } catch (error) {
-            console.error('Error fetching productos:', error);
-            setError('Error al cargar productos. Verifique la conexión.');
-            toast.error('Error al cargar productos');
-            setProductos([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const fetchAll = useCallback(async () => {
+    try {
+      const [r1, r2] = await Promise.all([productosService.getAll(), categoriasService.getAll()]);
+      setProductos(r1.data.data || []);
+      setCategorias(r2.data.data || []);
+    } catch { toast.error('Error al cargar datos'); }
+    finally { setLoading(false); }
+  }, []);
 
-    // ✅ Función para cargar categorías
-    const fetchCategorias = useCallback(async () => {
-        try {
-            const response = await categoriasService.getAll();
-            setCategorias(response.data.data || []);
-        } catch (error) {
-            console.error('Error fetching categorías:', error);
-            toast.error('Error al cargar categorías');
-            setCategorias([]);
-        }
-    }, []);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
-    // ✅ Función para calcular estadísticas
-    const calcularEstadisticas = useCallback((productosData, categoriasData) => {
-        const stats = {
-            total: productosData.length,
-            disponibles: productosData.filter(p => p.disponible).length,
-            agotados: productosData.filter(p => !p.disponible).length,
-            por_categoria: categoriasData.map(cat => ({
-                categoria: cat.nombre,
-                cantidad: productosData.filter(p => p.categoria?.id === cat.id).length
-            })).filter(stat => stat.cantidad > 0)
-        };
-        setEstadisticas(stats);
-    }, []);
-
-    // ✅ Efecto principal para cargar datos
-    useEffect(() => {
-        const loadData = async () => {
-            await Promise.all([fetchProductos(), fetchCategorias()]);
-        };
-        loadData();
-    }, [fetchProductos, fetchCategorias]);
-
-    // ✅ Efecto para recalcular estadísticas
-    useEffect(() => {
-        if (productos.length >= 0 && categorias.length >= 0) {
-            calcularEstadisticas(productos, categorias);
-        }
-    }, [productos, categorias, calcularEstadisticas]);
-
-    // ✅ Función para mostrar modal
-    const handleShowModal = useCallback((producto = null) => {
-        if (producto) {
-            setEditingProducto(producto);
-            setFormData({
-                nombre: producto.nombre || '',
-                descripcion: producto.descripcion || '',
-                precio: producto.precio?.toString() || '',
-                categoria_id: producto.categoria_id?.toString() || '',
-                disponible: Boolean(producto.disponible)
-            });
-        } else {
-            setEditingProducto(null);
-            setFormData({
-                nombre: '',
-                descripcion: '',
-                precio: '',
-                categoria_id: '',
-                disponible: true
-            });
-        }
-        setShowModal(true);
-    }, []);
-
-    // ✅ Función para cerrar modal
-    const handleCloseModal = useCallback(() => {
-        setShowModal(false);
-        setEditingProducto(null);
-        setFormData({
-            nombre: '',
-            descripcion: '',
-            precio: '',
-            categoria_id: '',
-            disponible: true
-        });
-    }, []);
-
-    // ✅ Función para guardar producto - CORREGIDO: Se agregó la función faltante
-    const handleSubmit = useCallback(async (e) => {
-        e.preventDefault();
-        
-        // Validaciones mejoradas
-        if (!formData.nombre?.trim()) {
-            toast.error('El nombre es requerido');
-            return;
-        }
-        
-        const precio = parseFloat(formData.precio);
-        if (!formData.precio || isNaN(precio) || precio <= 0) {
-            toast.error('El precio debe ser un número mayor a 0');
-            return;
-        }
-        
-        if (!formData.categoria_id) {
-            toast.error('Selecciona una categoría');
-            return;
-        }
-
-        try {
-            const productoData = {
-                nombre: formData.nombre.trim(),
-                descripcion: formData.descripcion?.trim() || '',
-                precio: precio,
-                categoria_id: parseInt(formData.categoria_id),
-                disponible: Boolean(formData.disponible)
-            };
-
-            if (editingProducto) {
-                await productosService.update(editingProducto.id, productoData);
-                toast.success('Producto actualizado exitosamente');
-            } else {
-                await productosService.create(productoData);
-                toast.success('Producto creado exitosamente');
-            }
-            
-            handleCloseModal();
-            await fetchProductos();
-        } catch (error) {
-            console.error('Error saving producto:', error);
-            const errorMessage = error.response?.data?.error || 'Error al guardar producto';
-            toast.error(errorMessage);
-        }
-    }, [formData, editingProducto, handleCloseModal, fetchProductos]);
-
-    // ✅ Función para eliminar producto
-    const handleDelete = useCallback(async (producto) => {
-        if (!window.confirm(`¿Estás seguro de eliminar el producto "${producto.nombre}"?`)) {
-            return;
-        }
-
-        try {
-            await productosService.delete(producto.id);
-            toast.success('Producto eliminado exitosamente');
-            await fetchProductos();
-        } catch (error) {
-            console.error('Error deleting producto:', error);
-            const errorMessage = error.response?.data?.error || 'Error al eliminar producto';
-            toast.error(errorMessage);
-        }
-    }, [fetchProductos]);
-
-    // ✅ Función para cambiar disponibilidad
-    const handleToggleDisponibilidad = useCallback(async (producto) => {
-        try {
-            const nuevoEstado = !producto.disponible;
-            await productosService.changeAvailability(producto.id, nuevoEstado);
-            
-            toast.success(
-                `${producto.nombre} marcado como ${nuevoEstado ? 'disponible' : 'agotado'}`
-            );
-            
-            await fetchProductos();
-        } catch (error) {
-            console.error('Error updating availability:', error);
-            const errorMessage = error.response?.data?.error || 'Error al cambiar disponibilidad';
-            toast.error(errorMessage);
-        }
-    }, [fetchProductos]);
-
-    // ✅ Función para crear categoría
-    const handleCrearCategoria = useCallback(async (e) => {
-        e.preventDefault();
-        
-        if (!categoriaForm.nombre?.trim()) {
-            toast.error('El nombre de la categoría es requerido');
-            return;
-        }
-
-        try {
-            const categoriaData = {
-                nombre: categoriaForm.nombre.trim(),
-                descripcion: categoriaForm.descripcion?.trim() || ''
-            };
-            
-            await categoriasService.create(categoriaData);
-            toast.success('Categoría creada exitosamente');
-            
-            setCategoriaForm({ nombre: '', descripcion: '' });
-            setShowCategoriaModal(false);
-            await fetchCategorias();
-        } catch (error) {
-            console.error('Error creating categoria:', error);
-            const errorMessage = error.response?.data?.error || 'Error al crear categoría';
-            toast.error(errorMessage);
-        }
-    }, [categoriaForm, fetchCategorias]);
-
-    // ✅ Función para cambiar filtros
-    const handleFiltroChange = useCallback((campo, valor) => {
-        setFiltros(prev => ({ ...prev, [campo]: valor }));
-    }, []);
-
-    // ✅ Función para limpiar filtros
-    const handleLimpiarFiltros = useCallback(() => {
-        setFiltros({
-            categoria: 'todas',
-            disponibilidad: 'todos',
-            busqueda: ''
-        });
-    }, []);
-
-    // ✅ Función para obtener color de categoría
-    const getCategoriaColor = useCallback((categoriaId) => {
-        const colors = ['primary', 'success', 'warning', 'info', 'secondary', 'dark'];
-        const index = categoriaId ? (categoriaId % colors.length) : 0;
-        return colors[index];
-    }, []);
-
-    // ✅ Función para filtrar productos (Memoizada)
-    const productosFiltrados = React.useMemo(() => {
-        let resultado = [...productos];
-
-        // Filtro por categoría
-        if (filtros.categoria !== 'todas') {
-            resultado = resultado.filter(p => 
-                p.categoria?.id === parseInt(filtros.categoria)
-            );
-        }
-
-        // Filtro por disponibilidad
-        if (filtros.disponibilidad !== 'todos') {
-            resultado = resultado.filter(p => 
-                filtros.disponibilidad === 'disponibles' ? p.disponible : !p.disponible
-            );
-        }
-
-        // Filtro de búsqueda
-        if (filtros.busqueda?.trim()) {
-            const busqueda = filtros.busqueda.toLowerCase();
-            resultado = resultado.filter(producto => 
-                producto.nombre?.toLowerCase().includes(busqueda) ||
-                producto.categoria?.nombre?.toLowerCase().includes(busqueda) ||
-                producto.descripcion?.toLowerCase().includes(busqueda)
-            );
-        }
-
-        return resultado;
-    }, [productos, filtros]);
-
-    // ✅ Manejo de errores en el render
-    if (loading && productos.length === 0) {
-        return (
-            <Container>
-                <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3">Cargando productos...</p>
-                </div>
-            </Container>
-        );
+  const productosFiltrados = useMemo(() => {
+    let list = [...productos];
+    if (filtros.categoria !== 'todas') list = list.filter(p => p.categoria?.id === parseInt(filtros.categoria));
+    if (filtros.disponibilidad === 'disponibles') list = list.filter(p => p.disponible);
+    if (filtros.disponibilidad === 'agotados')    list = list.filter(p => !p.disponible);
+    if (filtros.busqueda.trim()) {
+      const q = filtros.busqueda.toLowerCase();
+      list = list.filter(p => p.nombre?.toLowerCase().includes(q) || p.categoria?.nombre?.toLowerCase().includes(q));
     }
+    return list;
+  }, [productos, filtros]);
 
-    if (error && productos.length === 0) {
-        return (
-            <Container>
-                <Alert variant="danger" className="mt-3">
-                    <Alert.Heading>Error</Alert.Heading>
-                    <p>{error}</p>
-                    <Button variant="outline-danger" onClick={fetchProductos}>
-                        Reintentar
-                    </Button>
-                </Alert>
-            </Container>
-        );
-    }
+  const openNew = () => { setEditing(null); setFormData({ nombre: '', descripcion: '', precio: '', categoria_id: '', disponible: true }); setShowForm(true); };
+  const openEdit = () => {
+    const p = selected;
+    setSelected(null);
+    setTimeout(() => {
+      setEditing(p);
+      setFormData({ nombre: p.nombre, descripcion: p.descripcion || '', precio: p.precio?.toString() || '', categoria_id: p.categoria_id?.toString() || '', disponible: Boolean(p.disponible) });
+      setShowForm(true);
+    }, 200);
+  };
 
-    return (
-        <Container fluid>
-            {/* Header */}
-            <Row className="mb-4">
-                <Col>
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 className="mb-1">Gestión de Productos</h2>
-                            <p className="text-muted mb-0">
-                                Administra el menú del restaurante
-                            </p>
-                        </div>
-                        <div className="d-flex gap-2">
-                            <Button 
-                                variant="outline-success"
-                                size="sm"
-                                onClick={() => setShowCategoriaModal(true)}
-                            >
-                                <i className="fas fa-tags me-1"></i>
-                                Categorías
-                            </Button>
-                            <ButtonGroup size="sm">
-                                <Button 
-                                    variant={view === 'grid' ? 'primary' : 'outline-primary'}
-                                    onClick={() => setView('grid')}
-                                >
-                                    <i className="fas fa-th-large"></i>
-                                </Button>
-                                <Button 
-                                    variant={view === 'table' ? 'primary' : 'outline-primary'}
-                                    onClick={() => setView('table')}
-                                >
-                                    <i className="fas fa-list"></i>
-                                </Button>
-                            </ButtonGroup>
-                            <Button 
-                                variant="success" 
-                                onClick={() => handleShowModal()}
-                            >
-                                <i className="fas fa-plus me-2"></i>
-                                Nuevo Producto
-                            </Button>
-                        </div>
-                    </div>
-                </Col>
-            </Row>
+  const handleSubmit = async () => {
+    if (!formData.nombre.trim()) { toast.error('El nombre es requerido'); return; }
+    const precio = parseFloat(formData.precio);
+    if (!formData.precio || isNaN(precio) || precio <= 0) { toast.error('Precio inválido'); return; }
+    if (!formData.categoria_id) { toast.error('Selecciona una categoría'); return; }
+    setSaving(true);
+    try {
+      const payload = { nombre: formData.nombre.trim(), descripcion: formData.descripcion.trim(), precio, categoria_id: parseInt(formData.categoria_id), disponible: formData.disponible };
+      if (editing) { await productosService.update(editing.id, payload); toast.success('Producto actualizado'); }
+      else          { await productosService.create(payload);             toast.success('Producto creado');     }
+      setShowForm(false);
+      fetchAll();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error al guardar'); }
+    finally { setSaving(false); }
+  };
 
-            {/* Estadísticas */}
-            <Row className="mb-4">
-                <Col md={3}>
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="bg-primary rounded-circle p-3 me-3">
-                                    <i className="fas fa-utensils text-white"></i>
-                                </div>
-                                <div>
-                                    <div className="text-muted small">Total Productos</div>
-                                    <div className="h4 mb-0">{estadisticas.total}</div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={3}>
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="bg-success rounded-circle p-3 me-3">
-                                    <i className="fas fa-check-circle text-white"></i>
-                                </div>
-                                <div>
-                                    <div className="text-muted small">Disponibles</div>
-                                    <div className="h4 mb-0">{estadisticas.disponibles}</div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={3}>
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="bg-danger rounded-circle p-3 me-3">
-                                    <i className="fas fa-times-circle text-white"></i>
-                                </div>
-                                <div>
-                                    <div className="text-muted small">Agotados</div>
-                                    <div className="h4 mb-0">{estadisticas.agotados}</div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={3}>
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex align-items-center">
-                                <div className="bg-info rounded-circle p-3 me-3">
-                                    <i className="fas fa-tags text-white"></i>
-                                </div>
-                                <div>
-                                    <div className="text-muted small">Categorías</div>
-                                    <div className="h4 mb-0">{categorias.length}</div>
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+  const handleDelete = async (producto) => {
+    if (!window.confirm(`¿Eliminar "${producto.nombre}"?`)) return;
+    setSelected(null);
+    try { await productosService.delete(producto.id); toast.success('Producto eliminado'); fetchAll(); }
+    catch (err) { toast.error(err.response?.data?.error || 'Error al eliminar'); }
+  };
 
-            {/* Filtros */}
-            <Card className="border-0 shadow-sm mb-4">
-                <Card.Body>
-                    <Row className="g-3">
-                        <Col md={3}>
-                            <Form.Group>
-                                <Form.Label className="small fw-bold">Categoría</Form.Label>
-                                <Form.Select
-                                    size="sm"
-                                    value={filtros.categoria}
-                                    onChange={(e) => handleFiltroChange('categoria', e.target.value)}
-                                >
-                                    <option value="todas">Todas las categorías</option>
-                                    {categorias.map(categoria => (
-                                        <option key={categoria.id} value={categoria.id}>
-                                            {categoria.nombre}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                            <Form.Group>
-                                <Form.Label className="small fw-bold">Disponibilidad</Form.Label>
-                                <Form.Select
-                                    size="sm"
-                                    value={filtros.disponibilidad}
-                                    onChange={(e) => handleFiltroChange('disponibilidad', e.target.value)}
-                                >
-                                    <option value="todos">Todos</option>
-                                    <option value="disponibles">Solo disponibles</option>
-                                    <option value="agotados">Solo agotados</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                            <Form.Group>
-                                <Form.Label className="small fw-bold">Buscar</Form.Label>
-                                <InputGroup size="sm">
-                                    <Form.Control
-                                        placeholder="Nombre del producto..."
-                                        value={filtros.busqueda}
-                                        onChange={(e) => handleFiltroChange('busqueda', e.target.value)}
-                                    />
-                                    <Button variant="outline-secondary">
-                                        <i className="fas fa-search"></i>
-                                    </Button>
-                                </InputGroup>
-                            </Form.Group>
-                        </Col>
-                        <Col md={2} className="d-flex align-items-end">
-                            <Button 
-                                variant="outline-primary" 
-                                size="sm" 
-                                className="w-100"
-                                onClick={handleLimpiarFiltros}
-                            >
-                                <i className="fas fa-undo me-1"></i>
-                                Limpiar
-                            </Button>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
+  const handleToggle = async (producto) => {
+    const nuevo = !producto.disponible;
+    try {
+      await productosService.changeAvailability(producto.id, nuevo);
+      toast.success(`${producto.nombre} → ${nuevo ? 'Disponible' : 'Agotado'}`);
+      setProductos(prev => prev.map(p => p.id === producto.id ? { ...p, disponible: nuevo } : p));
+      setSelected(prev => prev ? { ...prev, disponible: nuevo } : null);
+    } catch { toast.error('Error al cambiar disponibilidad'); }
+  };
 
-            {/* Vista Grid */}
-            {view === 'grid' && (
-                <Row>
-                    {productosFiltrados.map((producto) => (
-                        <Col lg={3} md={4} sm={6} key={producto.id} className="mb-4">
-                            <Card 
-                                className={`h-100 border-0 shadow-sm ${
-                                    !producto.disponible ? 'opacity-75' : ''
-                                }`}
-                            >
-                                <Card.Body>
-                                    <div className="d-flex justify-content-between align-items-start mb-3">
-                                        <Badge 
-                                            bg={getCategoriaColor(producto.categoria?.id)}
-                                            className="mb-2"
-                                        >
-                                            {producto.categoria?.nombre || 'Sin categoría'}
-                                        </Badge>
-                                        <Badge 
-                                            bg={producto.disponible ? "success" : "danger"}
-                                        >
-                                            {producto.disponible ? "Disponible" : "Agotado"}
-                                        </Badge>
-                                    </div>
-                                    
-                                    <h5 className="mb-2">{producto.nombre}</h5>
-                                    
-                                    {producto.descripcion && (
-                                        <p className="text-muted small mb-3">
-                                            {producto.descripcion}
-                                        </p>
-                                    )}
-                                    
-                                    <div className="mb-3">
-                                        <span className="h4 text-success mb-0">
-                                            S/ {parseFloat(producto.precio || 0).toFixed(2)}
-                                        </span>
-                                    </div>
+  const handleCrearCategoria = async () => {
+    if (!catForm.nombre.trim()) { toast.error('Nombre requerido'); return; }
+    setSaving(true);
+    try { await categoriasService.create({ nombre: catForm.nombre.trim(), descripcion: catForm.descripcion.trim() }); toast.success('Categoría creada'); setShowCatForm(false); setCatForm({ nombre: '', descripcion: '' }); fetchAll(); }
+    catch (err) { toast.error(err.response?.data?.error || 'Error al crear categoría'); }
+    finally { setSaving(false); }
+  };
 
-                                    <div className="d-flex gap-1">
-                                        <OverlayTrigger
-                                            overlay={<Tooltip>Cambiar disponibilidad</Tooltip>}
-                                        >
-                                            <Button
-                                                variant={producto.disponible ? "outline-warning" : "outline-success"}
-                                                size="sm"
-                                                onClick={() => handleToggleDisponibilidad(producto)}
-                                            >
-                                                <i className={`fas ${
-                                                    producto.disponible ? 'fa-eye-slash' : 'fa-eye'
-                                                }`}></i>
-                                            </Button>
-                                        </OverlayTrigger>
-                                        
-                                        <Button
-                                            variant="outline-primary"
-                                            size="sm"
-                                            onClick={() => handleShowModal(producto)}
-                                        >
-                                            <i className="fas fa-edit"></i>
-                                        </Button>
-                                        
-                                        <Button
-                                            variant="outline-danger"
-                                            size="sm"
-                                            onClick={() => handleDelete(producto)}
-                                        >
-                                            <i className="fas fa-trash"></i>
-                                        </Button>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
-                </Row>
-            )}
+  const total      = productos.length;
+  const disponibles = productos.filter(p => p.disponible).length;
+  const agotados   = productos.filter(p => !p.disponible).length;
 
-            {/* Vista Tabla */}
-            {view === 'table' && (
-                <Card className="border-0 shadow-sm">
-                    <Card.Body>
-                        <Table responsive hover>
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Categoría</th>
-                                    <th>Precio</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {productosFiltrados.map((producto) => (
-                                    <tr key={producto.id} className={!producto.disponible ? 'opacity-75' : ''}>
-                                        <td>
-                                            <div>
-                                                <strong>{producto.nombre}</strong>
-                                                {producto.descripcion && (
-                                                    <div className="text-muted small">
-                                                        {producto.descripcion}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <Badge bg={getCategoriaColor(producto.categoria?.id)}>
-                                                {producto.categoria?.nombre || 'Sin categoría'}
-                                            </Badge>
-                                        </td>
-                                        <td>
-                                            <strong className="text-success">
-                                                S/ {parseFloat(producto.precio || 0).toFixed(2)}
-                                            </strong>
-                                        </td>
-                                        <td>
-                                            <Badge bg={producto.disponible ? "success" : "danger"}>
-                                                <i className={`fas ${
-                                                    producto.disponible ? 'fa-check-circle' : 'fa-times-circle'
-                                                } me-1`}></i>
-                                                {producto.disponible ? "Disponible" : "Agotado"}
-                                            </Badge>
-                                        </td>
-                                        <td>
-                                            <div className="d-flex gap-1">
-                                                <Button
-                                                    variant={producto.disponible ? "outline-warning" : "outline-success"}
-                                                    size="sm"
-                                                    onClick={() => handleToggleDisponibilidad(producto)}
-                                                >
-                                                    <i className={`fas ${
-                                                        producto.disponible ? 'fa-eye-slash' : 'fa-eye'
-                                                    }`}></i>
-                                                </Button>
-                                                
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    onClick={() => handleShowModal(producto)}
-                                                >
-                                                    <i className="fas fa-edit"></i>
-                                                </Button>
-                                                
-                                                <Button
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    onClick={() => handleDelete(producto)}
-                                                >
-                                                    <i className="fas fa-trash"></i>
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    </Card.Body>
-                </Card>
-            )}
+  return (
+    <div style={{ paddingBottom: 100 }}>
 
-            {/* Mensaje si no hay productos */}
-            {productosFiltrados.length === 0 && !loading && (
-                <Card className="border-0 shadow-sm">
-                    <Card.Body className="text-center py-5">
-                        <i className="fas fa-utensils fa-4x text-muted mb-4"></i>
-                        <h4>No hay productos</h4>
-                        <p className="text-muted mb-3">
-                            {filtros.categoria !== 'todas' || filtros.disponibilidad !== 'todos' || filtros.busqueda
-                                ? 'No se encontraron productos con los filtros seleccionados.'
-                                : 'Comienza agregando productos al menú.'}
-                        </p>
-                        {(filtros.categoria !== 'todas' || filtros.disponibilidad !== 'todos' || filtros.busqueda) ? (
-                            <Button variant="outline-primary" onClick={handleLimpiarFiltros}>
-                                Mostrar todos los productos
-                            </Button>
-                        ) : (
-                            <Button variant="primary" onClick={() => handleShowModal()}>
-                                <i className="fas fa-plus me-2"></i>
-                                Agregar Primer Producto
-                            </Button>
-                        )}
-                    </Card.Body>
-                </Card>
-            )}
+      {/* Stats */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+        {[
+          { label: 'Total',       value: total,       color: '#6366f1', icon: 'fa-utensils'     },
+          { label: 'Disponibles', value: disponibles,  color: '#16a34a', icon: 'fa-circle-check' },
+          { label: 'Agotados',    value: agotados,     color: '#ef4444', icon: 'fa-ban'          },
+          { label: 'Categorías',  value: categorias.length, color: '#f59e0b', icon: 'fa-tags'   },
+        ].map(s => (
+          <div key={s.label} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '12px 6px', textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: `${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px' }}>
+              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: 13 }}></i>
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>{s.value}</div>
+            <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
 
-            {/* Modal para Crear/Editar Producto */}
-            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        {editingProducto ? 'Editar Producto' : 'Nuevo Producto'}
-                    </Modal.Title>
-                </Modal.Header>
-                <Form onSubmit={handleSubmit}>
-                    <Modal.Body>
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Nombre del Producto *</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={formData.nombre}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            nombre: e.target.value
-                                        })}
-                                        required
-                                        placeholder="Ej: Pizza Margarita"
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Precio *</Form.Label>
-                                    <InputGroup>
-                                        <InputGroup.Text>S/</InputGroup.Text>
-                                        <Form.Control
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={formData.precio}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                precio: e.target.value
-                                            })}
-                                            required
-                                            placeholder="0.00"
-                                        />
-                                    </InputGroup>
-                                </Form.Group>
-                            </Col>
-                        </Row>
+      {/* Buscar */}
+      <div style={{ position: 'relative', marginBottom: 12 }}>
+        <i className="fas fa-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: 14 }}></i>
+        <input
+          type="text" placeholder="Buscar producto..."
+          value={filtros.busqueda}
+          onChange={e => setFiltros(f => ({ ...f, busqueda: e.target.value }))}
+          style={{ ...inputSt, paddingLeft: 40 }}
+        />
+      </div>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Descripción</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={3}
-                                value={formData.descripcion}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    descripcion: e.target.value
-                                })}
-                                placeholder="Descripción del producto..."
-                            />
-                        </Form.Group>
+      {/* Filtro categoría — chips horizontales */}
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 10, WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+        <button
+          onClick={() => setFiltros(f => ({ ...f, categoria: 'todas' }))}
+          style={{ padding: '7px 16px', borderRadius: 20, border: 'none', background: filtros.categoria === 'todas' ? '#0f172a' : '#f1f5f9', color: filtros.categoria === 'todas' ? '#fff' : '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit' }}
+        >Todas</button>
+        {categorias.map(c => {
+          const active = filtros.categoria === String(c.id);
+          const col = catColor(c.id);
+          return (
+            <button key={c.id}
+              onClick={() => setFiltros(f => ({ ...f, categoria: String(c.id) }))}
+              style={{ padding: '7px 16px', borderRadius: 20, border: 'none', background: active ? col : '#f1f5f9', color: active ? '#fff' : '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit' }}
+            >{c.nombre}</button>
+          );
+        })}
+      </div>
 
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Categoría *</Form.Label>
-                                    <Form.Select
-                                        value={formData.categoria_id}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            categoria_id: e.target.value
-                                        })}
-                                        required
-                                    >
-                                        <option value="">Selecciona una categoría</option>
-                                        {categorias.map(categoria => (
-                                            <option key={categoria.id} value={categoria.id}>
-                                                {categoria.nombre}
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Estado</Form.Label>
-                                    <div className="mt-2">
-                                        <Form.Check
-                                            type="switch"
-                                            id="disponible-switch"
-                                            label={formData.disponible ? "Disponible" : "No disponible"}
-                                            checked={formData.disponible}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                disponible: e.target.checked
-                                            })}
-                                        />
-                                    </div>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleCloseModal}>
-                            Cancelar
-                        </Button>
-                        <Button variant="primary" type="submit">
-                            {editingProducto ? 'Actualizar' : 'Crear'} Producto
-                        </Button>
-                    </Modal.Footer>
-                </Form>
-            </Modal>
+      {/* Filtro disponibilidad */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+        {[['todos','Todos'],['disponibles','Disponibles'],['agotados','Agotados']].map(([v, l]) => (
+          <button key={v}
+            onClick={() => setFiltros(f => ({ ...f, disponibilidad: v }))}
+            style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', background: filtros.disponibilidad === v ? '#6366f1' : '#f1f5f9', color: filtros.disponibilidad === v ? '#fff' : '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+          >{l}</button>
+        ))}
+      </div>
 
-            {/* Modal para Crear Categoría */}
-            <Modal show={showCategoriaModal} onHide={() => setShowCategoriaModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Nueva Categoría</Modal.Title>
-                </Modal.Header>
-                <Form onSubmit={handleCrearCategoria}>
-                    <Modal.Body>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Nombre de la Categoría *</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={categoriaForm.nombre}
-                                onChange={(e) => setCategoriaForm({
-                                    ...categoriaForm,
-                                    nombre: e.target.value
-                                })}
-                                required
-                                placeholder="Ej: Bebidas, Platos Principales..."
-                            />
-                        </Form.Group>
+      {/* Botón nueva categoría */}
+      <button
+        onClick={() => setShowCatForm(true)}
+        style={{ width: '100%', padding: '11px', borderRadius: 12, border: '1.5px dashed #c7d2fe', background: '#eef2ff', color: '#6366f1', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 }}
+      >
+        <i className="fas fa-tags"></i>
+        Nueva Categoría
+      </button>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Descripción</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={2}
-                                value={categoriaForm.descripcion}
-                                onChange={(e) => setCategoriaForm({
-                                    ...categoriaForm,
-                                    descripcion: e.target.value
-                                })}
-                                placeholder="Descripción opcional..."
-                            />
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowCategoriaModal(false)}>
-                            Cancelar
-                        </Button>
-                        <Button variant="success" type="submit">
-                            Crear Categoría
-                        </Button>
-                    </Modal.Footer>
-                </Form>
-            </Modal>
-        </Container>
-    );
+      {/* Lista */}
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}><Spin /></div>
+      ) : productosFiltrados.length === 0 ? (
+        <div style={{ textAlign: 'center', paddingTop: 60 }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <i className="fas fa-utensils" style={{ fontSize: 30, color: '#cbd5e1' }}></i>
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#475569' }}>Sin productos</div>
+          <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 6 }}>Ajusta los filtros o agrega uno nuevo</div>
+        </div>
+      ) : (
+        <>
+          <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>
+            {productosFiltrados.length} PRODUCTO{productosFiltrados.length !== 1 ? 'S' : ''}
+          </div>
+          {productosFiltrados.map(p => (
+            <ProductoCard key={p.id} producto={p} onTap={() => setSelected(p)} />
+          ))}
+        </>
+      )}
+
+      {/* FAB */}
+      <button
+        onClick={openNew}
+        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(99,102,241,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <i className="fas fa-plus" style={{ fontSize: 22 }}></i>
+      </button>
+
+      {/* Sheet detalle */}
+      <ProductoSheet
+        producto={selected}
+        categorias={categorias}
+        onClose={() => setSelected(null)}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+        onToggle={handleToggle}
+      />
+
+      {/* Sheet crear/editar producto */}
+      <Sheet
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editing ? `Editar: ${editing.nombre}` : 'Nuevo Producto'}
+        footer={
+          <button
+            onClick={handleSubmit} disabled={saving}
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+          >
+            <i className={saving ? 'fas fa-circle-notch fa-spin' : editing ? 'fas fa-save' : 'fas fa-plus'}></i>
+            {saving ? 'Guardando...' : editing ? 'Actualizar Producto' : 'Crear Producto'}
+          </button>
+        }
+      >
+        <Field label="Nombre *">
+          <input style={inputSt} type="text" placeholder="Ej: Pollo a la brasa" value={formData.nombre} onChange={e => setFormData(f => ({ ...f, nombre: e.target.value }))} required />
+        </Field>
+
+        <Field label="Precio (S/) *">
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#16a34a', fontSize: 16 }}>S/</span>
+            <input style={{ ...inputSt, paddingLeft: 36 }} type="number" inputMode="decimal" step="0.01" min="0" placeholder="0.00" value={formData.precio} onChange={e => setFormData(f => ({ ...f, precio: e.target.value }))} required />
+          </div>
+        </Field>
+
+        <Field label="Categoría *">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {categorias.map(c => {
+              const active = formData.categoria_id === String(c.id);
+              const col = catColor(c.id);
+              return (
+                <button key={c.id} type="button"
+                  onClick={() => setFormData(f => ({ ...f, categoria_id: String(c.id) }))}
+                  style={{ padding: '9px 16px', borderRadius: 10, border: `2px solid ${active ? col : '#e2e8f0'}`, background: active ? col + '15' : '#f8fafc', color: active ? col : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+                >{c.nombre}</button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field label="Descripción (opcional)">
+          <textarea
+            style={{ ...inputSt, minHeight: 80, resize: 'vertical', lineHeight: 1.5 }}
+            placeholder="Descripción del producto..."
+            value={formData.descripcion}
+            onChange={e => setFormData(f => ({ ...f, descripcion: e.target.value }))}
+          />
+        </Field>
+
+        <Field label="Disponibilidad">
+          <div style={{ padding: '12px 14px', background: '#f8fafc', borderRadius: 12, border: '1.5px solid #f1f5f9' }}>
+            <Toggle value={formData.disponible} onChange={() => setFormData(f => ({ ...f, disponible: !f.disponible }))} />
+          </div>
+        </Field>
+      </Sheet>
+
+      {/* Sheet nueva categoría */}
+      <Sheet
+        open={showCatForm}
+        onClose={() => setShowCatForm(false)}
+        title="Nueva Categoría"
+        footer={
+          <button
+            onClick={handleCrearCategoria} disabled={saving}
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+          >
+            <i className={saving ? 'fas fa-circle-notch fa-spin' : 'fas fa-tags'}></i>
+            {saving ? 'Guardando...' : 'Crear Categoría'}
+          </button>
+        }
+      >
+        <Field label="Nombre *">
+          <input style={inputSt} type="text" placeholder="Ej: Bebidas, Platos Principales..." value={catForm.nombre} onChange={e => setCatForm(f => ({ ...f, nombre: e.target.value }))} />
+        </Field>
+        <Field label="Descripción (opcional)">
+          <textarea style={{ ...inputSt, minHeight: 70, resize: 'vertical' }} placeholder="Descripción opcional..." value={catForm.descripcion} onChange={e => setCatForm(f => ({ ...f, descripcion: e.target.value }))} />
+        </Field>
+      </Sheet>
+    </div>
+  );
 };
 
 export default ProductosManagement;

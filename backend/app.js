@@ -23,6 +23,7 @@ const io = socketManager.initialize(server);
 app.use(cors({
     origin: [
         process.env.FRONTEND_URL || 'http://localhost:3000',
+        'http://localhost:3001',
         'https://sirer-frontend.onrender.com',
         /\.onrender\.com$/
     ],

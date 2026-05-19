@@ -55,12 +55,6 @@ const setupRoleSpecificEvents = (socket, usuario) => {
         case 'mozo':
             setupMozoEvents(socket, usuario);
             break;
-        case 'cocina':
-            setupCocinaEvents(socket, usuario);
-            break;
-        case 'cajero':
-            setupCajeroEvents(socket, usuario);
-            break;
         case 'administrador':
             setupAdminEvents(socket, usuario);
             break;
@@ -82,63 +76,6 @@ const setupMozoEvents = (socket, usuario) => {
             pedido_id: data.pedido_id,
             mesa_numero: data.mesa_numero,
             mozo: usuario.nombre,
-            timestamp: new Date().toISOString()
-        });
-    });
-};
-
-const setupCocinaEvents = (socket, usuario) => {
-    // Evento para cambiar estado de pedido en cocina
-    socket.on('pedido-estado-cocina', (data) => {
-        const { pedido_id, estado } = data;
-        
-        // Notificar a mozos si el pedido está preparado
-        if (estado === 'preparado') {
-            socket.to('mozo').emit('pedido-listo-para-entregar', {
-                pedido_id,
-                mesa_numero: data.mesa_numero,
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        // Notificar a administradores
-        socket.to('administrador').emit('pedido-estado-actualizado', {
-            pedido_id,
-            estado,
-            actualizado_por: usuario.nombre,
-            timestamp: new Date().toISOString()
-        });
-    });
-
-    // Evento para cambiar disponibilidad de producto
-    socket.on('cambiar-disponibilidad-producto', (data) => {
-        socket.to('mozo').emit('producto-disponibilidad-actualizada', {
-            producto_id: data.producto_id,
-            disponible: data.disponible,
-            actualizado_por: usuario.nombre,
-            timestamp: new Date().toISOString()
-        });
-    });
-};
-
-const setupCajeroEvents = (socket, usuario) => {
-    // Evento para solicitar cuenta de mesa
-    socket.on('solicitar-cuenta-mesa', (data) => {
-        socket.to('mozo').emit('cuenta-solicitada', {
-            mesa_id: data.mesa_id,
-            mesa_numero: data.mesa_numero,
-            timestamp: new Date().toISOString()
-        });
-    });
-
-    // Evento para procesar pago
-    socket.on('pago-procesado', (data) => {
-        // Notificar a todos sobre el pago procesado
-        socket.broadcast.emit('pago-confirmado', {
-            mesa_id: data.mesa_id,
-            total: data.total,
-            metodo_pago: data.metodo_pago,
-            procesado_por: usuario.nombre,
             timestamp: new Date().toISOString()
         });
     });
@@ -227,15 +164,7 @@ const EVENTOS = {
     // Mesas
     MESA_ESTADO_CAMBIADO: 'mesa-estado-cambiado',
     MESA_LIBERADA: 'mesa-liberada',
-    CUENTA_SOLICITADA: 'cuenta-solicitada',
-    
-    // Productos
-    PRODUCTO_DISPONIBILIDAD_ACTUALIZADA: 'producto-disponibilidad-actualizada',
-    
-    // Pagos
-    PAGO_PROCESADO: 'pago-procesado',
-    PAGO_CONFIRMADO: 'pago-confirmado',
-    
+
     // Sistema
     NOTIFICACION_GENERAL: 'notificacion-general',
     ESTADISTICAS_ACTUALIZADAS: 'estadisticas-actualizadas'

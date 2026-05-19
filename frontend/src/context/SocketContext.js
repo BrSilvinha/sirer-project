@@ -72,28 +72,6 @@ export const SocketProvider = ({ children }) => {
         }
     };
 
-    const cocinaActions = {
-        takeOrder: (pedidoId, mesa) => {
-            socketService.takeOrder(pedidoId, mesa);
-            setLastActivity(new Date().toISOString());
-        },
-        markOrderReady: (pedidoId, mesa, productos, mozoId) => {
-            socketService.markOrderReady(pedidoId, mesa, productos, mozoId);
-            setLastActivity(new Date().toISOString());
-        },
-        changeProductAvailability: (productoId, productoNombre, disponible) => {
-            socketService.changeProductAvailability(productoId, productoNombre, disponible);
-            setLastActivity(new Date().toISOString());
-        }
-    };
-
-    const cajeroActions = {
-        processPayment: (mesa, total, metodoPago) => {
-            socketService.processPayment(mesa, total, metodoPago);
-            setLastActivity(new Date().toISOString());
-        }
-    };
-
     const adminActions = {
         requestStats: () => {
             socketService.requestStats();
@@ -133,8 +111,6 @@ export const SocketProvider = ({ children }) => {
         
         // Acciones por rol
         mozo: mozoActions,
-        cocina: cocinaActions,
-        cajero: cajeroActions,
         admin: adminActions,
         
         // Instancia del servicio (para casos avanzados)

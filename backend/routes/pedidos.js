@@ -42,15 +42,15 @@ router.patch('/:id/estado',
 );
 
 // Rutas para cajeros - gestión de cuentas y pagos
-router.get('/cuenta/mesa/:mesa_id', 
+router.get('/cuenta/mesa/:mesa_id',
     authenticateToken,
-    authorizeRoles('cajero', 'administrador'),
+    authorizeRoles('cajero', 'administrador', 'mozo'),
     pedidosController.obtenerCuentaMesa
 );
 
-router.post('/pago/mesa/:mesa_id', 
+router.post('/pago/mesa/:mesa_id',
     authenticateToken,
-    authorizeRoles('cajero', 'administrador'),
+    authorizeRoles('cajero', 'administrador', 'mozo'),
     pedidosController.procesarPagoMesa
 );
 

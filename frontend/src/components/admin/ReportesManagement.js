@@ -1,1031 +1,873 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-    Container, Row, Col, Card, Badge, Button, Form, 
-    Table, Spinner, Modal, Tab, Tabs, ButtonGroup, Alert
-} from 'react-bootstrap';
 import {
     Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
-    Filler
+    CategoryScale, LinearScale, BarElement, LineElement,
+    PointElement, Title, Tooltip, Legend, ArcElement, Filler
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { reportesService } from '../../services/api';
 import toast from 'react-hot-toast';
 
-// Registrar componentes de Chart.js
 ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
-    Filler
+    CategoryScale, LinearScale, BarElement, LineElement,
+    PointElement, Title, Tooltip, Legend, ArcElement, Filler
 );
 
-const ReportesManagement = () => {
-    const [activeTab, setActiveTab] = useState('ventas');
+const A = '#6366f1';
+const BG = '#f1f5f9';
+const DARK = '#0f172a';
+const DARK2 = '#1e293b';
+const DARK3 = '#334155';
+const BAR_COLORS = ['#6366f1','#16a34a','#f59e0b','#0ea5e9','#ec4899','#8b5cf6','#14b8a6','#dc2626'];
+
+const useIsDesktop = () => {
+    const [desk, setDesk] = useState(() => window.innerWidth >= 768);
+    useEffect(() => {
+        const h = () => setDesk(window.innerWidth >= 768);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    return desk;
+};
+
+const fmt   = n => `S/${parseFloat(n || 0).toFixed(2)}`;
+const fmtK  = n => { const v = parseFloat(n || 0); return v >= 1000 ? `S/${(v/1000).toFixed(1)}k` : `S/${v.toFixed(0)}`; };
+
+const TABS = [
+    { key: 'ventas',    label: 'Ventas',    icon: 'fa-chart-line' },
+    { key: 'productos', label: 'Productos', icon: 'fa-utensils'   },
+    { key: 'mozos',     label: 'Mozos',     icon: 'fa-user-tie'   },
+    { key: 'mesas',     label: 'Mesas',     icon: 'fa-table'      },
+];
+const PERIODOS = [
+    { key: 'hora',   label: 'Hora'   },
+    { key: 'dia',    label: 'Día'    },
+    { key: 'semana', label: 'Semana' },
+    { key: 'mes',    label: 'Mes'    },
+];
+
+/* ══════════════════════════════════════════════════════
+   LÓGICA COMPARTIDA
+══════════════════════════════════════════════════════ */
+const useReportes = () => {
     const [loading, setLoading] = useState(false);
     const [filtros, setFiltros] = useState({
         fechaInicio: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        fechaFin: new Date().toISOString().split('T')[0],
-        periodo: 'dia',
-        comparar: false
+        fechaFin:    new Date().toISOString().split('T')[0],
+        periodo:     'dia',
     });
-    const [showExportModal, setShowExportModal] = useState(false);
-    const [exportType, setExportType] = useState('pdf');
-    const [exportando, setExportando] = useState(false);
-
-    // Estados para diferentes tipos de reportes
-    const [reporteVentas, setReporteVentas] = useState(null);
+    const [reporteVentas,    setReporteVentas]    = useState(null);
     const [reporteProductos, setReporteProductos] = useState(null);
-    const [reporteMozos, setReporteMozos] = useState(null);
-    const [reporteMesas, setReporteMesas] = useState(null);
+    const [reporteMozos,     setReporteMozos]     = useState(null);
+    const [reporteMesas,     setReporteMesas]     = useState(null);
     const [error, setError] = useState(null);
 
     const fetchReportes = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        
+        setLoading(true); setError(null);
         try {
-            const params = {
-                fecha_desde: filtros.fechaInicio,
-                fecha_hasta: filtros.fechaFin,
-                agrupar_por: filtros.periodo
-            };
-
-            // Llamadas independientes con manejo de errores individual
-            const promises = [
-                reportesService.getVentas(params).catch(err => {
-                    console.error('Error en ventas:', err);
-                    return null;
-                }),
-                reportesService.getProductosMasVendidos(params).catch(err => {
-                    console.error('Error en productos:', err);
-                    return null;
-                }),
-                reportesService.getMozosRendimiento(params).catch(err => {
-                    console.error('Error en mozos:', err);
-                    return null;
-                }),
-                reportesService.getMesasRendimiento(params).catch(err => {
-                    console.error('Error en mesas:', err);
-                    return null;
-                })
-            ];
-
-            const [ventasResponse, productosResponse, mozosResponse, mesasResponse] = await Promise.all(promises);
-
-            // Establecer datos o null si hubo error
-            setReporteVentas(ventasResponse?.data?.data || null);
-            setReporteProductos(productosResponse?.data?.data || null);
-            setReporteMozos(mozosResponse?.data?.data || null);
-            setReporteMesas(mesasResponse?.data?.data || null);
-
-            // Si todos los reportes fallaron, mostrar error general
-            if (!ventasResponse && !productosResponse && !mozosResponse && !mesasResponse) {
-                setError('No se pudieron cargar los reportes. Verifique la conexión con el servidor.');
-            }
-            
-        } catch (error) {
-            console.error('Error general en fetchReportes:', error);
-            setError('Error al cargar reportes. Verifique la conexión con el servidor.');
+            const p = { fecha_desde: filtros.fechaInicio, fecha_hasta: filtros.fechaFin, agrupar_por: filtros.periodo };
+            const [v, pr, m, ms] = await Promise.all([
+                reportesService.getVentas(p).catch(() => null),
+                reportesService.getProductosMasVendidos(p).catch(() => null),
+                reportesService.getMozosRendimiento(p).catch(() => null),
+                reportesService.getMesasRendimiento(p).catch(() => null),
+            ]);
+            setReporteVentas(v?.data?.data || null);
+            setReporteProductos(pr?.data?.data || null);
+            setReporteMozos(m?.data?.data || null);
+            setReporteMesas(ms?.data?.data || null);
+            if (!v && !pr && !m && !ms) setError('No se pudieron cargar los reportes.');
+        } catch {
+            setError('Error al cargar reportes.');
             toast.error('Error al cargar reportes');
-        } finally {
-            setLoading(false);
-        }
+        } finally { setLoading(false); }
     }, [filtros]);
 
-    useEffect(() => {
-        fetchReportes();
-    }, [fetchReportes]);
+    useEffect(() => { fetchReportes(); }, [fetchReportes]);
 
-    const handleFiltroChange = useCallback((campo, valor) => {
-        setFiltros(prev => ({ ...prev, [campo]: valor }));
-    }, []);
+    const exportarCSV = useCallback((tab) => {
+        let csv = '';
+        const nom = `reporte_${tab}_${filtros.fechaInicio}_${filtros.fechaFin}`;
+        if (tab === 'ventas' && reporteVentas)
+            { csv = 'Período,Ventas,Pedidos,Promedio\n'; reporteVentas.ventas_por_periodo?.forEach(v => { csv += `${v.periodo},${v.total_ventas},${v.total_pedidos},${v.promedio_pedido}\n`; }); }
+        else if (tab === 'productos' && reporteProductos)
+            { csv = 'Producto,Categoría,Cantidad,Ingresos\n'; reporteProductos.productos?.forEach(p => { csv += `"${p.producto?.nombre}","${p.producto?.categoria?.nombre}",${p.total_vendido},${p.ingresos_totales}\n`; }); }
+        else if (tab === 'mozos' && reporteMozos)
+            { csv = 'Mozo,Pedidos,Ventas,Promedio\n'; reporteMozos.mozos?.forEach(m => { csv += `"${m.mozo?.nombre}",${m.total_pedidos},${m.total_ventas},${m.promedio_por_pedido}\n`; }); }
+        else if (tab === 'mesas' && reporteMesas)
+            { csv = 'Mesa,Capacidad,Pedidos,Ingresos,Promedio\n'; reporteMesas.mesas?.forEach(m => { csv += `Mesa ${m.mesa?.numero},${m.mesa?.capacidad},${m.total_pedidos},${m.ingresos_totales},${m.promedio_por_pedido}\n`; }); }
+        if (!csv) { toast.error('No hay datos'); return; }
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob); link.download = `${nom}.csv`;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        toast.success('CSV descargado');
+    }, [filtros, reporteVentas, reporteProductos, reporteMozos, reporteMesas]);
 
-    // ✅ FUNCIÓN DE EXPORTACIÓN A CSV (simulación de Excel)
-    const exportarCSV = useCallback((datos, nombreArchivo) => {
-        try {
-            let csvContent = '';
-            
-            if (activeTab === 'ventas' && reporteVentas) {
-                csvContent = 'Período,Total Ventas,Total Pedidos,Promedio por Pedido\n';
-                reporteVentas.ventas_por_periodo?.forEach(venta => {
-                    csvContent += `${venta.periodo},${venta.total_ventas},${venta.total_pedidos},${venta.promedio_pedido}\n`;
-                });
-            } else if (activeTab === 'productos' && reporteProductos) {
-                csvContent = 'Producto,Categoría,Cantidad Vendida,Ingresos Totales\n';
-                reporteProductos.productos?.forEach(producto => {
-                    csvContent += `"${producto.producto?.nombre}","${producto.producto?.categoria?.nombre}",${producto.total_vendido},${producto.ingresos_totales}\n`;
-                });
-            } else if (activeTab === 'mozos' && reporteMozos) {
-                csvContent = 'Mozo,Total Pedidos,Total Ventas,Promedio por Pedido\n';
-                reporteMozos.mozos?.forEach(mozo => {
-                    csvContent += `"${mozo.mozo?.nombre}",${mozo.total_pedidos},${mozo.total_ventas},${mozo.promedio_por_pedido}\n`;
-                });
-            } else if (activeTab === 'mesas' && reporteMesas) {
-                csvContent = 'Mesa,Capacidad,Total Pedidos,Ingresos Totales,Promedio por Pedido\n';
-                reporteMesas.mesas?.forEach(mesa => {
-                    csvContent += `Mesa ${mesa.mesa?.numero},${mesa.mesa?.capacidad},${mesa.total_pedidos},${mesa.ingresos_totales},${mesa.promedio_por_pedido}\n`;
-                });
-            }
+    const exportarPDF = useCallback((tab) => {
+        const periodo = `${filtros.fechaInicio} al ${filtros.fechaFin}`;
+        let rows = '', headers = '';
+        if (tab === 'ventas' && reporteVentas) { headers = '<tr><th>#</th><th>Período</th><th>Ventas</th><th>Pedidos</th><th>Promedio</th></tr>'; reporteVentas.ventas_por_periodo?.forEach((v, i) => { rows += `<tr><td>${i+1}</td><td>${v.periodo}</td><td>S/${v.total_ventas}</td><td>${v.total_pedidos}</td><td>S/${v.promedio_pedido}</td></tr>`; }); }
+        else if (tab === 'productos' && reporteProductos) { headers = '<tr><th>#</th><th>Producto</th><th>Cantidad</th><th>Ingresos</th></tr>'; reporteProductos.productos?.forEach((p, i) => { rows += `<tr><td>${i+1}</td><td>${p.producto?.nombre}</td><td>${p.total_vendido}</td><td>S/${p.ingresos_totales}</td></tr>`; }); }
+        else if (tab === 'mozos' && reporteMozos) { headers = '<tr><th>#</th><th>Mozo</th><th>Pedidos</th><th>Ventas</th><th>Promedio</th></tr>'; reporteMozos.mozos?.forEach((m, i) => { rows += `<tr><td>${i+1}</td><td>${m.mozo?.nombre}</td><td>${m.total_pedidos}</td><td>S/${m.total_ventas}</td><td>S/${m.promedio_por_pedido}</td></tr>`; }); }
+        else if (tab === 'mesas' && reporteMesas) { headers = '<tr><th>Mesa</th><th>Cap.</th><th>Pedidos</th><th>Ingresos</th><th>Promedio</th></tr>'; reporteMesas.mesas?.forEach(m => { rows += `<tr><td>Mesa ${m.mesa?.numero}</td><td>${m.mesa?.capacidad}</td><td>${m.total_pedidos}</td><td>S/${m.ingresos_totales}</td><td>S/${m.promedio_por_pedido}</td></tr>`; }); }
+        const html = `<html><head><title>SIRER - ${tab}</title><style>body{font-family:Arial,sans-serif;margin:20px}h1{color:#6366f1;margin-bottom:4px}p{color:#64748b;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:9px 12px;text-align:left}th{background:#f1f5f9;font-weight:700}</style></head><body><h1>SIRER — ${tab.charAt(0).toUpperCase()+tab.slice(1)}</h1><p>Período: ${periodo} · Generado: ${new Date().toLocaleString()}</p><table><thead>${headers}</thead><tbody>${rows}</tbody></table></body></html>`;
+        const w = window.open('', '_blank');
+        w.document.write(html); w.document.close();
+        setTimeout(() => w.print(), 500);
+        toast.success('PDF listo — usa Ctrl+P para guardar');
+    }, [filtros, reporteVentas, reporteProductos, reporteMozos, reporteMesas]);
 
-            if (csvContent) {
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `${nombreArchivo}_${new Date().toISOString().split('T')[0]}.csv`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                toast.success('Archivo CSV descargado correctamente');
-            } else {
-                toast.error('No hay datos para exportar');
-            }
-        } catch (error) {
-            console.error('Error exportando CSV:', error);
-            toast.error('Error al generar archivo CSV');
-        }
-    }, [activeTab, reporteVentas, reporteProductos, reporteMozos, reporteMesas]);
+    return { loading, filtros, setFiltros, reporteVentas, reporteProductos, reporteMozos, reporteMesas, error, setError, fetchReportes, exportarCSV, exportarPDF };
+};
 
-    // ✅ FUNCIÓN DE EXPORTACIÓN A PDF (simulación básica)
-    const exportarPDF = useCallback(() => {
-        try {
-            // Crear contenido HTML para el PDF
-            const fechaActual = new Date().toLocaleDateString();
-            const periodo = `${filtros.fechaInicio} al ${filtros.fechaFin}`;
-            
-            let contenidoHTML = `
-                <html>
-                <head>
-                    <title>Reporte SIRER - ${activeTab.toUpperCase()}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-                        .periodo { color: #666; margin-bottom: 20px; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; font-weight: bold; }
-                        .total { font-weight: bold; background-color: #e8f5e8; }
-                        .footer { margin-top: 30px; text-align: right; color: #666; font-size: 12px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>SISTEMA SIRER</h1>
-                        <h2>Reporte de ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
-                    </div>
-                    <div class="periodo">
-                        <strong>Período:</strong> ${periodo}<br>
-                        <strong>Generado:</strong> ${fechaActual}
-                    </div>
-            `;
+/* ══════════════════════════════════════════════════════
+   COMPONENTES COMPARTIDOS (mobile + desktop)
+══════════════════════════════════════════════════════ */
+const EmptyChart = ({ icon, msg }) => (
+    <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+        <div style={{ textAlign: 'center' }}>
+            <i className={`fas ${icon}`} style={{ fontSize: 26, display: 'block', marginBottom: 8 }} />
+            <div style={{ fontSize: 13 }}>{msg}</div>
+        </div>
+    </div>
+);
+const EmptyState = ({ icon, msg }) => (
+    <div style={{ textAlign: 'center', paddingTop: 60, color: '#94a3b8' }}>
+        <i className={`fas ${icon}`} style={{ fontSize: 38, display: 'block', marginBottom: 12 }} />
+        <div style={{ fontSize: 14 }}>{msg}</div>
+    </div>
+);
 
-            if (activeTab === 'ventas' && reporteVentas) {
-                contenidoHTML += `
-                    <h3>Resumen Total</h3>
-                    <table>
-                        <tr><td><strong>Total Ventas:</strong></td><td>S/${reporteVentas.resumen_total?.total_ventas || '0.00'}</td></tr>
-                        <tr><td><strong>Total Pedidos:</strong></td><td>${reporteVentas.resumen_total?.total_pedidos || 0}</td></tr>
-                        <tr><td><strong>Promedio por Pedido:</strong></td><td>S/${reporteVentas.resumen_total?.promedio_pedido || '0.00'}</td></tr>
-                    </table>
-                    
-                    <h3>Ventas por Período</h3>
-                    <table>
-                        <tr><th>Período</th><th>Total Ventas</th><th>Total Pedidos</th><th>Promedio</th></tr>
-                `;
-                reporteVentas.ventas_por_periodo?.forEach(venta => {
-                    contenidoHTML += `<tr><td>${venta.periodo}</td><td>S/${venta.total_ventas}</td><td>${venta.total_pedidos}</td><td>S/${venta.promedio_pedido}</td></tr>`;
-                });
-                contenidoHTML += '</table>';
-            }
+/* ══════════════════════════════════════════════════════
+   MOBILE LAYOUT
+══════════════════════════════════════════════════════ */
+const MobileKpiCard = ({ icon, label, value, color }) => {
+    const [pressed, setPressed] = useState(false);
+    return (
+        <div
+            onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
+            onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
+            style={{
+                background: '#fff', borderRadius: 16, padding: '14px 14px',
+                display: 'flex', alignItems: 'center', gap: 12,
+                boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.06)' : '0 2px 10px rgba(0,0,0,0.08)',
+                flex: '1 1 0', minWidth: 0,
+                transform: pressed ? 'scale(0.97)' : 'scale(1)',
+                transition: 'transform 0.12s, box-shadow 0.12s',
+            }}
+        >
+            <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className={`fas ${icon}`} style={{ color, fontSize: 18 }} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 19, fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>{value}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+            </div>
+        </div>
+    );
+};
 
-            if (activeTab === 'productos' && reporteProductos) {
-                contenidoHTML += `
-                    <h3>Productos Más Vendidos</h3>
-                    <table>
-                        <tr><th>Posición</th><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Ingresos</th></tr>
-                `;
-                reporteProductos.productos?.forEach((producto, index) => {
-                    contenidoHTML += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${producto.producto?.nombre || 'N/A'}</td>
-                            <td>${producto.producto?.categoria?.nombre || 'N/A'}</td>
-                            <td>${producto.total_vendido}</td>
-                            <td>S/${producto.ingresos_totales}</td>
-                        </tr>
-                    `;
-                });
-                contenidoHTML += '</table>';
-            }
+const MobileRankRow = ({ pos, name, sub, ingresos, maxIngresos, extra }) => {
+    const medal = pos === 1 ? '#f59e0b' : pos === 2 ? '#94a3b8' : pos === 3 ? '#cd7f32' : null;
+    const pct = maxIngresos > 0 ? Math.round((parseFloat(ingresos) / maxIngresos) * 100) : 0;
+    return (
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: medal ? medal + '20' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, color: medal || '#64748b' }}>
+                    {medal ? <i className="fas fa-crown" style={{ color: medal, fontSize: 11 }} /> : `#${pos}`}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    {sub && <div style={{ fontSize: 11, color: '#94a3b8' }}>{sub}</div>}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#16a34a', flexShrink: 0 }}>{fmt(ingresos)}</div>
+            </div>
+            <div style={{ height: 4, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden', marginLeft: 42 }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${A},#818cf8)`, borderRadius: 4, transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)' }} />
+            </div>
+            {extra && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, marginLeft: 42 }}>{extra}</div>}
+        </div>
+    );
+};
 
-            if (activeTab === 'mozos' && reporteMozos) {
-                contenidoHTML += `
-                    <h3>Rendimiento de Mozos</h3>
-                    <table>
-                        <tr><th>Posición</th><th>Mozo</th><th>Total Pedidos</th><th>Total Ventas</th><th>Promedio</th></tr>
-                `;
-                reporteMozos.mozos?.forEach((mozo, index) => {
-                    contenidoHTML += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${mozo.mozo?.nombre || 'N/A'}</td>
-                            <td>${mozo.total_pedidos}</td>
-                            <td>S/${mozo.total_ventas}</td>
-                            <td>S/${mozo.promedio_por_pedido}</td>
-                        </tr>
-                    `;
-                });
-                contenidoHTML += '</table>';
-            }
+const TabChip = ({ label, icon, active, onClick }) => (
+    <button onClick={onClick} style={{
+        flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
+        padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+        background: active ? A : '#fff', color: active ? '#fff' : '#64748b',
+        fontWeight: 700, fontSize: 13,
+        boxShadow: active ? `0 3px 10px ${A}50` : '0 1px 4px rgba(0,0,0,0.06)',
+        transition: 'all 0.15s',
+    }}>
+        <i className={`fas ${icon}`} style={{ fontSize: 12 }} />{label}
+    </button>
+);
 
-            if (activeTab === 'mesas' && reporteMesas) {
-                contenidoHTML += `
-                    <h3>Rendimiento de Mesas</h3>
-                    <table>
-                        <tr><th>Mesa</th><th>Capacidad</th><th>Total Pedidos</th><th>Ingresos</th><th>Promedio</th></tr>
-                `;
-                reporteMesas.mesas?.forEach(mesa => {
-                    contenidoHTML += `
-                        <tr>
-                            <td>Mesa ${mesa.mesa?.numero}</td>
-                            <td>${mesa.mesa?.capacidad} personas</td>
-                            <td>${mesa.total_pedidos}</td>
-                            <td>S/${mesa.ingresos_totales}</td>
-                            <td>S/${mesa.promedio_por_pedido}</td>
-                        </tr>
-                    `;
-                });
-                contenidoHTML += '</table>';
-            }
+const MobileLayout = ({ data }) => {
+    const { loading, filtros, setFiltros, reporteVentas, reporteProductos, reporteMozos, reporteMesas, error, setError, fetchReportes, exportarCSV, exportarPDF } = data;
+    const [activeTab, setActiveTab] = useState('ventas');
+    const [showFiltros, setShowFiltros] = useState(false);
 
-            contenidoHTML += `
-                    <div class="footer">
-                        <p>Generado por Sistema SIRER - ${new Date().toLocaleString()}</p>
-                    </div>
-                </body>
-                </html>
-            `;
-
-            // Abrir en nueva ventana para imprimir/guardar como PDF
-            const ventanaPDF = window.open('', '_blank');
-            ventanaPDF.document.write(contenidoHTML);
-            ventanaPDF.document.close();
-            
-            // Auto-imprimir después de un breve delay
-            setTimeout(() => {
-                ventanaPDF.print();
-            }, 500);
-            
-            toast.success('PDF generado correctamente. Use Ctrl+P para guardar como PDF');
-            
-        } catch (error) {
-            console.error('Error generando PDF:', error);
-            toast.error('Error al generar PDF');
-        }
-    }, [activeTab, filtros, reporteVentas, reporteProductos, reporteMozos, reporteMesas]);
-
-    const handleExportar = useCallback((tipo) => {
-        setExportType(tipo);
-        setShowExportModal(true);
-    }, []);
-
-    const handleConfirmExport = useCallback(async () => {
-        setExportando(true);
-        try {
-            if (exportType === 'excel') {
-                const nombreArchivo = `reporte_${activeTab}_${filtros.fechaInicio}_${filtros.fechaFin}`;
-                exportarCSV(null, nombreArchivo);
-            } else if (exportType === 'pdf') {
-                exportarPDF();
-            }
-            
-            setShowExportModal(false);
-            
-        } catch (error) {
-            console.error('Error al exportar:', error);
-            toast.error('Error al exportar reporte');
-        } finally {
-            setExportando(false);
-        }
-    }, [exportType, activeTab, filtros, exportarCSV, exportarPDF]);
-
-    // Configuraciones de gráficos con datos reales
-    const ventasChartData = {
-        labels: reporteVentas?.ventas_por_periodo?.map(v => 
-            new Date(v.periodo).toLocaleDateString('es', { 
-                month: 'short', 
-                day: 'numeric' 
-            })
-        ) || [],
+    const ventasCD = {
+        labels: reporteVentas?.ventas_por_periodo?.map(v => new Date(v.periodo).toLocaleDateString('es', { month: 'short', day: 'numeric' })) || [],
         datasets: [
-            {
-                label: 'Ventas (S/)',
-                data: reporteVentas?.ventas_por_periodo?.map(v => 
-                    parseFloat(v.total_ventas)
-                ) || [],
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                tension: 0.4,
-                fill: true
-            },
-            {
-                label: 'Pedidos',
-                data: reporteVentas?.ventas_por_periodo?.map(v => 
-                    parseInt(v.total_pedidos)
-                ) || [],
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                tension: 0.4,
-                yAxisID: 'y1',
-                fill: false
-            }
-        ]
+            { label: 'Ventas S/', data: reporteVentas?.ventas_por_periodo?.map(v => parseFloat(v.total_ventas)) || [], borderColor: A, backgroundColor: A+'20', tension: 0.4, fill: true },
+            { label: 'Pedidos',   data: reporteVentas?.ventas_por_periodo?.map(v => parseInt(v.total_pedidos)) || [],   borderColor: '#f59e0b', backgroundColor: '#f59e0b10', tension: 0.4, yAxisID: 'y1' },
+        ],
     };
+    const prodCD = { labels: reporteProductos?.productos?.slice(0,6).map(p => p.producto?.nombre||'') || [], datasets: [{ label: 'Ingresos S/', data: reporteProductos?.productos?.slice(0,6).map(p => parseFloat(p.ingresos_totales||0)) || [], backgroundColor: BAR_COLORS }] };
+    const mozoCD = { labels: reporteMozos?.mozos?.map(m => (m.mozo?.nombre||'').split(' ')[0]) || [], datasets: [{ label: 'Ventas S/', data: reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [], backgroundColor: A }, { label: 'Pedidos', data: reporteMozos?.mozos?.map(m => parseInt(m.total_pedidos||0)) || [], backgroundColor: '#f59e0b' }] };
 
-    const productosChartData = {
-        labels: reporteProductos?.productos?.slice(0, 8).map(p => 
-            p.producto?.nombre || 'Sin nombre'
-        ) || [],
-        datasets: [{
-            label: 'Ingresos (S/)',
-            data: reporteProductos?.productos?.slice(0, 8).map(p => 
-                parseFloat(p.ingresos_totales || 0)
-            ) || [],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.8)',
-                'rgba(54, 162, 235, 0.8)',
-                'rgba(255, 205, 86, 0.8)',
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(153, 102, 255, 0.8)',
-                'rgba(255, 159, 64, 0.8)',
-                'rgba(199, 199, 199, 0.8)',
-                'rgba(83, 102, 255, 0.8)'
-            ]
-        }]
-    };
+    const mxVenta = Math.max(...(reporteVentas?.ventas_por_periodo?.map(v => parseFloat(v.total_ventas||0)) || [0]));
+    const mxProd  = Math.max(...(reporteProductos?.productos?.map(p => parseFloat(p.ingresos_totales||0)) || [0]));
+    const mxMozo  = Math.max(...(reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [0]));
+    const mxMesa  = Math.max(...(reporteMesas?.mesas?.map(m => parseFloat(m.ingresos_totales||0)) || [0]));
 
-    const mozosChartData = {
-        labels: reporteMozos?.mozos?.map(m => 
-            (m.mozo?.nombre || 'Sin nombre').split(' ')[0]
-        ) || [],
-        datasets: [
-            {
-                label: 'Ventas (S/)',
-                data: reporteMozos?.mozos?.map(m => 
-                    parseFloat(m.total_ventas || 0)
-                ) || [],
-                backgroundColor: 'rgba(54, 162, 235, 0.8)'
-            },
-            {
-                label: 'Pedidos',
-                data: reporteMozos?.mozos?.map(m => 
-                    parseInt(m.total_pedidos || 0)
-                ) || [],
-                backgroundColor: 'rgba(255, 99, 132, 0.8)'
-            }
-        ]
-    };
-
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top',
-            }
-        }
-    };
-
-    const ventasChartOptions = {
-        ...chartOptions,
-        scales: {
-            y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                title: {
-                    display: true,
-                    text: 'Ventas (S/)'
-                }
-            },
-            y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                title: {
-                    display: true,
-                    text: 'Pedidos'
-                },
-                grid: {
-                    drawOnChartArea: false,
-                }
-            }
-        }
-    };
+    const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 } } } }, scales: { x: { ticks: { font: { size: 10 }, maxRotation: 35 }, grid: { display: false } }, y: { ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } } } };
+    const ventasOpts = { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } } } };
 
     return (
-        <Container fluid>
+        <div style={{ minHeight: '100vh', background: BG, paddingBottom: 40 }}>
             {/* Header */}
-            <Row className="mb-4">
-                <Col>
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 className="mb-1">
-                                <i className="fas fa-chart-line text-primary me-2"></i>
-                                Reportes Avanzados
-                            </h2>
-                            <p className="text-muted mb-0">
-                                Análisis detallado del rendimiento del restaurante
-                            </p>
+            <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '12px 16px', position: 'sticky', top: 58, zIndex: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: A+'15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <i className="fas fa-chart-bar" style={{ color: A, fontSize: 16 }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>Reportes</div>
+                        <div style={{ fontSize: 10, color: '#94a3b8' }}>{filtros.fechaInicio} → {filtros.fechaFin}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                        {[
+                            { icon: 'fa-sliders-h', fn: () => setShowFiltros(v=>!v), bg: showFiltros ? A : '#f1f5f9', cl: showFiltros ? '#fff' : '#64748b' },
+                            { icon: 'fa-file-csv',  fn: () => exportarCSV(activeTab), bg: '#f0fdf4', cl: '#16a34a' },
+                            { icon: 'fa-file-pdf',  fn: () => exportarPDF(activeTab), bg: '#fef2f2', cl: '#dc2626' },
+                            { icon: loading ? 'fa-spinner fa-spin' : 'fa-sync-alt', fn: fetchReportes, bg: A+'15', cl: A },
+                        ].map((b, i) => (
+                            <button key={i} onClick={b.fn} disabled={loading && i===3}
+                                style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer', background: b.bg, color: b.cl, fontSize: 13 }}>
+                                <i className={`fas ${b.icon}`} />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                {showFiltros && (
+                    <div style={{ background: '#f8fafc', borderRadius: 14, padding: '12px', marginBottom: 10 }}>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                            {[['Desde','fechaInicio'],['Hasta','fechaFin']].map(([lbl,key]) => (
+                                <div key={key} style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>{lbl}</div>
+                                    <input type="date" value={filtros[key]} onChange={e => setFiltros(f=>({...f,[key]:e.target.value}))}
+                                        style={{ width: '100%', padding: '7px 8px', borderRadius: 9, border: '1.5px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+                                </div>
+                            ))}
                         </div>
-                        <div className="d-flex gap-2">
-                            <Button 
-                                variant="outline-success" 
-                                size="sm"
-                                onClick={() => handleExportar('excel')}
-                                disabled={loading || exportando}
-                            >
-                                <i className="fas fa-file-excel me-1"></i>
-                                Excel
-                            </Button>
-                            <Button 
-                                variant="outline-danger" 
-                                size="sm"
-                                onClick={() => handleExportar('pdf')}
-                                disabled={loading || exportando}
-                            >
-                                <i className="fas fa-file-pdf me-1"></i>
-                                PDF
-                            </Button>
-                            <Button 
-                                variant="primary" 
-                                size="sm"
-                                onClick={fetchReportes}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <Spinner animation="border" size="sm" />
-                                ) : (
-                                    <i className="fas fa-sync-alt"></i>
-                                )}
-                                <span className="ms-1">Actualizar</span>
-                            </Button>
+                        <div style={{ display: 'flex', gap: 5 }}>
+                            {PERIODOS.map(p => (
+                                <button key={p.key} onClick={() => setFiltros(f=>({...f,periodo:p.key}))}
+                                    style={{ flex: 1, padding: '6px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                                        background: filtros.periodo===p.key ? A : '#fff', color: filtros.periodo===p.key ? '#fff' : '#64748b',
+                                        boxShadow: filtros.periodo===p.key ? `0 2px 8px ${A}40` : 'none' }}>
+                                    {p.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
-                </Col>
-            </Row>
+                )}
+                <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2 }}>
+                    {TABS.map(t => <TabChip key={t.key} {...t} active={activeTab===t.key} onClick={() => setActiveTab(t.key)} />)}
+                </div>
+            </div>
 
-            {/* Error Alert */}
             {error && (
-                <Alert variant="danger" className="mb-4" dismissible onClose={() => setError(null)}>
-                    <Alert.Heading>Error</Alert.Heading>
-                    <p>{error}</p>
-                </Alert>
+                <div style={{ margin: '12px 16px 0', background: '#fef2f2', borderRadius: 12, padding: '11px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <i className="fas fa-exclamation-circle" style={{ color: '#dc2626' }} />
+                    <div style={{ fontSize: 13, color: '#dc2626', flex: 1 }}>{error}</div>
+                    <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}><i className="fas fa-times" /></button>
+                </div>
             )}
-
-            {/* Filtros globales */}
-            <Card className="border-0 shadow-sm mb-4">
-                <Card.Body>
-                    <Row className="g-3">
-                        <Col md={3}>
-                            <Form.Group>
-                                <Form.Label className="small fw-bold">Fecha Inicio</Form.Label>
-                                <Form.Control
-                                    type="date"
-                                    size="sm"
-                                    value={filtros.fechaInicio}
-                                    onChange={(e) => handleFiltroChange('fechaInicio', e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                            <Form.Group>
-                                <Form.Label className="small fw-bold">Fecha Fin</Form.Label>
-                                <Form.Control
-                                    type="date"
-                                    size="sm"
-                                    value={filtros.fechaFin}
-                                    onChange={(e) => handleFiltroChange('fechaFin', e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                            <Form.Group>
-                                <Form.Label className="small fw-bold">Período</Form.Label>
-                                <Form.Select
-                                    size="sm"
-                                    value={filtros.periodo}
-                                    onChange={(e) => handleFiltroChange('periodo', e.target.value)}
-                                >
-                                    <option value="hora">Por Hora</option>
-                                    <option value="dia">Por Día</option>
-                                    <option value="semana">Por Semana</option>
-                                    <option value="mes">Por Mes</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={3} className="d-flex align-items-end">
-                            <Form.Check
-                                type="switch"
-                                id="comparar-switch"
-                                label="Comparar períodos"
-                                checked={filtros.comparar}
-                                onChange={(e) => handleFiltroChange('comparar', e.target.checked)}
-                            />
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
-
-            {/* Loading State */}
             {loading && (
-                <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3 text-muted">Cargando reportes...</p>
+                <div style={{ textAlign: 'center', paddingTop: 60, color: '#94a3b8' }}>
+                    <i className="fas fa-spinner fa-spin" style={{ fontSize: 30, display: 'block', marginBottom: 12, color: A }} />
+                    <div style={{ fontSize: 14 }}>Cargando...</div>
                 </div>
             )}
 
-            {/* Tabs de reportes */}
-            {!loading && (
-                <Tabs 
-                    activeKey={activeTab} 
-                    onSelect={(k) => setActiveTab(k)}
-                    className="mb-4"
-                >
-                    {/* Reporte de Ventas */}
-                    <Tab eventKey="ventas" title={
-                        <span>
-                            <i className="fas fa-chart-line me-2"></i>
-                            Ventas
-                        </span>
-                    }>
-                        {reporteVentas ? (
-                            <>
-                                {/* Métricas de ventas */}
-                                <Row className="mb-4">
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-success bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-dollar-sign fa-2x text-success mb-2"></i>
-                                                <div className="h4 mb-0 text-success">
-                                                    S/{parseFloat(reporteVentas.resumen_total?.total_ventas || 0).toFixed(2)}
-                                                </div>
-                                                <div className="text-muted small">Total Ventas</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-primary bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-receipt fa-2x text-primary mb-2"></i>
-                                                <div className="h4 mb-0 text-primary">
-                                                    {reporteVentas.resumen_total?.total_pedidos || 0}
-                                                </div>
-                                                <div className="text-muted small">Total Pedidos</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-info bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-chart-line fa-2x text-info mb-2"></i>
-                                                <div className="h4 mb-0 text-info">
-                                                    S/{parseFloat(reporteVentas.resumen_total?.promedio_pedido || 0).toFixed(2)}
-                                                </div>
-                                                <div className="text-muted small">Promedio por Pedido</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Card className="border-0 shadow-sm bg-warning bg-opacity-10">
-                                            <Card.Body className="text-center">
-                                                <i className="fas fa-calendar fa-2x text-warning mb-2"></i>
-                                                <div className="h4 mb-0 text-warning">
-                                                    {reporteVentas.ventas_por_periodo?.length || 0}
-                                                </div>
-                                                <div className="text-muted small">Días Analizados</div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
-                                {/* Gráfico de ventas */}
-                                <Row className="mb-4">
-                                    <Col>
-                                        <Card className="border-0 shadow-sm">
-                                            <Card.Header className="bg-white border-0">
-                                                <h5 className="mb-0">Evolución de Ventas y Pedidos</h5>
-                                            </Card.Header>
-                                            <Card.Body>
-                                                <div style={{ height: '400px' }}>
-                                                    {reporteVentas.ventas_por_periodo?.length > 0 ? (
-                                                        <Line data={ventasChartData} options={ventasChartOptions} />
-                                                    ) : (
-                                                        <div className="d-flex align-items-center justify-content-center h-100">
-                                                            <div className="text-center text-muted">
-                                                                <i className="fas fa-chart-line fa-3x mb-3"></i>
-                                                                <p>No hay datos de ventas en el período seleccionado</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
-                                {/* Tabla detallada */}
-                                {reporteVentas.ventas_por_periodo?.length > 0 && (
-                                    <Row>
-                                        <Col>
-                                            <Card className="border-0 shadow-sm">
-                                                <Card.Header className="bg-white border-0">
-                                                    <h5 className="mb-0">Detalle por Período</h5>
-                                                </Card.Header>
-                                                <Card.Body className="p-0">
-                                                    <Table responsive className="mb-0">
-                                                        <thead className="bg-light">
-                                                            <tr>
-                                                                <th>Período</th>
-                                                                <th>Ventas</th>
-                                                                <th>Pedidos</th>
-                                                                <th>Promedio</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {reporteVentas.ventas_por_periodo.map((periodo, index) => (
-                                                                <tr key={index}>
-                                                                    <td>{new Date(periodo.periodo).toLocaleDateString()}</td>
-                                                                    <td>
-                                                                        <strong className="text-success">
-                                                                            S/{parseFloat(periodo.total_ventas).toFixed(2)}
-                                                                        </strong>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Badge bg="primary">{periodo.total_pedidos}</Badge>
-                                                                    </td>
-                                                                    <td>S/{parseFloat(periodo.promedio_pedido).toFixed(2)}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </Table>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                    </Row>
-                                )}
-                            </>
-                        ) : (
-                            <div className="text-center py-5">
-                                <i className="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                                <p className="text-muted">No hay datos de ventas disponibles</p>
-                            </div>
-                        )}
-                    </Tab>
-
-                    {/* Reporte de Productos */}
-                    <Tab eventKey="productos" title={
-                        <span>
-                            <i className="fas fa-utensils me-2"></i>
-                            Productos
-                        </span>
-                    }>
-                        {reporteProductos ? (
-                            <>
-                                {/* Gráfico de productos */}
-                                <Row className="mb-4">
-                                    <Col>
-                                        <Card className="border-0 shadow-sm">
-                                            <Card.Header className="bg-white border-0">
-                                                <h5 className="mb-0">Top Productos por Ingresos</h5>
-                                            </Card.Header>
-                                            <Card.Body>
-                                                <div style={{ height: '350px' }}>
-                                                    {reporteProductos.productos?.length > 0 ? (
-                                                        <Bar data={productosChartData} options={chartOptions} />
-                                                    ) : (
-                                                        <div className="d-flex align-items-center justify-content-center h-100">
-                                                            <div className="text-center text-muted">
-                                                                <i className="fas fa-utensils fa-3x mb-3"></i>
-                                                                <p>No hay datos de productos en el período seleccionado</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
-                                {/* Tabla de productos */}
-                                {reporteProductos.productos?.length > 0 && (
-                                    <Row>
-                                        <Col>
-                                            <Card className="border-0 shadow-sm">
-                                                <Card.Header className="bg-white border-0">
-                                                    <h5 className="mb-0">Ranking de Productos</h5>
-                                                </Card.Header>
-                                                <Card.Body className="p-0">
-                                                    <Table responsive className="mb-0">
-                                                        <thead className="bg-light">
-                                                            <tr>
-                                                                <th>#</th>
-                                                                <th>Producto</th>
-                                                                <th>Cantidad</th>
-                                                                <th>Ingresos</th>
-                                                                <th>Veces Pedido</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {reporteProductos.productos.map((producto, index) => (
-                                                                <tr key={index}>
-                                                                    <td>
-                                                                        <Badge bg={index < 3 ? 'warning' : 'light'} text={index < 3 ? 'dark' : 'dark'}>
-                                                                            #{index + 1}
-                                                                        </Badge>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="d-flex align-items-center">
-                                                                            {index === 0 && <i className="fas fa-crown text-warning me-2"></i>}
-                                                                            <strong>{producto.producto?.nombre || 'Sin nombre'}</strong>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Badge bg="primary">{producto.total_vendido || 0}</Badge>
-                                                                    </td>
-                                                                    <td>
-                                                                        <strong className="text-success">
-                                                                            S/{parseFloat(producto.ingresos_totales || 0).toFixed(2)}
-                                                                        </strong>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Badge bg="info">{producto.veces_pedido || 0}</Badge>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </Table>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                    </Row>
-                                )}
-                            </>
-                        ) : (
-                            <div className="text-center py-5">
-                                <i className="fas fa-utensils fa-3x text-muted mb-3"></i>
-                                <p className="text-muted">No hay datos de productos disponibles</p>
-                            </div>
-                        )}
-                    </Tab>
-
-                    {/* Reporte de Mozos */}
-                    <Tab eventKey="mozos" title={
-                        <span>
-                            <i className="fas fa-users me-2"></i>
-                            Mozos
-                        </span>
-                    }>
-                        {reporteMozos ? (
-                            <>
-                                {/* Gráfico de mozos */}
-                                <Row className="mb-4">
-                                    <Col>
-                                        <Card className="border-0 shadow-sm">
-                                            <Card.Header className="bg-white border-0">
-                                                <h5 className="mb-0">Performance de Mozos</h5>
-                                            </Card.Header>
-                                            <Card.Body>
-                                                <div style={{ height: '350px' }}>
-                                                    {reporteMozos.mozos?.length > 0 ? (
-                                                        <Bar data={mozosChartData} options={chartOptions} />
-                                                    ) : (
-                                                        <div className="d-flex align-items-center justify-content-center h-100">
-                                                            <div className="text-center text-muted">
-                                                                <i className="fas fa-users fa-3x mb-3"></i>
-                                                                <p>No hay datos de mozos en el período seleccionado</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
-
-                                {/* Tabla de mozos */}
-                                {reporteMozos.mozos?.length > 0 && (
-                                    <Row>
-                                        <Col>
-                                            <Card className="border-0 shadow-sm">
-                                                <Card.Header className="bg-white border-0">
-                                                    <h5 className="mb-0">Ranking de Mozos</h5>
-                                                </Card.Header>
-                                                <Card.Body className="p-0">
-                                                    <Table responsive className="mb-0">
-                                                        <thead className="bg-light">
-                                                            <tr>
-                                                                <th>#</th>
-                                                                <th>Mozo</th>
-                                                                <th>Pedidos</th>
-                                                                <th>Ventas</th>
-                                                                <th>Promedio</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {reporteMozos.mozos.map((mozo, index) => (
-                                                                <tr key={index}>
-                                                                    <td>
-                                                                        <Badge bg={index < 3 ? 'warning' : 'light'} text={index < 3 ? 'dark' : 'dark'}>
-                                                                            #{index + 1}
-                                                                        </Badge>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="d-flex align-items-center">
-                                                                            {index === 0 && <i className="fas fa-crown text-warning me-2"></i>}
-                                                                            <strong>{mozo.mozo?.nombre || 'Sin nombre'}</strong>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Badge bg="primary">{mozo.total_pedidos || 0}</Badge>
-                                                                    </td>
-                                                                    <td>
-                                                                        <strong className="text-success">
-                                                                            S/{parseFloat(mozo.total_ventas || 0).toFixed(2)}
-                                                                        </strong>
-                                                                    </td>
-                                                                    <td>S/{parseFloat(mozo.promedio_por_pedido || 0).toFixed(2)}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </Table>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                    </Row>
-                                )}
-                            </>
-                        ) : (
-                            <div className="text-center py-5">
-                                <i className="fas fa-users fa-3x text-muted mb-3"></i>
-                                <p className="text-muted">No hay datos de mozos disponibles</p>
-                            </div>
-                        )}
-                    </Tab>
-
-                    {/* Reporte de Mesas */}
-                    <Tab eventKey="mesas" title={
-                        <span>
-                            <i className="fas fa-table me-2"></i>
-                            Mesas
-                        </span>
-                    }>
-                        {reporteMesas ? (
-                            <>
-                                {/* Tabla de mesas */}
-                                {reporteMesas.mesas?.length > 0 && (
-                                    <Row>
-                                        <Col>
-                                            <Card className="border-0 shadow-sm">
-                                                <Card.Header className="bg-white border-0">
-                                                    <h5 className="mb-0">Performance por Mesa</h5>
-                                                </Card.Header>
-                                                <Card.Body className="p-0">
-                                                    <Table responsive className="mb-0">
-                                                        <thead className="bg-light">
-                                                            <tr>
-                                                                <th>Mesa</th>
-                                                                <th>Capacidad</th>
-                                                                <th>Pedidos</th>
-                                                                <th>Ingresos</th>
-                                                                <th>Promedio</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {reporteMesas.mesas.map((mesa, index) => (
-                                                                <tr key={index}>
-                                                                    <td>
-                                                                        <div className="d-flex align-items-center">
-                                                                            {index === 0 && <i className="fas fa-crown text-warning me-2"></i>}
-                                                                            <strong>Mesa {mesa.mesa?.numero || 'N/A'}</strong>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Badge bg="secondary">
-                                                                            {mesa.mesa?.capacidad || 0} pers
-                                                                        </Badge>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Badge bg="primary">{mesa.total_pedidos || 0}</Badge>
-                                                                    </td>
-                                                                    <td>
-                                                                        <strong className="text-success">
-                                                                            S/{parseFloat(mesa.ingresos_totales || 0).toFixed(2)}
-                                                                        </strong>
-                                                                    </td>
-                                                                    <td>S/{parseFloat(mesa.promedio_por_pedido || 0).toFixed(2)}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </Table>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                    </Row>
-                                )}
-                            </>
-                        ) : (
-                            <div className="text-center py-5">
-                                <i className="fas fa-table fa-3x text-muted mb-3"></i>
-                                <p className="text-muted">No hay datos de mesas disponibles</p>
-                            </div>
-                        )}
-                    </Tab>
-                </Tabs>
+            {/* VENTAS */}
+            {!loading && activeTab==='ventas' && (
+                <div style={{ padding: '14px 16px 0' }}>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                        <MobileKpiCard icon="fa-dollar-sign" label="Total ventas"  color="#16a34a" value={fmtK(reporteVentas?.resumen_total?.total_ventas)} />
+                        <MobileKpiCard icon="fa-receipt"     label="Pedidos"       color={A}       value={reporteVentas?.resumen_total?.total_pedidos || 0} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                        <MobileKpiCard icon="fa-chart-line"  label="Prom/pedido"  color="#f59e0b" value={fmtK(reporteVentas?.resumen_total?.promedio_pedido)} />
+                        <MobileKpiCard icon="fa-calendar"    label="Períodos"      color="#0ea5e9" value={reporteVentas?.ventas_por_periodo?.length || 0} />
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 12 }}>Evolución de ventas</div>
+                        {reporteVentas?.ventas_por_periodo?.length > 0
+                            ? <div style={{ height: 220 }}><Line data={ventasCD} options={ventasOpts} /></div>
+                            : <EmptyChart icon="fa-chart-line" msg="Sin datos en este período" />}
+                    </div>
+                    {reporteVentas?.ventas_por_periodo?.length > 0 && (
+                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Detalle por período</div>
+                            {reporteVentas.ventas_por_periodo.map((v, i) => (
+                                <MobileRankRow key={i} pos={i+1}
+                                    name={new Date(v.periodo).toLocaleDateString('es',{weekday:'short',month:'short',day:'numeric'})}
+                                    sub={`${v.total_pedidos} pedidos`} ingresos={v.total_ventas} maxIngresos={mxVenta}
+                                    extra={`Promedio: ${fmt(v.promedio_pedido)}`} />
+                            ))}
+                        </div>
+                    )}
+                    {!reporteVentas && <EmptyState icon="fa-chart-line" msg="Sin datos de ventas" />}
+                </div>
             )}
-
-            {/* Modal de exportación */}
-            <Modal show={showExportModal} onHide={() => setShowExportModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        <i className="fas fa-download me-2"></i>
-                        Exportar Reporte
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="mb-3">
-                        <strong>Tipo de archivo:</strong>
-                        <Badge bg="primary" className="ms-2">
-                            {exportType.toUpperCase()}
-                        </Badge>
+            {/* PRODUCTOS */}
+            {!loading && activeTab==='productos' && (
+                <div style={{ padding: '14px 16px 0' }}>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                        <MobileKpiCard icon="fa-utensils" label="Productos"  color={A}       value={reporteProductos?.productos?.length || 0} />
+                        <MobileKpiCard icon="fa-fire"     label="Top item"   color="#dc2626" value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]} />
                     </div>
-                    
-                    <div className="mb-3">
-                        <strong>Período:</strong>
-                        <div className="text-muted">
-                            Del {new Date(filtros.fechaInicio).toLocaleDateString()} 
-                            al {new Date(filtros.fechaFin).toLocaleDateString()}
+                    <div style={{ background: '#fff', borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 12 }}>Top 6 por ingresos</div>
+                        {reporteProductos?.productos?.length > 0
+                            ? <div style={{ height: 220 }}><Bar data={prodCD} options={baseOpts} /></div>
+                            : <EmptyChart icon="fa-utensils" msg="Sin datos en este período" />}
+                    </div>
+                    {reporteProductos?.productos?.length > 0 && (
+                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Ranking</div>
+                            {reporteProductos.productos.map((p, i) => (
+                                <MobileRankRow key={i} pos={i+1} name={p.producto?.nombre||'Sin nombre'}
+                                    sub={p.producto?.categoria?.nombre} ingresos={p.ingresos_totales} maxIngresos={mxProd}
+                                    extra={`${p.total_vendido} unidades`} />
+                            ))}
                         </div>
+                    )}
+                    {!reporteProductos && <EmptyState icon="fa-utensils" msg="Sin datos de productos" />}
+                </div>
+            )}
+            {/* MOZOS */}
+            {!loading && activeTab==='mozos' && (
+                <div style={{ padding: '14px 16px 0' }}>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                        <MobileKpiCard icon="fa-user-tie" label="Mozos"    color={A}       value={reporteMozos?.mozos?.length || 0} />
+                        <MobileKpiCard icon="fa-trophy"   label="Top mozo" color="#f59e0b" value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]} />
                     </div>
-
-                    <div className="mb-3">
-                        <strong>Sección:</strong>
-                        <div className="mt-2">
-                            <Badge bg="success" className="me-2 mb-1">
-                                <i className="fas fa-check me-1"></i>
-                                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                            </Badge>
+                    <div style={{ background: '#fff', borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 12 }}>Performance</div>
+                        {reporteMozos?.mozos?.length > 0
+                            ? <div style={{ height: 220 }}><Bar data={mozoCD} options={baseOpts} /></div>
+                            : <EmptyChart icon="fa-user-tie" msg="Sin datos en este período" />}
+                    </div>
+                    {reporteMozos?.mozos?.length > 0 && (
+                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Ranking</div>
+                            {reporteMozos.mozos.map((m, i) => (
+                                <MobileRankRow key={i} pos={i+1} name={m.mozo?.nombre||'Sin nombre'}
+                                    ingresos={m.total_ventas} maxIngresos={mxMozo}
+                                    extra={`${m.total_pedidos} pedidos · prom ${fmt(m.promedio_por_pedido)}`} />
+                            ))}
                         </div>
+                    )}
+                    {!reporteMozos && <EmptyState icon="fa-user-tie" msg="Sin datos de mozos" />}
+                </div>
+            )}
+            {/* MESAS */}
+            {!loading && activeTab==='mesas' && (
+                <div style={{ padding: '14px 16px 0' }}>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                        <MobileKpiCard icon="fa-table"       label="Mesas"    color={A}       value={reporteMesas?.mesas?.length || 0} />
+                        <MobileKpiCard icon="fa-dollar-sign" label="Ingresos" color="#16a34a"
+                            value={fmtK(reporteMesas?.mesas?.reduce((a,m)=>a+parseFloat(m.ingresos_totales||0),0))} />
                     </div>
-
-                    <Alert variant="info" className="small">
-                        <i className="fas fa-info-circle me-2"></i>
-                        {exportType === 'pdf' 
-                            ? 'Se abrirá una nueva ventana para generar el PDF. Use Ctrl+P para guardarlo.'
-                            : 'Se descargará un archivo CSV que puede abrir en Excel o Google Sheets.'
-                        }
-                    </Alert>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowExportModal(false)}>
-                        Cancelar
-                    </Button>
-                    <Button 
-                        variant="primary" 
-                        onClick={handleConfirmExport}
-                        disabled={exportando}
-                    >
-                        {exportando ? (
-                            <>
-                                <Spinner animation="border" size="sm" className="me-2" />
-                                Generando...
-                            </>
-                        ) : (
-                            <>
-                                <i className="fas fa-download me-2"></i>
-                                Exportar {exportType.toUpperCase()}
-                            </>
-                        )}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </Container>
+                    {reporteMesas?.mesas?.length > 0 ? (
+                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Performance por mesa</div>
+                            {reporteMesas.mesas.map((m, i) => (
+                                <MobileRankRow key={i} pos={i+1} name={`Mesa ${m.mesa?.numero||'?'}`}
+                                    sub={`${m.mesa?.capacidad||0} personas`}
+                                    ingresos={m.ingresos_totales} maxIngresos={mxMesa}
+                                    extra={`${m.total_pedidos} pedidos · prom ${fmt(m.promedio_por_pedido)}`} />
+                            ))}
+                        </div>
+                    ) : !loading && <EmptyState icon="fa-table" msg="Sin datos de mesas" />}
+                </div>
+            )}
+        </div>
     );
+};
+
+/* ══════════════════════════════════════════════════════
+   DESKTOP LAYOUT — COMPONENTES
+══════════════════════════════════════════════════════ */
+
+/* KPI card con fondo degradado suave */
+const DeskKpi = ({ icon, label, value, color, sub }) => {
+    const [hov, setHov] = useState(false);
+    return (
+        <div
+            onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+            style={{
+                background: '#fff',
+                borderRadius: 20,
+                padding: '22px 24px',
+                boxShadow: hov ? '0 12px 32px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.07)',
+                transform: hov ? 'translateY(-4px)' : 'translateY(0)',
+                transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+                position: 'relative', overflow: 'hidden',
+                cursor: 'default',
+            }}
+        >
+            {/* Círculo decorativo fondo */}
+            <div style={{ position: 'absolute', right: -24, bottom: -24, width: 96, height: 96, borderRadius: '50%', background: color + '12', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', right: -8, bottom: -8, width: 52, height: 52, borderRadius: '50%', background: color + '18', pointerEvents: 'none' }} />
+
+            <div style={{ position: 'relative' }}>
+                {/* Icono + label en misma fila */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, textTransform: 'uppercase' }}>{label}</div>
+                    <div style={{ width: 40, height: 40, borderRadius: 14, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className={`fas ${icon}`} style={{ color, fontSize: 16 }} />
+                    </div>
+                </div>
+                <div style={{ fontSize: 30, fontWeight: 900, color: '#0f172a', lineHeight: 1, letterSpacing: -1 }}>{value}</div>
+                {sub && <div style={{ fontSize: 12, color: '#64748b', marginTop: 8, fontWeight: 500 }}>{sub}</div>}
+                {/* Línea de color abajo */}
+                <div style={{ position: 'absolute', bottom: -22, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${color}, ${color}60)`, borderRadius: 2 }} />
+            </div>
+        </div>
+    );
+};
+
+/* Tabla desktop con hover */
+const DeskTable = ({ columns, rows }) => {
+    const [hov, setHov] = useState(null);
+    return (
+        <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                        {columns.map((c, i) => (
+                            <th key={i} style={{ padding: '11px 16px', textAlign: i===0 ? 'center' : 'left', fontWeight: 700, fontSize: 11, color: '#64748b', letterSpacing: 0.8, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{c}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row, ri) => (
+                        <tr key={ri} onMouseEnter={() => setHov(ri)} onMouseLeave={() => setHov(null)}
+                            style={{ background: hov===ri ? '#f5f7ff' : ri%2===0 ? '#fff' : '#fafafa', transition: 'background 0.1s', borderBottom: '1px solid #f1f5f9' }}>
+                            {row.map((cell, ci) => (
+                                <td key={ci} style={{ padding: '13px 16px', textAlign: ci===0 ? 'center' : 'left', verticalAlign: 'middle' }}>{cell}</td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+/* Badge posición en tabla */
+const PosBadge = ({ pos }) => {
+    const cfg = pos===1 ? ['#fef3c7','#92400e','fa-crown'] : pos===2 ? ['#f1f5f9','#475569','fa-crown'] : pos===3 ? ['#fef3c7','#92400e','fa-crown'] : null;
+    return cfg
+        ? <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:28, height:28, borderRadius:9, background:cfg[0] }}><i className={`fas ${cfg[2]}`} style={{ color:cfg[1], fontSize:11 }} /></span>
+        : <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:28, height:28, borderRadius:9, background:'#f8fafc', color:'#94a3b8', fontWeight:700, fontSize:12 }}>#{pos}</span>;
+};
+
+/* Barra de progreso para leaderboard */
+const ProgressBar = ({ name, value, max, color, sub }) => {
+    const pct = max > 0 ? Math.round((parseFloat(value)/max)*100) : 0;
+    const [hov, setHov] = useState(false);
+    return (
+        <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+            style={{ padding: '10px 4px', borderRadius: 10, background: hov ? '#f8fafc' : 'transparent', transition: 'background 0.12s' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
+                <div style={{ minWidth: 0 }}>
+                    <span style={{ fontWeight: 700, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{name}</span>
+                    {sub && <span style={{ fontSize: 11, color: '#94a3b8' }}>{sub}</span>}
+                </div>
+                <span style={{ fontWeight: 800, color: color || '#16a34a', flexShrink: 0, marginLeft: 8 }}>{fmt(value)}</span>
+            </div>
+            <div style={{ height: 7, background: '#f1f5f9', borderRadius: 6, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: color ? `linear-gradient(90deg,${color},${color}99)` : `linear-gradient(90deg,${A},#818cf8)`, borderRadius: 6, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
+            </div>
+        </div>
+    );
+};
+
+/* Card de contenido */
+const DeskCard = ({ title, children, action }) => (
+    <div style={{ background: '#fff', borderRadius: 22, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.07)' }}>
+        <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{title}</div>
+            {action}
+        </div>
+        {children}
+    </div>
+);
+
+/* Item nav sidebar oscuro */
+const SideItem = ({ tab, active, onClick }) => {
+    const [hov, setHov] = useState(false);
+    return (
+        <button onClick={onClick}
+            onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+            style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                padding: '11px 14px', border: 'none', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                background: active ? A : hov ? DARK2 : 'transparent',
+                color: active ? '#fff' : '#94a3b8',
+                fontWeight: active ? 700 : 500, fontSize: 14,
+                marginBottom: 3,
+                transition: 'all 0.15s',
+                boxShadow: active ? `0 4px 12px ${A}50` : 'none',
+            }}
+        >
+            <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
+                <i className={`fas ${tab.icon}`} style={{ fontSize: 14 }} />
+            </div>
+            <span style={{ flex: 1 }}>{tab.label}</span>
+            {active && <i className="fas fa-chevron-right" style={{ fontSize: 10, opacity: 0.6 }} />}
+        </button>
+    );
+};
+
+/* ══════════════════════════════════════════════════════
+   DESKTOP LAYOUT
+══════════════════════════════════════════════════════ */
+const DesktopLayout = ({ data }) => {
+    const { loading, filtros, setFiltros, reporteVentas, reporteProductos, reporteMozos, reporteMesas, error, setError, fetchReportes, exportarCSV, exportarPDF } = data;
+    const [activeTab, setActiveTab] = useState('ventas');
+
+    /* ── Chart data ── */
+    const ventasCD = {
+        labels: reporteVentas?.ventas_por_periodo?.map(v => new Date(v.periodo).toLocaleDateString('es',{month:'short',day:'numeric'})) || [],
+        datasets: [
+            { label: 'Ventas S/', data: reporteVentas?.ventas_por_periodo?.map(v => parseFloat(v.total_ventas)) || [], borderColor: A, backgroundColor: A+'25', tension: 0.4, fill: true, pointBackgroundColor: A, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Pedidos',   data: reporteVentas?.ventas_por_periodo?.map(v => parseInt(v.total_pedidos)) || [],   borderColor: '#f59e0b', backgroundColor: '#f59e0b15', tension: 0.4, yAxisID: 'y1', pointBackgroundColor: '#f59e0b', pointRadius: 4 },
+        ],
+    };
+    const prodCD = {
+        labels: reporteProductos?.productos?.slice(0,8).map(p => p.producto?.nombre?.split(' ')[0]||'') || [],
+        datasets: [{ label: 'Ingresos S/', data: reporteProductos?.productos?.slice(0,8).map(p => parseFloat(p.ingresos_totales||0)) || [], backgroundColor: BAR_COLORS, borderRadius: 8, borderSkipped: false }],
+    };
+    const mozoCD = {
+        labels: reporteMozos?.mozos?.map(m => (m.mozo?.nombre||'').split(' ')[0]) || [],
+        datasets: [
+            { label: 'Ventas S/', data: reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [], backgroundColor: A, borderRadius: 8 },
+            { label: 'Pedidos',  data: reporteMozos?.mozos?.map(m => parseInt(m.total_pedidos||0)) || [],  backgroundColor: '#f59e0b', borderRadius: 8 },
+        ],
+    };
+
+    const baseOpts = { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 }, padding: 14 } }, tooltip: { bodyFont: { size: 12 } } },
+        scales: { x: { ticks: { font: { size: 11 } }, grid: { display: false } }, y: { ticks: { font: { size: 11 } }, grid: { color: '#f1f5f924' } } }
+    };
+    const ventasOpts = { ...baseOpts, scales: { ...baseOpts.scales,
+        y:  { ...baseOpts.scales.y, position: 'left', title: { display: true, text: 'Ventas S/', font: { size: 11 } } },
+        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 } }, title: { display: true, text: 'Pedidos', font: { size: 11 } } },
+    }};
+
+    /* ── Filas de tabla ── */
+    const mxProd = Math.max(...(reporteProductos?.productos?.map(p => parseFloat(p.ingresos_totales||0)) || [0]));
+    const mxMozo = Math.max(...(reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [0]));
+    const mxMesa = Math.max(...(reporteMesas?.mesas?.map(m => parseFloat(m.ingresos_totales||0)) || [0]));
+
+    const ventasRows = (reporteVentas?.ventas_por_periodo||[]).map((v,i) => [
+        <PosBadge pos={i+1} />,
+        new Date(v.periodo).toLocaleDateString('es',{weekday:'short',year:'numeric',month:'short',day:'numeric'}),
+        <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(v.total_ventas)}</span>,
+        <span style={{ background: A+'15', color: A, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{v.total_pedidos}</span>,
+        <span style={{ color: '#64748b' }}>{fmt(v.promedio_pedido)}</span>,
+    ]);
+    const prodRows = (reporteProductos?.productos||[]).map((p,i) => [
+        <PosBadge pos={i+1} />,
+        <div><div style={{ fontWeight: 700, color: '#0f172a' }}>{p.producto?.nombre||'—'}</div><div style={{ fontSize: 11, color: '#94a3b8' }}>{p.producto?.categoria?.nombre}</div></div>,
+        <span style={{ background: '#f0fdf4', color: '#16a34a', padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{p.total_vendido} uds</span>,
+        <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(p.ingresos_totales)}</span>,
+    ]);
+    const mozoRows = (reporteMozos?.mozos||[]).map((m,i) => [
+        <PosBadge pos={i+1} />,
+        <span style={{ fontWeight: 700, color: '#0f172a' }}>{m.mozo?.nombre||'—'}</span>,
+        <span style={{ background: A+'15', color: A, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.total_pedidos}</span>,
+        <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(m.total_ventas)}</span>,
+        <span style={{ color: '#64748b' }}>{fmt(m.promedio_por_pedido)}</span>,
+    ]);
+    const mesaRows = (reporteMesas?.mesas||[]).map((m,i) => [
+        <PosBadge pos={i+1} />,
+        <span style={{ fontWeight: 700, color: '#0f172a' }}>Mesa {m.mesa?.numero||'?'}</span>,
+        <span style={{ background: '#f8fafc', color: '#64748b', padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.mesa?.capacidad||0} pers</span>,
+        <span style={{ background: A+'15', color: A, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.total_pedidos}</span>,
+        <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(m.ingresos_totales)}</span>,
+        <span style={{ color: '#64748b' }}>{fmt(m.promedio_por_pedido)}</span>,
+    ]);
+
+    const ExportBtns = () => (
+        <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => exportarCSV(activeTab)} style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:10, border:'1px solid #dcfce7', background:'#f0fdf4', color:'#16a34a', fontWeight:700, fontSize:12, cursor:'pointer' }}>
+                <i className="fas fa-file-csv" />CSV
+            </button>
+            <button onClick={() => exportarPDF(activeTab)} style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:10, border:'1px solid #fecaca', background:'#fef2f2', color:'#dc2626', fontWeight:700, fontSize:12, cursor:'pointer' }}>
+                <i className="fas fa-file-pdf" />PDF
+            </button>
+        </div>
+    );
+
+    return (
+        <div style={{ display: 'flex', minHeight: '100vh', background: BG }}>
+
+            {/* ══ SIDEBAR OSCURO ══ */}
+            <div style={{ width: 272, flexShrink: 0, background: DARK, display: 'flex', flexDirection: 'column', position: 'sticky', top: 58, height: 'calc(100vh - 58px)', overflowY: 'auto' }}>
+
+                {/* Logo */}
+                <div style={{ padding: '22px 18px 16px', borderBottom: `1px solid ${DARK2}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                        <div style={{ width: 42, height: 42, borderRadius: 14, background: 'linear-gradient(135deg,#4f46e5,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 14px ${A}60` }}>
+                            <i className="fas fa-chart-bar" style={{ color: '#fff', fontSize: 18 }} />
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 900, fontSize: 17, color: '#fff', letterSpacing: 0.3 }}>Reportes</div>
+                            <div style={{ fontSize: 11, color: '#64748b' }}>Análisis del negocio</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Nav */}
+                <nav style={{ flex: 1, padding: '16px 12px' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: 1.2, padding: '0 4px 12px', textTransform: 'uppercase' }}>Secciones</div>
+                    {TABS.map(t => <SideItem key={t.key} tab={t} active={activeTab===t.key} onClick={() => setActiveTab(t.key)} />)}
+                </nav>
+
+                {/* Filtros */}
+                <div style={{ padding: '16px 14px', borderTop: `1px solid ${DARK2}` }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: 1.2, marginBottom: 14, textTransform: 'uppercase' }}>Período</div>
+                    {[['Desde','fechaInicio'],['Hasta','fechaFin']].map(([lbl,key]) => (
+                        <div key={key} style={{ marginBottom: 10 }}>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 5 }}>{lbl}</div>
+                            <input type="date" value={filtros[key]} onChange={e => setFiltros(f=>({...f,[key]:e.target.value}))}
+                                style={{ width: '100%', padding: '8px 10px', borderRadius: 9, border: `1.5px solid ${DARK3}`, fontSize: 12, outline: 'none', boxSizing: 'border-box', background: DARK2, color: '#f8fafc', colorScheme: 'dark' }} />
+                        </div>
+                    ))}
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 8 }}>Agrupar por</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 16 }}>
+                        {PERIODOS.map(p => (
+                            <button key={p.key} onClick={() => setFiltros(f=>({...f,periodo:p.key}))}
+                                style={{ padding: '7px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                                    background: filtros.periodo===p.key ? A : DARK2,
+                                    color: filtros.periodo===p.key ? '#fff' : '#64748b',
+                                    boxShadow: filtros.periodo===p.key ? `0 3px 10px ${A}50` : 'none',
+                                    transition: 'all 0.15s' }}>
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+                    <button onClick={fetchReportes} disabled={loading}
+                        style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
+                            background: loading ? DARK3 : `linear-gradient(135deg,#4f46e5,#818cf8)`,
+                            color: '#fff', fontWeight: 700, fontSize: 13,
+                            boxShadow: loading ? 'none' : `0 4px 14px ${A}50`, transition: 'all 0.2s' }}>
+                        <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-sync-alt'}`} style={{ marginRight: 8 }} />
+                        Actualizar datos
+                    </button>
+                </div>
+            </div>
+
+            {/* ══ CONTENIDO PRINCIPAL ══ */}
+            <div style={{ flex: 1, minWidth: 0, padding: '0 0 48px', overflowY: 'auto' }}>
+
+                {/* Sub-header */}
+                <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className={`fas ${TABS.find(t=>t.key===activeTab)?.icon}`} style={{ color: A, fontSize: 15 }} />
+                            <span style={{ fontWeight: 800, fontSize: 18, color: '#0f172a' }}>{TABS.find(t=>t.key===activeTab)?.label}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                            {filtros.fechaInicio} → {filtros.fechaFin} · Agrupado por {filtros.periodo}
+                        </div>
+                    </div>
+                    <ExportBtns />
+                </div>
+
+                <div style={{ padding: '28px 32px 0' }}>
+
+                    {/* Error */}
+                    {error && (
+                        <div style={{ background: '#fef2f2', borderRadius: 14, padding: '14px 18px', display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24 }}>
+                            <i className="fas fa-exclamation-circle" style={{ color: '#dc2626', fontSize: 16 }} />
+                            <div style={{ fontSize: 14, color: '#dc2626', flex: 1 }}>{error}</div>
+                            <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 16 }}><i className="fas fa-times" /></button>
+                        </div>
+                    )}
+
+                    {loading && (
+                        <div style={{ textAlign: 'center', paddingTop: 100, color: '#94a3b8' }}>
+                            <i className="fas fa-spinner fa-spin" style={{ fontSize: 40, display: 'block', marginBottom: 16, color: A }} />
+                            <div style={{ fontSize: 16 }}>Cargando reportes...</div>
+                        </div>
+                    )}
+
+                    {/* ─── TAB VENTAS ─── */}
+                    {!loading && activeTab==='ventas' && (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18, marginBottom: 28 }}>
+                                <DeskKpi icon="fa-dollar-sign" label="Total ventas"   color="#16a34a" value={fmt(reporteVentas?.resumen_total?.total_ventas)} />
+                                <DeskKpi icon="fa-receipt"     label="Total pedidos"  color={A}       value={reporteVentas?.resumen_total?.total_pedidos || 0} />
+                                <DeskKpi icon="fa-chart-line"  label="Prom / pedido"  color="#f59e0b" value={fmt(reporteVentas?.resumen_total?.promedio_pedido)} />
+                                <DeskKpi icon="fa-calendar-day" label="Períodos"      color="#0ea5e9" value={reporteVentas?.ventas_por_periodo?.length || 0}
+                                    sub={`Agrupado por ${filtros.periodo}`} />
+                            </div>
+
+                            <DeskCard title="Evolución de Ventas y Pedidos">
+                                <div style={{ padding: '20px 24px' }}>
+                                    {reporteVentas?.ventas_por_periodo?.length > 0
+                                        ? <div style={{ height: 360 }}><Line data={ventasCD} options={ventasOpts} /></div>
+                                        : <EmptyChart icon="fa-chart-line" msg="Sin datos en este período" />}
+                                </div>
+                            </DeskCard>
+
+                            {ventasRows.length > 0 && (
+                                <div style={{ marginTop: 20 }}>
+                                    <DeskCard title="Detalle por período">
+                                        <DeskTable columns={['#','Período','Ventas','Pedidos','Promedio']} rows={ventasRows} />
+                                    </DeskCard>
+                                </div>
+                            )}
+                            {!reporteVentas && <EmptyState icon="fa-chart-line" msg="Sin datos de ventas" />}
+                        </>
+                    )}
+
+                    {/* ─── TAB PRODUCTOS ─── */}
+                    {!loading && activeTab==='productos' && (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginBottom: 28 }}>
+                                <DeskKpi icon="fa-utensils"    label="Productos"      color={A}       value={reporteProductos?.productos?.length || 0} />
+                                <DeskKpi icon="fa-fire"        label="Más vendido"    color="#dc2626"
+                                    value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]}
+                                    sub={`${reporteProductos?.productos?.[0]?.total_vendido||0} unidades`} />
+                                <DeskKpi icon="fa-dollar-sign" label="Mayor ingreso"  color="#16a34a" value={fmt(reporteProductos?.productos?.[0]?.ingresos_totales)} />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
+                                <DeskCard title="Top 8 por ingresos">
+                                    <div style={{ padding: '20px 24px' }}>
+                                        {reporteProductos?.productos?.length > 0
+                                            ? <div style={{ height: 300 }}><Bar data={prodCD} options={baseOpts} /></div>
+                                            : <EmptyChart icon="fa-utensils" msg="Sin datos" />}
+                                    </div>
+                                </DeskCard>
+                                <DeskCard title="Leaderboard">
+                                    <div style={{ padding: '16px 20px' }}>
+                                        {(reporteProductos?.productos?.slice(0,6)||[]).map((p,i) => (
+                                            <ProgressBar key={i} name={p.producto?.nombre||'—'} sub={p.producto?.categoria?.nombre}
+                                                value={p.ingresos_totales} max={mxProd} color={BAR_COLORS[i]} />
+                                        ))}
+                                        {!reporteProductos?.productos?.length && <EmptyChart icon="fa-utensils" msg="Sin datos" />}
+                                    </div>
+                                </DeskCard>
+                            </div>
+
+                            {prodRows.length > 0 && (
+                                <DeskCard title="Ranking completo">
+                                    <DeskTable columns={['#','Producto','Cantidad','Ingresos']} rows={prodRows} />
+                                </DeskCard>
+                            )}
+                            {!reporteProductos && <EmptyState icon="fa-utensils" msg="Sin datos de productos" />}
+                        </>
+                    )}
+
+                    {/* ─── TAB MOZOS ─── */}
+                    {!loading && activeTab==='mozos' && (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginBottom: 28 }}>
+                                <DeskKpi icon="fa-user-tie" label="Mozos activos"  color={A}       value={reporteMozos?.mozos?.length || 0} />
+                                <DeskKpi icon="fa-trophy"   label="Top mozo"       color="#f59e0b"
+                                    value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]}
+                                    sub={`${fmt(reporteMozos?.mozos?.[0]?.total_ventas)} en ventas`} />
+                                <DeskKpi icon="fa-receipt"  label="Total pedidos"  color="#16a34a"
+                                    value={reporteMozos?.mozos?.reduce((a,m)=>a+parseInt(m.total_pedidos||0),0)||0} />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
+                                <DeskCard title="Ventas y Pedidos por mozo">
+                                    <div style={{ padding: '20px 24px' }}>
+                                        {reporteMozos?.mozos?.length > 0
+                                            ? <div style={{ height: 300 }}><Bar data={mozoCD} options={baseOpts} /></div>
+                                            : <EmptyChart icon="fa-user-tie" msg="Sin datos" />}
+                                    </div>
+                                </DeskCard>
+                                <DeskCard title="Comparativa">
+                                    <div style={{ padding: '16px 20px' }}>
+                                        {(reporteMozos?.mozos||[]).map((m,i) => (
+                                            <ProgressBar key={i} name={(m.mozo?.nombre||'—').split(' ')[0]}
+                                                sub={`${m.total_pedidos} pedidos`}
+                                                value={m.total_ventas} max={mxMozo} />
+                                        ))}
+                                        {!reporteMozos?.mozos?.length && <EmptyChart icon="fa-user-tie" msg="Sin datos" />}
+                                    </div>
+                                </DeskCard>
+                            </div>
+
+                            {mozoRows.length > 0 && (
+                                <DeskCard title="Ranking completo">
+                                    <DeskTable columns={['#','Mozo','Pedidos','Ventas','Promedio']} rows={mozoRows} />
+                                </DeskCard>
+                            )}
+                            {!reporteMozos && <EmptyState icon="fa-user-tie" msg="Sin datos de mozos" />}
+                        </>
+                    )}
+
+                    {/* ─── TAB MESAS ─── */}
+                    {!loading && activeTab==='mesas' && (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginBottom: 28 }}>
+                                <DeskKpi icon="fa-table"       label="Mesas"           color={A}       value={reporteMesas?.mesas?.length || 0} />
+                                <DeskKpi icon="fa-dollar-sign" label="Ingresos totales" color="#16a34a"
+                                    value={fmt(reporteMesas?.mesas?.reduce((a,m)=>a+parseFloat(m.ingresos_totales||0),0))} />
+                                <DeskKpi icon="fa-fire"        label="Mesa top"         color="#dc2626"
+                                    value={`Mesa ${reporteMesas?.mesas?.[0]?.mesa?.numero||'—'}`}
+                                    sub={fmt(reporteMesas?.mesas?.[0]?.ingresos_totales)} />
+                            </div>
+
+                            {reporteMesas?.mesas?.length > 0 && (
+                                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
+                                    <DeskCard title="Ranking completo">
+                                        <DeskTable columns={['#','Mesa','Capacidad','Pedidos','Ingresos','Promedio']} rows={mesaRows} />
+                                    </DeskCard>
+                                    <DeskCard title="Comparativa de ingresos">
+                                        <div style={{ padding: '16px 20px' }}>
+                                            {reporteMesas.mesas.map((m,i) => (
+                                                <ProgressBar key={i} name={`Mesa ${m.mesa?.numero||'?'}`}
+                                                    sub={`${m.mesa?.capacidad||0} personas · ${m.total_pedidos} pedidos`}
+                                                    value={m.ingresos_totales} max={mxMesa} color={BAR_COLORS[i%BAR_COLORS.length]} />
+                                            ))}
+                                        </div>
+                                    </DeskCard>
+                                </div>
+                            )}
+                            {!reporteMesas && <EmptyState icon="fa-table" msg="Sin datos de mesas" />}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ══════════════════════════════════════════════════════
+   ROOT
+══════════════════════════════════════════════════════ */
+const ReportesManagement = () => {
+    const isDesktop = useIsDesktop();
+    const data = useReportes();
+    return isDesktop ? <DesktopLayout data={data} /> : <MobileLayout data={data} />;
 };
 
 export default ReportesManagement;
