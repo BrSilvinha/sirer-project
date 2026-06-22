@@ -83,9 +83,13 @@ const startServer = async () => {
     try {
         // Probar conexión a la base de datos
         await testConnection();
-        
+
         await sequelize.sync({ alter: false });
         console.log('📊 Modelos sincronizados con la base de datos');
+
+        // Ejecutar seed automáticamente (crea datos iniciales si no existen)
+        const seed = require('./seed');
+        await seed();
 
         const PORT = process.env.PORT || 5000;
         

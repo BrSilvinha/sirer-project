@@ -9,23 +9,16 @@ const seed = async () => {
         await sequelize.sync({ force: false });
         console.log('Tablas sincronizadas');
 
-        // Usuarios
-        const usuarios = [
-            { nombre: 'Administrador', email: 'admin@sirer.com', password: 'admin123', rol: 'administrador' },
-            { nombre: 'Mozo Demo', email: 'mozo@sirer.com', password: 'mozo123', rol: 'mozo' },
-        ];
-        for (const u of usuarios) {
-            await Usuario.findOrCreate({ where: { email: u.email }, defaults: u });
-        }
-        console.log('Usuarios creados');
+        // Usuario administrador principal
+        await Usuario.findOrCreate({
+            where: { email: '71749437' },
+            defaults: { nombre: 'Administrador', email: '71749437', password: '71749437', rol: 'administrador' }
+        });
+        console.log('Admin creado/verificado');
 
         // Mesas
-        const mesas = [];
         for (let i = 1; i <= 10; i++) {
-            mesas.push({ numero: i, capacidad: 4, estado: 'libre' });
-        }
-        for (const m of mesas) {
-            await Mesa.findOrCreate({ where: { numero: m.numero }, defaults: m });
+            await Mesa.findOrCreate({ where: { numero: i }, defaults: { numero: i, capacidad: 4, estado: 'libre' } });
         }
         console.log('Mesas creadas');
 
@@ -59,15 +52,16 @@ const seed = async () => {
         }
         console.log('Productos creados');
 
-        console.log('\n=== Seed completado exitosamente ===');
-        console.log('Usuarios disponibles:');
-        console.log('  admin@sirer.com / admin123');
-        console.log('  mozo@sirer.com / mozo123');
-        process.exit(0);
+        console.log('=== Seed completado ===');
     } catch (error) {
         console.error('Error en seed:', error);
-        process.exit(1);
+        throw error;
     }
 };
 
-seed();
+module.exports = seed;
+
+// Si se ejecuta directamente
+if (require.main === module) {
+    seed().then(() => process.exit(0)).catch(() => process.exit(1));
+}
