@@ -10,7 +10,7 @@ const generateTokens = (userId) => {
 
     const refreshToken = jwt.sign(
         { id: userId },
-        process.env.JWT_REFRESH_SECRET,
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
         { expiresIn: '7d' }
     );
 
@@ -111,7 +111,7 @@ const refreshToken = async (req, res) => {
             return res.status(401).json({ error: 'Refresh token requerido' });
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded.id);
 
         res.json({
