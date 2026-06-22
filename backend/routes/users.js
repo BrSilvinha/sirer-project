@@ -208,7 +208,7 @@ router.delete('/:id', authenticateToken, authorizeRoles('administrador'), async 
             });
         }
 
-        await usuario.update({ activo: false });
+        await usuario.destroy();
 
         res.json({
             success: true,
