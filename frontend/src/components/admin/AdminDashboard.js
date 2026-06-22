@@ -6,6 +6,7 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { reportesService, mesasService } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import MesasManagement from './MesasManagement';
 import ProductosManagement from './ProductosManagement';
 import UsuariosManagement from './UsuariosManagement';
@@ -14,49 +15,53 @@ import toast from 'react-hot-toast';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
-/* ── Spinner ── */
-const Spin = () => (
-  <div style={{ width: 40, height: 40, border: '3px solid #eef2ff', borderTop: '3px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
-);
+const Spin = () => {
+  const { C } = useTheme();
+  return <div style={{ width: 40, height: 40, border: `3px solid ${C.surfaceAlt2}`, borderTop: '3px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />;
+};
 
-/* ── Tarjeta stat ── */
-const StatCard = ({ label, value, sub, icon, color, bg }) => (
-  <div style={{ background: '#fff', borderRadius: 20, padding: '18px 16px', border: '1.5px solid #e2e8f0', boxShadow: '0 2px 10px rgba(0,0,0,.05)', position: 'relative', overflow: 'hidden' }}>
-    <div style={{ position: 'absolute', right: -14, top: -14, width: 72, height: 72, borderRadius: '50%', background: color + '10' }} />
-    <div style={{ width: 42, height: 42, borderRadius: 13, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-      <i className={`fas ${icon}`} style={{ color, fontSize: 18 }} />
+const StatCard = ({ label, value, sub, icon, color, bg }) => {
+  const { C } = useTheme();
+  return (
+    <div style={{ background: C.surface, borderRadius: 20, padding: '18px 16px', border: `1.5px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', right: -14, top: -14, width: 72, height: 72, borderRadius: '50%', background: color + '10' }} />
+      <div style={{ width: 42, height: 42, borderRadius: 13, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+        <i className={`fas ${icon}`} style={{ color, fontSize: 18 }} />
+      </div>
+      <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 900, color: C.text, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>{sub}</div>}
     </div>
-    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-    <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>{value}</div>
-    {sub && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{sub}</div>}
-  </div>
-);
+  );
+};
 
-/* ── Sección card ── */
-const SectionCard = ({ title, icon, iconColor, children }) => (
-  <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,.05)' }}>
-    <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 9 }}>
-      <i className={`fas ${icon}`} style={{ color: iconColor, fontSize: 15 }} />
-      <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{title}</span>
+const SectionCard = ({ title, icon, iconColor, children }) => {
+  const { C } = useTheme();
+  return (
+    <div style={{ background: C.surface, borderRadius: 20, border: `1.5px solid ${C.border}`, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,.05)' }}>
+      <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.borderLight}`, display: 'flex', alignItems: 'center', gap: 9 }}>
+        <i className={`fas ${icon}`} style={{ color: iconColor, fontSize: 15 }} />
+        <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>{title}</span>
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+};
 
-/* ── Empty state ── */
-const Empty = ({ icon, text }) => (
-  <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-    <i className={`fas ${icon}`} style={{ fontSize: 36, color: '#e2e8f0', display: 'block', marginBottom: 12 }} />
-    <div style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600 }}>{text}</div>
-  </div>
-);
+const Empty = ({ icon, text }) => {
+  const { C } = useTheme();
+  return (
+    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+      <i className={`fas ${icon}`} style={{ fontSize: 36, color: C.border, display: 'block', marginBottom: 12 }} />
+      <div style={{ fontSize: 14, color: C.textMuted, fontWeight: 600 }}>{text}</div>
+    </div>
+  );
+};
 
-/* ══════════════════════════════════════════
-   ADMIN HOME
-══════════════════════════════════════════ */
 const AdminHome = () => {
-  const [dash, setDash]   = useState(null);
-  const [mesas, setMesas] = useState(null);
+  const { C } = useTheme();
+  const [dash, setDash]     = useState(null);
+  const [mesas, setMesas]   = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
@@ -81,10 +86,10 @@ const AdminHome = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 14, background: C.bg }}>
         <style>{`@keyframes spin { to{transform:rotate(360deg)} }`}</style>
         <Spin />
-        <span style={{ color: '#94a3b8', fontSize: 15 }}>Cargando panel...</span>
+        <span style={{ color: C.textMuted, fontSize: 15 }}>Cargando panel...</span>
       </div>
     );
   }
@@ -94,8 +99,10 @@ const AdminHome = () => {
   const prom    = parseFloat(dash?.resumen?.promedio_por_pedido || 0);
   const ocup    = mesas?.porcentaje_ocupacion || 0;
 
-  /* Charts */
-  const chartOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } };
+  const chartOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, color: C.textSub } } },
+  };
 
   const mesasChart = {
     labels: ['Libres', 'Ocupadas', 'Cuenta'],
@@ -119,15 +126,15 @@ const AdminHome = () => {
   };
 
   return (
-    <div style={{ padding: '20px 16px 32px', maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ padding: '20px 16px 32px', maxWidth: 1200, margin: '0 auto', background: C.bg, minHeight: '100%' }}>
       <style>{`@keyframes spin { to{transform:rotate(360deg)} } @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }`}</style>
 
       {/* Header */}
       <div style={{ marginBottom: 24, animation: 'fadeIn .3s ease' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 style={{ fontWeight: 900, fontSize: 22, color: '#0f172a', margin: 0 }}>Panel Administrativo</h1>
-            <p style={{ color: '#94a3b8', fontSize: 13, margin: '4px 0 0' }}>
+            <h1 style={{ fontWeight: 900, fontSize: 22, color: C.text, margin: 0 }}>Panel Administrativo</h1>
+            <p style={{ color: C.textMuted, fontSize: 13, margin: '4px 0 0' }}>
               <i className="fas fa-clock" style={{ marginRight: 6 }} />
               {new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
@@ -140,16 +147,15 @@ const AdminHome = () => {
 
       {/* Stats grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 14, marginBottom: 24 }}>
-        <StatCard label="Ventas hoy"   value={`S/${ventas.toFixed(0)}`}  icon="fa-dollar-sign" color="#16a34a" bg="#f0fdf4" />
-        <StatCard label="Pedidos hoy"  value={pedidos}                   icon="fa-receipt"     color="#6366f1" bg="#eef2ff" />
-        <StatCard label="Promedio"     value={`S/${prom.toFixed(0)}`}    icon="fa-chart-line"  color="#d97706" bg="#fffbeb" />
-        <StatCard label="Ocupación"    value={`${ocup}%`}                icon="fa-table"       color="#0ea5e9" bg="#f0f9ff"
+        <StatCard label="Ventas hoy"  value={`S/${ventas.toFixed(0)}`}  icon="fa-dollar-sign" color="#16a34a" bg="#f0fdf4" />
+        <StatCard label="Pedidos hoy" value={pedidos}                    icon="fa-receipt"     color="#6366f1" bg="#eef2ff" />
+        <StatCard label="Promedio"    value={`S/${prom.toFixed(0)}`}     icon="fa-chart-line"  color="#d97706" bg="#fffbeb" />
+        <StatCard label="Ocupación"   value={`${ocup}%`}                 icon="fa-table"       color="#0ea5e9" bg="#f0f9ff"
           sub={`${mesas?.ocupadas || 0} de ${mesas?.total || 0} mesas`} />
       </div>
 
       {/* Charts row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 24 }}>
-        {/* Mesas doughnut */}
         <SectionCard title="Estado de Mesas" icon="fa-table" iconColor="#6366f1">
           <div style={{ padding: 16, height: 220 }}>
             {(mesas?.total || 0) > 0
@@ -158,8 +164,6 @@ const AdminHome = () => {
             }
           </div>
         </SectionCard>
-
-        {/* Pedidos bar */}
         <SectionCard title="Pedidos por Estado" icon="fa-clipboard-list" iconColor="#16a34a">
           <div style={{ padding: 16, height: 220 }}>
             {(dash?.pedidos_por_estado?.length || 0) > 0
@@ -172,20 +176,19 @@ const AdminHome = () => {
 
       {/* Lists row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
-        {/* Top productos */}
         <SectionCard title="Productos Más Vendidos" icon="fa-fire" iconColor="#ef4444">
           {(dash?.productos_mas_vendidos?.length || 0) > 0 ? (
             <div style={{ padding: '8px 0' }}>
               {dash.productos_mas_vendidos.slice(0, 5).map((p, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < 4 ? '1px solid #f8fafc' : 'none' }}>
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: i === 0 ? '#fef3c7' : i === 1 ? '#f1f5f9' : '#fdf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 12, color: i === 0 ? '#d97706' : i === 1 ? '#64748b' : '#a855f7', flexShrink: 0 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < 4 ? `1px solid ${C.borderLight}` : 'none' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: i === 0 ? '#fef3c7' : i === 1 ? C.surfaceAlt2 : '#fdf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 12, color: i === 0 ? '#d97706' : i === 1 ? C.textSub : '#a855f7', flexShrink: 0 }}>
                     {i + 1}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {p.producto?.nombre || 'Producto'}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>×{p.total_vendido || 0} unidades</div>
+                    <div style={{ fontSize: 11, color: C.textMuted }}>×{p.total_vendido || 0} unidades</div>
                   </div>
                   <div style={{ fontWeight: 800, fontSize: 14, color: '#16a34a', flexShrink: 0 }}>
                     S/{parseFloat(p.ingresos || p.ingresos_totales || 0).toFixed(2)}
@@ -196,20 +199,19 @@ const AdminHome = () => {
           ) : <Empty icon="fa-box-open" text="Sin datos de productos hoy" />}
         </SectionCard>
 
-        {/* Mozos activos */}
         <SectionCard title="Mozos Más Activos" icon="fa-user-tie" iconColor="#d97706">
           {(dash?.mozos_activos?.length || 0) > 0 ? (
             <div style={{ padding: '8px 0' }}>
               {dash.mozos_activos.map((m, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < dash.mozos_activos.length - 1 ? '1px solid #f8fafc' : 'none' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < dash.mozos_activos.length - 1 ? `1px solid ${C.borderLight}` : 'none' }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#eef2ff', border: '1.5px solid #c7d2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <i className="fas fa-user-tie" style={{ color: '#6366f1', fontSize: 14 }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {m.mozo?.nombre || 'Mozo'}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>{m.total_pedidos || 0} pedidos</div>
+                    <div style={{ fontSize: 11, color: C.textMuted }}>{m.total_pedidos || 0} pedidos</div>
                   </div>
                   <div style={{ fontWeight: 800, fontSize: 14, color: '#16a34a', flexShrink: 0 }}>
                     S/{parseFloat(m.total_ventas || 0).toFixed(2)}
@@ -224,7 +226,6 @@ const AdminHome = () => {
   );
 };
 
-/* ── Router principal del admin ── */
 const AdminDashboard = () => (
   <Routes>
     <Route path="/"          element={<AdminHome />} />

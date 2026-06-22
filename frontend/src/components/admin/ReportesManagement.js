@@ -6,6 +6,7 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { reportesService } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 ChartJS.register(
@@ -13,11 +14,10 @@ ChartJS.register(
     PointElement, Title, Tooltip, Legend, ArcElement, Filler
 );
 
-const A = '#6366f1';
-const BG = '#f1f5f9';
-const DARK = '#0f172a';
-const DARK2 = '#1e293b';
-const DARK3 = '#334155';
+const A       = '#6366f1';
+const SDARK   = '#0f172a';
+const SDARK2  = '#1e293b';
+const SDARK3  = '#334155';
 const BAR_COLORS = ['#6366f1','#16a34a','#f59e0b','#0ea5e9','#ec4899','#8b5cf6','#14b8a6','#dc2626'];
 
 const useIsDesktop = () => {
@@ -30,8 +30,8 @@ const useIsDesktop = () => {
     return desk;
 };
 
-const fmt   = n => `S/${parseFloat(n || 0).toFixed(2)}`;
-const fmtK  = n => { const v = parseFloat(n || 0); return v >= 1000 ? `S/${(v/1000).toFixed(1)}k` : `S/${v.toFixed(0)}`; };
+const fmt  = n => `S/${parseFloat(n || 0).toFixed(2)}`;
+const fmtK = n => { const v = parseFloat(n || 0); return v >= 1000 ? `S/${(v/1000).toFixed(1)}k` : `S/${v.toFixed(0)}`; };
 
 const TABS = [
     { key: 'ventas',    label: 'Ventas',    icon: 'fa-chart-line' },
@@ -46,9 +46,6 @@ const PERIODOS = [
     { key: 'mes',    label: 'Mes'    },
 ];
 
-/* ══════════════════════════════════════════════════════
-   LÓGICA COMPARTIDA
-══════════════════════════════════════════════════════ */
 const useReportes = () => {
     const [loading, setLoading] = useState(false);
     const [filtros, setFiltros] = useState({
@@ -121,90 +118,82 @@ const useReportes = () => {
     return { loading, filtros, setFiltros, reporteVentas, reporteProductos, reporteMozos, reporteMesas, error, setError, fetchReportes, exportarCSV, exportarPDF };
 };
 
-/* ══════════════════════════════════════════════════════
-   COMPONENTES COMPARTIDOS (mobile + desktop)
-══════════════════════════════════════════════════════ */
-const EmptyChart = ({ icon, msg }) => (
-    <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-        <div style={{ textAlign: 'center' }}>
-            <i className={`fas ${icon}`} style={{ fontSize: 26, display: 'block', marginBottom: 8 }} />
-            <div style={{ fontSize: 13 }}>{msg}</div>
+const EmptyChart = ({ icon, msg }) => {
+    const { C } = useTheme();
+    return (
+        <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.textMuted }}>
+            <div style={{ textAlign: 'center' }}>
+                <i className={`fas ${icon}`} style={{ fontSize: 26, display: 'block', marginBottom: 8 }} />
+                <div style={{ fontSize: 13 }}>{msg}</div>
+            </div>
         </div>
-    </div>
-);
-const EmptyState = ({ icon, msg }) => (
-    <div style={{ textAlign: 'center', paddingTop: 60, color: '#94a3b8' }}>
-        <i className={`fas ${icon}`} style={{ fontSize: 38, display: 'block', marginBottom: 12 }} />
-        <div style={{ fontSize: 14 }}>{msg}</div>
-    </div>
-);
+    );
+};
+const EmptyState = ({ icon, msg }) => {
+    const { C } = useTheme();
+    return (
+        <div style={{ textAlign: 'center', paddingTop: 60, color: C.textMuted }}>
+            <i className={`fas ${icon}`} style={{ fontSize: 38, display: 'block', marginBottom: 12 }} />
+            <div style={{ fontSize: 14 }}>{msg}</div>
+        </div>
+    );
+};
 
-/* ══════════════════════════════════════════════════════
-   MOBILE LAYOUT
-══════════════════════════════════════════════════════ */
+/* ── Mobile KPI card ── */
 const MobileKpiCard = ({ icon, label, value, color }) => {
+    const { C } = useTheme();
     const [pressed, setPressed] = useState(false);
     return (
         <div
             onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
             onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
-            style={{
-                background: '#fff', borderRadius: 16, padding: '14px 14px',
-                display: 'flex', alignItems: 'center', gap: 12,
-                boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.06)' : '0 2px 10px rgba(0,0,0,0.08)',
-                flex: '1 1 0', minWidth: 0,
-                transform: pressed ? 'scale(0.97)' : 'scale(1)',
-                transition: 'transform 0.12s, box-shadow 0.12s',
-            }}
-        >
+            style={{ background: C.surface, borderRadius: 16, padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.06)' : '0 2px 10px rgba(0,0,0,0.08)', flex: '1 1 0', minWidth: 0, transform: pressed ? 'scale(0.97)' : 'scale(1)', transition: 'transform 0.12s', border: `1px solid ${C.borderLight}` }}>
             <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <i className={`fas ${icon}`} style={{ color, fontSize: 18 }} />
             </div>
             <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 19, fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>{value}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                <div style={{ fontSize: 19, fontWeight: 800, color: C.text, lineHeight: 1.1 }}>{value}</div>
+                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
             </div>
         </div>
     );
 };
 
 const MobileRankRow = ({ pos, name, sub, ingresos, maxIngresos, extra }) => {
+    const { C } = useTheme();
     const medal = pos === 1 ? '#f59e0b' : pos === 2 ? '#94a3b8' : pos === 3 ? '#cd7f32' : null;
     const pct = maxIngresos > 0 ? Math.round((parseFloat(ingresos) / maxIngresos) * 100) : 0;
     return (
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
+        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.borderLight}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: medal ? medal + '20' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, color: medal || '#64748b' }}>
+                <div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: medal ? medal + '20' : C.surfaceAlt2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, color: medal || C.textMuted }}>
                     {medal ? <i className="fas fa-crown" style={{ color: medal, fontSize: 11 }} /> : `#${pos}`}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                    {sub && <div style={{ fontSize: 11, color: '#94a3b8' }}>{sub}</div>}
+                    <div style={{ fontWeight: 700, fontSize: 13, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    {sub && <div style={{ fontSize: 11, color: C.textMuted }}>{sub}</div>}
                 </div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#16a34a', flexShrink: 0 }}>{fmt(ingresos)}</div>
             </div>
-            <div style={{ height: 4, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden', marginLeft: 42 }}>
+            <div style={{ height: 4, background: C.surfaceAlt2, borderRadius: 4, overflow: 'hidden', marginLeft: 42 }}>
                 <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${A},#818cf8)`, borderRadius: 4, transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)' }} />
             </div>
-            {extra && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, marginLeft: 42 }}>{extra}</div>}
+            {extra && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4, marginLeft: 42 }}>{extra}</div>}
         </div>
     );
 };
 
-const TabChip = ({ label, icon, active, onClick }) => (
-    <button onClick={onClick} style={{
-        flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
-        padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
-        background: active ? A : '#fff', color: active ? '#fff' : '#64748b',
-        fontWeight: 700, fontSize: 13,
-        boxShadow: active ? `0 3px 10px ${A}50` : '0 1px 4px rgba(0,0,0,0.06)',
-        transition: 'all 0.15s',
-    }}>
-        <i className={`fas ${icon}`} style={{ fontSize: 12 }} />{label}
-    </button>
-);
+const TabChip = ({ label, icon, active, onClick }) => {
+    const { C } = useTheme();
+    return (
+        <button onClick={onClick} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', background: active ? A : C.surface, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 13, boxShadow: active ? `0 3px 10px ${A}50` : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.15s', border: `1px solid ${active ? A : C.borderLight}` }}>
+            <i className={`fas ${icon}`} style={{ fontSize: 12 }} />{label}
+        </button>
+    );
+};
 
 const MobileLayout = ({ data }) => {
+    const { C } = useTheme();
     const { loading, filtros, setFiltros, reporteVentas, reporteProductos, reporteMozos, reporteMesas, error, setError, fetchReportes, exportarCSV, exportarPDF } = data;
     const [activeTab, setActiveTab] = useState('ventas');
     const [showFiltros, setShowFiltros] = useState(false);
@@ -224,24 +213,24 @@ const MobileLayout = ({ data }) => {
     const mxMozo  = Math.max(...(reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [0]));
     const mxMesa  = Math.max(...(reporteMesas?.mesas?.map(m => parseFloat(m.ingresos_totales||0)) || [0]));
 
-    const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 } } } }, scales: { x: { ticks: { font: { size: 10 }, maxRotation: 35 }, grid: { display: false } }, y: { ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } } } };
-    const ventasOpts = { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } } } };
+    const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 }, color: C.textSub } } }, scales: { x: { ticks: { font: { size: 10 }, maxRotation: 35, color: C.textMuted }, grid: { display: false } }, y: { ticks: { font: { size: 10 }, color: C.textMuted }, grid: { color: C.borderLight } } } };
+    const ventasOpts = { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 10 }, color: C.textMuted } } } };
 
     return (
-        <div style={{ minHeight: '100vh', background: BG, paddingBottom: 40 }}>
+        <div style={{ minHeight: '100vh', background: C.bg, paddingBottom: 40 }}>
             {/* Header */}
-            <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '12px 16px', position: 'sticky', top: 58, zIndex: 20 }}>
+            <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '12px 16px', position: 'sticky', top: 58, zIndex: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 12, background: A+'15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className="fas fa-chart-bar" style={{ color: A, fontSize: 16 }} />
                     </div>
                     <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>Reportes</div>
-                        <div style={{ fontSize: 10, color: '#94a3b8' }}>{filtros.fechaInicio} → {filtros.fechaFin}</div>
+                        <div style={{ fontWeight: 800, fontSize: 15, color: C.text }}>Reportes</div>
+                        <div style={{ fontSize: 10, color: C.textMuted }}>{filtros.fechaInicio} → {filtros.fechaFin}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
                         {[
-                            { icon: 'fa-sliders-h', fn: () => setShowFiltros(v=>!v), bg: showFiltros ? A : '#f1f5f9', cl: showFiltros ? '#fff' : '#64748b' },
+                            { icon: 'fa-sliders-h', fn: () => setShowFiltros(v=>!v), bg: showFiltros ? A : C.surfaceAlt2, cl: showFiltros ? '#fff' : C.textSub },
                             { icon: 'fa-file-csv',  fn: () => exportarCSV(activeTab), bg: '#f0fdf4', cl: '#16a34a' },
                             { icon: 'fa-file-pdf',  fn: () => exportarPDF(activeTab), bg: '#fef2f2', cl: '#dc2626' },
                             { icon: loading ? 'fa-spinner fa-spin' : 'fa-sync-alt', fn: fetchReportes, bg: A+'15', cl: A },
@@ -254,29 +243,27 @@ const MobileLayout = ({ data }) => {
                     </div>
                 </div>
                 {showFiltros && (
-                    <div style={{ background: '#f8fafc', borderRadius: 14, padding: '12px', marginBottom: 10 }}>
+                    <div style={{ background: C.surfaceAlt, borderRadius: 14, padding: '12px', marginBottom: 10, border: `1px solid ${C.borderLight}` }}>
                         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                             {[['Desde','fechaInicio'],['Hasta','fechaFin']].map(([lbl,key]) => (
                                 <div key={key} style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>{lbl}</div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: C.textSub, marginBottom: 4 }}>{lbl}</div>
                                     <input type="date" value={filtros[key]} onChange={e => setFiltros(f=>({...f,[key]:e.target.value}))}
-                                        style={{ width: '100%', padding: '7px 8px', borderRadius: 9, border: '1.5px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+                                        style={{ width: '100%', padding: '7px 8px', borderRadius: 9, border: `1.5px solid ${C.border}`, fontSize: 12, outline: 'none', boxSizing: 'border-box', background: C.inputBg, color: C.text }} />
                                 </div>
                             ))}
                         </div>
                         <div style={{ display: 'flex', gap: 5 }}>
                             {PERIODOS.map(p => (
                                 <button key={p.key} onClick={() => setFiltros(f=>({...f,periodo:p.key}))}
-                                    style={{ flex: 1, padding: '6px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700,
-                                        background: filtros.periodo===p.key ? A : '#fff', color: filtros.periodo===p.key ? '#fff' : '#64748b',
-                                        boxShadow: filtros.periodo===p.key ? `0 2px 8px ${A}40` : 'none' }}>
+                                    style={{ flex: 1, padding: '6px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: filtros.periodo===p.key ? A : C.surfaceAlt2, color: filtros.periodo===p.key ? '#fff' : C.textSub, boxShadow: filtros.periodo===p.key ? `0 2px 8px ${A}40` : 'none' }}>
                                     {p.label}
                                 </button>
                             ))}
                         </div>
                     </div>
                 )}
-                <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2 }}>
+                <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
                     {TABS.map(t => <TabChip key={t.key} {...t} active={activeTab===t.key} onClick={() => setActiveTab(t.key)} />)}
                 </div>
             </div>
@@ -289,7 +276,7 @@ const MobileLayout = ({ data }) => {
                 </div>
             )}
             {loading && (
-                <div style={{ textAlign: 'center', paddingTop: 60, color: '#94a3b8' }}>
+                <div style={{ textAlign: 'center', paddingTop: 60, color: C.textMuted }}>
                     <i className="fas fa-spinner fa-spin" style={{ fontSize: 30, display: 'block', marginBottom: 12, color: A }} />
                     <div style={{ fontSize: 14 }}>Cargando...</div>
                 </div>
@@ -306,15 +293,15 @@ const MobileLayout = ({ data }) => {
                         <MobileKpiCard icon="fa-chart-line"  label="Prom/pedido"  color="#f59e0b" value={fmtK(reporteVentas?.resumen_total?.promedio_pedido)} />
                         <MobileKpiCard icon="fa-calendar"    label="Períodos"      color="#0ea5e9" value={reporteVentas?.ventas_por_periodo?.length || 0} />
                     </div>
-                    <div style={{ background: '#fff', borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 12 }}>Evolución de ventas</div>
+                    <div style={{ background: C.surface, borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 12 }}>Evolución de ventas</div>
                         {reporteVentas?.ventas_por_periodo?.length > 0
                             ? <div style={{ height: 220 }}><Line data={ventasCD} options={ventasOpts} /></div>
                             : <EmptyChart icon="fa-chart-line" msg="Sin datos en este período" />}
                     </div>
                     {reporteVentas?.ventas_por_periodo?.length > 0 && (
-                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
-                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Detalle por período</div>
+                        <div style={{ background: C.surface, borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16, border: `1px solid ${C.borderLight}` }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: `1px solid ${C.borderLight}`, fontWeight: 700, fontSize: 14, color: C.text }}>Detalle por período</div>
                             {reporteVentas.ventas_por_periodo.map((v, i) => (
                                 <MobileRankRow key={i} pos={i+1}
                                     name={new Date(v.periodo).toLocaleDateString('es',{weekday:'short',month:'short',day:'numeric'})}
@@ -333,15 +320,15 @@ const MobileLayout = ({ data }) => {
                         <MobileKpiCard icon="fa-utensils" label="Productos"  color={A}       value={reporteProductos?.productos?.length || 0} />
                         <MobileKpiCard icon="fa-fire"     label="Top item"   color="#dc2626" value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]} />
                     </div>
-                    <div style={{ background: '#fff', borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 12 }}>Top 6 por ingresos</div>
+                    <div style={{ background: C.surface, borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 12 }}>Top 6 por ingresos</div>
                         {reporteProductos?.productos?.length > 0
                             ? <div style={{ height: 220 }}><Bar data={prodCD} options={baseOpts} /></div>
                             : <EmptyChart icon="fa-utensils" msg="Sin datos en este período" />}
                     </div>
                     {reporteProductos?.productos?.length > 0 && (
-                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
-                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Ranking</div>
+                        <div style={{ background: C.surface, borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16, border: `1px solid ${C.borderLight}` }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: `1px solid ${C.borderLight}`, fontWeight: 700, fontSize: 14, color: C.text }}>Ranking</div>
                             {reporteProductos.productos.map((p, i) => (
                                 <MobileRankRow key={i} pos={i+1} name={p.producto?.nombre||'Sin nombre'}
                                     sub={p.producto?.categoria?.nombre} ingresos={p.ingresos_totales} maxIngresos={mxProd}
@@ -359,15 +346,15 @@ const MobileLayout = ({ data }) => {
                         <MobileKpiCard icon="fa-user-tie" label="Mozos"    color={A}       value={reporteMozos?.mozos?.length || 0} />
                         <MobileKpiCard icon="fa-trophy"   label="Top mozo" color="#f59e0b" value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]} />
                     </div>
-                    <div style={{ background: '#fff', borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 12 }}>Performance</div>
+                    <div style={{ background: C.surface, borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 12 }}>Performance</div>
                         {reporteMozos?.mozos?.length > 0
                             ? <div style={{ height: 220 }}><Bar data={mozoCD} options={baseOpts} /></div>
                             : <EmptyChart icon="fa-user-tie" msg="Sin datos en este período" />}
                     </div>
                     {reporteMozos?.mozos?.length > 0 && (
-                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
-                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Ranking</div>
+                        <div style={{ background: C.surface, borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16, border: `1px solid ${C.borderLight}` }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: `1px solid ${C.borderLight}`, fontWeight: 700, fontSize: 14, color: C.text }}>Ranking</div>
                             {reporteMozos.mozos.map((m, i) => (
                                 <MobileRankRow key={i} pos={i+1} name={m.mozo?.nombre||'Sin nombre'}
                                     ingresos={m.total_ventas} maxIngresos={mxMozo}
@@ -387,8 +374,8 @@ const MobileLayout = ({ data }) => {
                             value={fmtK(reporteMesas?.mesas?.reduce((a,m)=>a+parseFloat(m.ingresos_totales||0),0))} />
                     </div>
                     {reporteMesas?.mesas?.length > 0 ? (
-                        <div style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16 }}>
-                            <div style={{ padding: '13px 16px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 14, color: '#0f172a' }}>Performance por mesa</div>
+                        <div style={{ background: C.surface, borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 16, border: `1px solid ${C.borderLight}` }}>
+                            <div style={{ padding: '13px 16px 10px', borderBottom: `1px solid ${C.borderLight}`, fontWeight: 700, fontSize: 14, color: C.text }}>Performance por mesa</div>
                             {reporteMesas.mesas.map((m, i) => (
                                 <MobileRankRow key={i} pos={i+1} name={`Mesa ${m.mesa?.numero||'?'}`}
                                     sub={`${m.mesa?.capacidad||0} personas`}
@@ -403,67 +390,49 @@ const MobileLayout = ({ data }) => {
     );
 };
 
-/* ══════════════════════════════════════════════════════
-   DESKTOP LAYOUT — COMPONENTES
-══════════════════════════════════════════════════════ */
-
-/* KPI card con fondo degradado suave */
+/* ── Desktop KPI card ── */
 const DeskKpi = ({ icon, label, value, color, sub }) => {
+    const { C } = useTheme();
     const [hov, setHov] = useState(false);
     return (
-        <div
-            onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-            style={{
-                background: '#fff',
-                borderRadius: 20,
-                padding: '22px 24px',
-                boxShadow: hov ? '0 12px 32px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.07)',
-                transform: hov ? 'translateY(-4px)' : 'translateY(0)',
-                transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
-                position: 'relative', overflow: 'hidden',
-                cursor: 'default',
-            }}
-        >
-            {/* Círculo decorativo fondo */}
+        <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+            style={{ background: C.surface, borderRadius: 20, padding: '22px 24px', boxShadow: hov ? '0 12px 32px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.07)', transform: hov ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)', position: 'relative', overflow: 'hidden', cursor: 'default', border: `1px solid ${C.borderLight}` }}>
             <div style={{ position: 'absolute', right: -24, bottom: -24, width: 96, height: 96, borderRadius: '50%', background: color + '12', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', right: -8, bottom: -8, width: 52, height: 52, borderRadius: '50%', background: color + '18', pointerEvents: 'none' }} />
-
             <div style={{ position: 'relative' }}>
-                {/* Icono + label en misma fila */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, textTransform: 'uppercase' }}>{label}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>{label}</div>
                     <div style={{ width: 40, height: 40, borderRadius: 14, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <i className={`fas ${icon}`} style={{ color, fontSize: 16 }} />
                     </div>
                 </div>
-                <div style={{ fontSize: 30, fontWeight: 900, color: '#0f172a', lineHeight: 1, letterSpacing: -1 }}>{value}</div>
-                {sub && <div style={{ fontSize: 12, color: '#64748b', marginTop: 8, fontWeight: 500 }}>{sub}</div>}
-                {/* Línea de color abajo */}
+                <div style={{ fontSize: 30, fontWeight: 900, color: C.text, lineHeight: 1, letterSpacing: -1 }}>{value}</div>
+                {sub && <div style={{ fontSize: 12, color: C.textSub, marginTop: 8, fontWeight: 500 }}>{sub}</div>}
                 <div style={{ position: 'absolute', bottom: -22, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${color}, ${color}60)`, borderRadius: 2 }} />
             </div>
         </div>
     );
 };
 
-/* Tabla desktop con hover */
 const DeskTable = ({ columns, rows }) => {
+    const { C } = useTheme();
     const [hov, setHov] = useState(null);
     return (
         <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                    <tr style={{ background: C.surfaceAlt, borderBottom: `2px solid ${C.border}` }}>
                         {columns.map((c, i) => (
-                            <th key={i} style={{ padding: '11px 16px', textAlign: i===0 ? 'center' : 'left', fontWeight: 700, fontSize: 11, color: '#64748b', letterSpacing: 0.8, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{c}</th>
+                            <th key={i} style={{ padding: '11px 16px', textAlign: i===0 ? 'center' : 'left', fontWeight: 700, fontSize: 11, color: C.textMuted, letterSpacing: 0.8, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{c}</th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((row, ri) => (
                         <tr key={ri} onMouseEnter={() => setHov(ri)} onMouseLeave={() => setHov(null)}
-                            style={{ background: hov===ri ? '#f5f7ff' : ri%2===0 ? '#fff' : '#fafafa', transition: 'background 0.1s', borderBottom: '1px solid #f1f5f9' }}>
+                            style={{ background: hov===ri ? C.surfaceAlt : ri%2===0 ? C.surface : C.surfaceAlt, transition: 'background 0.1s', borderBottom: `1px solid ${C.borderLight}` }}>
                             {row.map((cell, ci) => (
-                                <td key={ci} style={{ padding: '13px 16px', textAlign: ci===0 ? 'center' : 'left', verticalAlign: 'middle' }}>{cell}</td>
+                                <td key={ci} style={{ padding: '13px 16px', textAlign: ci===0 ? 'center' : 'left', verticalAlign: 'middle', color: C.text }}>{cell}</td>
                             ))}
                         </tr>
                     ))}
@@ -473,7 +442,6 @@ const DeskTable = ({ columns, rows }) => {
     );
 };
 
-/* Badge posición en tabla */
 const PosBadge = ({ pos }) => {
     const cfg = pos===1 ? ['#fef3c7','#92400e','fa-crown'] : pos===2 ? ['#f1f5f9','#475569','fa-crown'] : pos===3 ? ['#fef3c7','#92400e','fa-crown'] : null;
     return cfg
@@ -481,55 +449,45 @@ const PosBadge = ({ pos }) => {
         : <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:28, height:28, borderRadius:9, background:'#f8fafc', color:'#94a3b8', fontWeight:700, fontSize:12 }}>#{pos}</span>;
 };
 
-/* Barra de progreso para leaderboard */
 const ProgressBar = ({ name, value, max, color, sub }) => {
+    const { C } = useTheme();
     const pct = max > 0 ? Math.round((parseFloat(value)/max)*100) : 0;
     const [hov, setHov] = useState(false);
     return (
         <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-            style={{ padding: '10px 4px', borderRadius: 10, background: hov ? '#f8fafc' : 'transparent', transition: 'background 0.12s' }}>
+            style={{ padding: '10px 4px', borderRadius: 10, background: hov ? C.surfaceAlt : 'transparent', transition: 'background 0.12s' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
                 <div style={{ minWidth: 0 }}>
-                    <span style={{ fontWeight: 700, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{name}</span>
-                    {sub && <span style={{ fontSize: 11, color: '#94a3b8' }}>{sub}</span>}
+                    <span style={{ fontWeight: 700, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{name}</span>
+                    {sub && <span style={{ fontSize: 11, color: C.textMuted }}>{sub}</span>}
                 </div>
                 <span style={{ fontWeight: 800, color: color || '#16a34a', flexShrink: 0, marginLeft: 8 }}>{fmt(value)}</span>
             </div>
-            <div style={{ height: 7, background: '#f1f5f9', borderRadius: 6, overflow: 'hidden' }}>
+            <div style={{ height: 7, background: C.surfaceAlt2, borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${pct}%`, background: color ? `linear-gradient(90deg,${color},${color}99)` : `linear-gradient(90deg,${A},#818cf8)`, borderRadius: 6, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
             </div>
         </div>
     );
 };
 
-/* Card de contenido */
-const DeskCard = ({ title, children, action }) => (
-    <div style={{ background: '#fff', borderRadius: 22, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.07)' }}>
-        <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{title}</div>
-            {action}
+const DeskCard = ({ title, children, action }) => {
+    const { C } = useTheme();
+    return (
+        <div style={{ background: C.surface, borderRadius: 22, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
+            <div style={{ padding: '18px 24px 14px', borderBottom: `1px solid ${C.borderLight}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontWeight: 800, fontSize: 15, color: C.text }}>{title}</div>
+                {action}
+            </div>
+            {children}
         </div>
-        {children}
-    </div>
-);
+    );
+};
 
-/* Item nav sidebar oscuro */
 const SideItem = ({ tab, active, onClick }) => {
     const [hov, setHov] = useState(false);
     return (
-        <button onClick={onClick}
-            onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-            style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                padding: '11px 14px', border: 'none', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
-                background: active ? A : hov ? DARK2 : 'transparent',
-                color: active ? '#fff' : '#94a3b8',
-                fontWeight: active ? 700 : 500, fontSize: 14,
-                marginBottom: 3,
-                transition: 'all 0.15s',
-                boxShadow: active ? `0 4px 12px ${A}50` : 'none',
-            }}
-        >
+        <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', border: 'none', borderRadius: 12, cursor: 'pointer', textAlign: 'left', background: active ? A : hov ? SDARK2 : 'transparent', color: active ? '#fff' : '#94a3b8', fontWeight: active ? 700 : 500, fontSize: 14, marginBottom: 3, transition: 'all 0.15s', boxShadow: active ? `0 4px 12px ${A}50` : 'none' }}>
             <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
                 <i className={`fas ${tab.icon}`} style={{ fontSize: 14 }} />
             </div>
@@ -539,14 +497,11 @@ const SideItem = ({ tab, active, onClick }) => {
     );
 };
 
-/* ══════════════════════════════════════════════════════
-   DESKTOP LAYOUT
-══════════════════════════════════════════════════════ */
 const DesktopLayout = ({ data }) => {
+    const { C } = useTheme();
     const { loading, filtros, setFiltros, reporteVentas, reporteProductos, reporteMozos, reporteMesas, error, setError, fetchReportes, exportarCSV, exportarPDF } = data;
     const [activeTab, setActiveTab] = useState('ventas');
 
-    /* ── Chart data ── */
     const ventasCD = {
         labels: reporteVentas?.ventas_por_periodo?.map(v => new Date(v.periodo).toLocaleDateString('es',{month:'short',day:'numeric'})) || [],
         datasets: [
@@ -554,28 +509,12 @@ const DesktopLayout = ({ data }) => {
             { label: 'Pedidos',   data: reporteVentas?.ventas_por_periodo?.map(v => parseInt(v.total_pedidos)) || [],   borderColor: '#f59e0b', backgroundColor: '#f59e0b15', tension: 0.4, yAxisID: 'y1', pointBackgroundColor: '#f59e0b', pointRadius: 4 },
         ],
     };
-    const prodCD = {
-        labels: reporteProductos?.productos?.slice(0,8).map(p => p.producto?.nombre?.split(' ')[0]||'') || [],
-        datasets: [{ label: 'Ingresos S/', data: reporteProductos?.productos?.slice(0,8).map(p => parseFloat(p.ingresos_totales||0)) || [], backgroundColor: BAR_COLORS, borderRadius: 8, borderSkipped: false }],
-    };
-    const mozoCD = {
-        labels: reporteMozos?.mozos?.map(m => (m.mozo?.nombre||'').split(' ')[0]) || [],
-        datasets: [
-            { label: 'Ventas S/', data: reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [], backgroundColor: A, borderRadius: 8 },
-            { label: 'Pedidos',  data: reporteMozos?.mozos?.map(m => parseInt(m.total_pedidos||0)) || [],  backgroundColor: '#f59e0b', borderRadius: 8 },
-        ],
-    };
+    const prodCD = { labels: reporteProductos?.productos?.slice(0,8).map(p => p.producto?.nombre?.split(' ')[0]||'') || [], datasets: [{ label: 'Ingresos S/', data: reporteProductos?.productos?.slice(0,8).map(p => parseFloat(p.ingresos_totales||0)) || [], backgroundColor: BAR_COLORS, borderRadius: 8, borderSkipped: false }] };
+    const mozoCD = { labels: reporteMozos?.mozos?.map(m => (m.mozo?.nombre||'').split(' ')[0]) || [], datasets: [{ label: 'Ventas S/', data: reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [], backgroundColor: A, borderRadius: 8 }, { label: 'Pedidos', data: reporteMozos?.mozos?.map(m => parseInt(m.total_pedidos||0)) || [], backgroundColor: '#f59e0b', borderRadius: 8 }] };
 
-    const baseOpts = { responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 }, padding: 14 } }, tooltip: { bodyFont: { size: 12 } } },
-        scales: { x: { ticks: { font: { size: 11 } }, grid: { display: false } }, y: { ticks: { font: { size: 11 } }, grid: { color: '#f1f5f924' } } }
-    };
-    const ventasOpts = { ...baseOpts, scales: { ...baseOpts.scales,
-        y:  { ...baseOpts.scales.y, position: 'left', title: { display: true, text: 'Ventas S/', font: { size: 11 } } },
-        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 } }, title: { display: true, text: 'Pedidos', font: { size: 11 } } },
-    }};
+    const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 }, padding: 14, color: C.textSub } }, tooltip: { bodyFont: { size: 12 } } }, scales: { x: { ticks: { font: { size: 11 }, color: C.textMuted }, grid: { display: false } }, y: { ticks: { font: { size: 11 }, color: C.textMuted }, grid: { color: C.borderLight } } } };
+    const ventasOpts = { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left', title: { display: true, text: 'Ventas S/', font: { size: 11 }, color: C.textMuted } }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 }, color: C.textMuted }, title: { display: true, text: 'Pedidos', font: { size: 11 }, color: C.textMuted } } } };
 
-    /* ── Filas de tabla ── */
     const mxProd = Math.max(...(reporteProductos?.productos?.map(p => parseFloat(p.ingresos_totales||0)) || [0]));
     const mxMozo = Math.max(...(reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [0]));
     const mxMesa = Math.max(...(reporteMesas?.mesas?.map(m => parseFloat(m.ingresos_totales||0)) || [0]));
@@ -585,28 +524,28 @@ const DesktopLayout = ({ data }) => {
         new Date(v.periodo).toLocaleDateString('es',{weekday:'short',year:'numeric',month:'short',day:'numeric'}),
         <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(v.total_ventas)}</span>,
         <span style={{ background: A+'15', color: A, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{v.total_pedidos}</span>,
-        <span style={{ color: '#64748b' }}>{fmt(v.promedio_pedido)}</span>,
+        <span style={{ color: C.textSub }}>{fmt(v.promedio_pedido)}</span>,
     ]);
     const prodRows = (reporteProductos?.productos||[]).map((p,i) => [
         <PosBadge pos={i+1} />,
-        <div><div style={{ fontWeight: 700, color: '#0f172a' }}>{p.producto?.nombre||'—'}</div><div style={{ fontSize: 11, color: '#94a3b8' }}>{p.producto?.categoria?.nombre}</div></div>,
+        <div><div style={{ fontWeight: 700, color: C.text }}>{p.producto?.nombre||'—'}</div><div style={{ fontSize: 11, color: C.textMuted }}>{p.producto?.categoria?.nombre}</div></div>,
         <span style={{ background: '#f0fdf4', color: '#16a34a', padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{p.total_vendido} uds</span>,
         <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(p.ingresos_totales)}</span>,
     ]);
     const mozoRows = (reporteMozos?.mozos||[]).map((m,i) => [
         <PosBadge pos={i+1} />,
-        <span style={{ fontWeight: 700, color: '#0f172a' }}>{m.mozo?.nombre||'—'}</span>,
+        <span style={{ fontWeight: 700, color: C.text }}>{m.mozo?.nombre||'—'}</span>,
         <span style={{ background: A+'15', color: A, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.total_pedidos}</span>,
         <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(m.total_ventas)}</span>,
-        <span style={{ color: '#64748b' }}>{fmt(m.promedio_por_pedido)}</span>,
+        <span style={{ color: C.textSub }}>{fmt(m.promedio_por_pedido)}</span>,
     ]);
     const mesaRows = (reporteMesas?.mesas||[]).map((m,i) => [
         <PosBadge pos={i+1} />,
-        <span style={{ fontWeight: 700, color: '#0f172a' }}>Mesa {m.mesa?.numero||'?'}</span>,
-        <span style={{ background: '#f8fafc', color: '#64748b', padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.mesa?.capacidad||0} pers</span>,
+        <span style={{ fontWeight: 700, color: C.text }}>Mesa {m.mesa?.numero||'?'}</span>,
+        <span style={{ background: C.surfaceAlt2, color: C.textSub, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.mesa?.capacidad||0} pers</span>,
         <span style={{ background: A+'15', color: A, padding:'3px 12px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>{m.total_pedidos}</span>,
         <span style={{ fontWeight: 800, color: '#16a34a', fontSize: 14 }}>{fmt(m.ingresos_totales)}</span>,
-        <span style={{ color: '#64748b' }}>{fmt(m.promedio_por_pedido)}</span>,
+        <span style={{ color: C.textSub }}>{fmt(m.promedio_por_pedido)}</span>,
     ]);
 
     const ExportBtns = () => (
@@ -621,13 +560,11 @@ const DesktopLayout = ({ data }) => {
     );
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: BG }}>
+        <div style={{ display: 'flex', minHeight: '100vh', background: C.bg }}>
 
-            {/* ══ SIDEBAR OSCURO ══ */}
-            <div style={{ width: 272, flexShrink: 0, background: DARK, display: 'flex', flexDirection: 'column', position: 'sticky', top: 58, height: 'calc(100vh - 58px)', overflowY: 'auto' }}>
-
-                {/* Logo */}
-                <div style={{ padding: '22px 18px 16px', borderBottom: `1px solid ${DARK2}` }}>
+            {/* SIDEBAR — always dark */}
+            <div style={{ width: 272, flexShrink: 0, background: SDARK, display: 'flex', flexDirection: 'column', position: 'sticky', top: 58, height: 'calc(100vh - 58px)', overflowY: 'auto' }}>
+                <div style={{ padding: '22px 18px 16px', borderBottom: `1px solid ${SDARK2}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                         <div style={{ width: 42, height: 42, borderRadius: 14, background: 'linear-gradient(135deg,#4f46e5,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 14px ${A}60` }}>
                             <i className="fas fa-chart-bar" style={{ color: '#fff', fontSize: 18 }} />
@@ -638,58 +575,45 @@ const DesktopLayout = ({ data }) => {
                         </div>
                     </div>
                 </div>
-
-                {/* Nav */}
                 <nav style={{ flex: 1, padding: '16px 12px' }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: 1.2, padding: '0 4px 12px', textTransform: 'uppercase' }}>Secciones</div>
                     {TABS.map(t => <SideItem key={t.key} tab={t} active={activeTab===t.key} onClick={() => setActiveTab(t.key)} />)}
                 </nav>
-
-                {/* Filtros */}
-                <div style={{ padding: '16px 14px', borderTop: `1px solid ${DARK2}` }}>
+                <div style={{ padding: '16px 14px', borderTop: `1px solid ${SDARK2}` }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: 1.2, marginBottom: 14, textTransform: 'uppercase' }}>Período</div>
                     {[['Desde','fechaInicio'],['Hasta','fechaFin']].map(([lbl,key]) => (
                         <div key={key} style={{ marginBottom: 10 }}>
                             <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 5 }}>{lbl}</div>
                             <input type="date" value={filtros[key]} onChange={e => setFiltros(f=>({...f,[key]:e.target.value}))}
-                                style={{ width: '100%', padding: '8px 10px', borderRadius: 9, border: `1.5px solid ${DARK3}`, fontSize: 12, outline: 'none', boxSizing: 'border-box', background: DARK2, color: '#f8fafc', colorScheme: 'dark' }} />
+                                style={{ width: '100%', padding: '8px 10px', borderRadius: 9, border: `1.5px solid ${SDARK3}`, fontSize: 12, outline: 'none', boxSizing: 'border-box', background: SDARK2, color: '#f8fafc', colorScheme: 'dark' }} />
                         </div>
                     ))}
                     <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 8 }}>Agrupar por</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 16 }}>
                         {PERIODOS.map(p => (
                             <button key={p.key} onClick={() => setFiltros(f=>({...f,periodo:p.key}))}
-                                style={{ padding: '7px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                                    background: filtros.periodo===p.key ? A : DARK2,
-                                    color: filtros.periodo===p.key ? '#fff' : '#64748b',
-                                    boxShadow: filtros.periodo===p.key ? `0 3px 10px ${A}50` : 'none',
-                                    transition: 'all 0.15s' }}>
+                                style={{ padding: '7px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: filtros.periodo===p.key ? A : SDARK2, color: filtros.periodo===p.key ? '#fff' : '#64748b', boxShadow: filtros.periodo===p.key ? `0 3px 10px ${A}50` : 'none', transition: 'all 0.15s' }}>
                                 {p.label}
                             </button>
                         ))}
                     </div>
                     <button onClick={fetchReportes} disabled={loading}
-                        style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
-                            background: loading ? DARK3 : `linear-gradient(135deg,#4f46e5,#818cf8)`,
-                            color: '#fff', fontWeight: 700, fontSize: 13,
-                            boxShadow: loading ? 'none' : `0 4px 14px ${A}50`, transition: 'all 0.2s' }}>
+                        style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', cursor: 'pointer', background: loading ? SDARK3 : `linear-gradient(135deg,#4f46e5,#818cf8)`, color: '#fff', fontWeight: 700, fontSize: 13, boxShadow: loading ? 'none' : `0 4px 14px ${A}50`, transition: 'all 0.2s' }}>
                         <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-sync-alt'}`} style={{ marginRight: 8 }} />
                         Actualizar datos
                     </button>
                 </div>
             </div>
 
-            {/* ══ CONTENIDO PRINCIPAL ══ */}
+            {/* CONTENT */}
             <div style={{ flex: 1, minWidth: 0, padding: '0 0 48px', overflowY: 'auto' }}>
-
-                {/* Sub-header */}
-                <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <i className={`fas ${TABS.find(t=>t.key===activeTab)?.icon}`} style={{ color: A, fontSize: 15 }} />
-                            <span style={{ fontWeight: 800, fontSize: 18, color: '#0f172a' }}>{TABS.find(t=>t.key===activeTab)?.label}</span>
+                            <span style={{ fontWeight: 800, fontSize: 18, color: C.text }}>{TABS.find(t=>t.key===activeTab)?.label}</span>
                         </div>
-                        <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                        <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>
                             {filtros.fechaInicio} → {filtros.fechaFin} · Agrupado por {filtros.periodo}
                         </div>
                     </div>
@@ -697,8 +621,6 @@ const DesktopLayout = ({ data }) => {
                 </div>
 
                 <div style={{ padding: '28px 32px 0' }}>
-
-                    {/* Error */}
                     {error && (
                         <div style={{ background: '#fef2f2', borderRadius: 14, padding: '14px 18px', display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24 }}>
                             <i className="fas fa-exclamation-circle" style={{ color: '#dc2626', fontSize: 16 }} />
@@ -706,25 +628,22 @@ const DesktopLayout = ({ data }) => {
                             <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 16 }}><i className="fas fa-times" /></button>
                         </div>
                     )}
-
                     {loading && (
-                        <div style={{ textAlign: 'center', paddingTop: 100, color: '#94a3b8' }}>
+                        <div style={{ textAlign: 'center', paddingTop: 100, color: C.textMuted }}>
                             <i className="fas fa-spinner fa-spin" style={{ fontSize: 40, display: 'block', marginBottom: 16, color: A }} />
                             <div style={{ fontSize: 16 }}>Cargando reportes...</div>
                         </div>
                     )}
 
-                    {/* ─── TAB VENTAS ─── */}
+                    {/* VENTAS */}
                     {!loading && activeTab==='ventas' && (
                         <>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18, marginBottom: 28 }}>
                                 <DeskKpi icon="fa-dollar-sign" label="Total ventas"   color="#16a34a" value={fmt(reporteVentas?.resumen_total?.total_ventas)} />
                                 <DeskKpi icon="fa-receipt"     label="Total pedidos"  color={A}       value={reporteVentas?.resumen_total?.total_pedidos || 0} />
                                 <DeskKpi icon="fa-chart-line"  label="Prom / pedido"  color="#f59e0b" value={fmt(reporteVentas?.resumen_total?.promedio_pedido)} />
-                                <DeskKpi icon="fa-calendar-day" label="Períodos"      color="#0ea5e9" value={reporteVentas?.ventas_por_periodo?.length || 0}
-                                    sub={`Agrupado por ${filtros.periodo}`} />
+                                <DeskKpi icon="fa-calendar-day" label="Períodos"      color="#0ea5e9" value={reporteVentas?.ventas_por_periodo?.length || 0} sub={`Agrupado por ${filtros.periodo}`} />
                             </div>
-
                             <DeskCard title="Evolución de Ventas y Pedidos">
                                 <div style={{ padding: '20px 24px' }}>
                                     {reporteVentas?.ventas_por_periodo?.length > 0
@@ -732,7 +651,6 @@ const DesktopLayout = ({ data }) => {
                                         : <EmptyChart icon="fa-chart-line" msg="Sin datos en este período" />}
                                 </div>
                             </DeskCard>
-
                             {ventasRows.length > 0 && (
                                 <div style={{ marginTop: 20 }}>
                                     <DeskCard title="Detalle por período">
@@ -744,17 +662,14 @@ const DesktopLayout = ({ data }) => {
                         </>
                     )}
 
-                    {/* ─── TAB PRODUCTOS ─── */}
+                    {/* PRODUCTOS */}
                     {!loading && activeTab==='productos' && (
                         <>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginBottom: 28 }}>
-                                <DeskKpi icon="fa-utensils"    label="Productos"      color={A}       value={reporteProductos?.productos?.length || 0} />
-                                <DeskKpi icon="fa-fire"        label="Más vendido"    color="#dc2626"
-                                    value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]}
-                                    sub={`${reporteProductos?.productos?.[0]?.total_vendido||0} unidades`} />
-                                <DeskKpi icon="fa-dollar-sign" label="Mayor ingreso"  color="#16a34a" value={fmt(reporteProductos?.productos?.[0]?.ingresos_totales)} />
+                                <DeskKpi icon="fa-utensils"    label="Productos"     color={A}       value={reporteProductos?.productos?.length || 0} />
+                                <DeskKpi icon="fa-fire"        label="Más vendido"   color="#dc2626" value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]} sub={`${reporteProductos?.productos?.[0]?.total_vendido||0} unidades`} />
+                                <DeskKpi icon="fa-dollar-sign" label="Mayor ingreso" color="#16a34a" value={fmt(reporteProductos?.productos?.[0]?.ingresos_totales)} />
                             </div>
-
                             <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
                                 <DeskCard title="Top 8 por ingresos">
                                     <div style={{ padding: '20px 24px' }}>
@@ -766,35 +681,25 @@ const DesktopLayout = ({ data }) => {
                                 <DeskCard title="Leaderboard">
                                     <div style={{ padding: '16px 20px' }}>
                                         {(reporteProductos?.productos?.slice(0,6)||[]).map((p,i) => (
-                                            <ProgressBar key={i} name={p.producto?.nombre||'—'} sub={p.producto?.categoria?.nombre}
-                                                value={p.ingresos_totales} max={mxProd} color={BAR_COLORS[i]} />
+                                            <ProgressBar key={i} name={p.producto?.nombre||'—'} sub={p.producto?.categoria?.nombre} value={p.ingresos_totales} max={mxProd} color={BAR_COLORS[i]} />
                                         ))}
                                         {!reporteProductos?.productos?.length && <EmptyChart icon="fa-utensils" msg="Sin datos" />}
                                     </div>
                                 </DeskCard>
                             </div>
-
-                            {prodRows.length > 0 && (
-                                <DeskCard title="Ranking completo">
-                                    <DeskTable columns={['#','Producto','Cantidad','Ingresos']} rows={prodRows} />
-                                </DeskCard>
-                            )}
+                            {prodRows.length > 0 && <DeskCard title="Ranking completo"><DeskTable columns={['#','Producto','Cantidad','Ingresos']} rows={prodRows} /></DeskCard>}
                             {!reporteProductos && <EmptyState icon="fa-utensils" msg="Sin datos de productos" />}
                         </>
                     )}
 
-                    {/* ─── TAB MOZOS ─── */}
+                    {/* MOZOS */}
                     {!loading && activeTab==='mozos' && (
                         <>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginBottom: 28 }}>
                                 <DeskKpi icon="fa-user-tie" label="Mozos activos"  color={A}       value={reporteMozos?.mozos?.length || 0} />
-                                <DeskKpi icon="fa-trophy"   label="Top mozo"       color="#f59e0b"
-                                    value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]}
-                                    sub={`${fmt(reporteMozos?.mozos?.[0]?.total_ventas)} en ventas`} />
-                                <DeskKpi icon="fa-receipt"  label="Total pedidos"  color="#16a34a"
-                                    value={reporteMozos?.mozos?.reduce((a,m)=>a+parseInt(m.total_pedidos||0),0)||0} />
+                                <DeskKpi icon="fa-trophy"   label="Top mozo"       color="#f59e0b" value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]} sub={`${fmt(reporteMozos?.mozos?.[0]?.total_ventas)} en ventas`} />
+                                <DeskKpi icon="fa-receipt"  label="Total pedidos"  color="#16a34a" value={reporteMozos?.mozos?.reduce((a,m)=>a+parseInt(m.total_pedidos||0),0)||0} />
                             </div>
-
                             <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
                                 <DeskCard title="Ventas y Pedidos por mozo">
                                     <div style={{ padding: '20px 24px' }}>
@@ -806,36 +711,25 @@ const DesktopLayout = ({ data }) => {
                                 <DeskCard title="Comparativa">
                                     <div style={{ padding: '16px 20px' }}>
                                         {(reporteMozos?.mozos||[]).map((m,i) => (
-                                            <ProgressBar key={i} name={(m.mozo?.nombre||'—').split(' ')[0]}
-                                                sub={`${m.total_pedidos} pedidos`}
-                                                value={m.total_ventas} max={mxMozo} />
+                                            <ProgressBar key={i} name={(m.mozo?.nombre||'—').split(' ')[0]} sub={`${m.total_pedidos} pedidos`} value={m.total_ventas} max={mxMozo} />
                                         ))}
                                         {!reporteMozos?.mozos?.length && <EmptyChart icon="fa-user-tie" msg="Sin datos" />}
                                     </div>
                                 </DeskCard>
                             </div>
-
-                            {mozoRows.length > 0 && (
-                                <DeskCard title="Ranking completo">
-                                    <DeskTable columns={['#','Mozo','Pedidos','Ventas','Promedio']} rows={mozoRows} />
-                                </DeskCard>
-                            )}
+                            {mozoRows.length > 0 && <DeskCard title="Ranking completo"><DeskTable columns={['#','Mozo','Pedidos','Ventas','Promedio']} rows={mozoRows} /></DeskCard>}
                             {!reporteMozos && <EmptyState icon="fa-user-tie" msg="Sin datos de mozos" />}
                         </>
                     )}
 
-                    {/* ─── TAB MESAS ─── */}
+                    {/* MESAS */}
                     {!loading && activeTab==='mesas' && (
                         <>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginBottom: 28 }}>
-                                <DeskKpi icon="fa-table"       label="Mesas"           color={A}       value={reporteMesas?.mesas?.length || 0} />
-                                <DeskKpi icon="fa-dollar-sign" label="Ingresos totales" color="#16a34a"
-                                    value={fmt(reporteMesas?.mesas?.reduce((a,m)=>a+parseFloat(m.ingresos_totales||0),0))} />
-                                <DeskKpi icon="fa-fire"        label="Mesa top"         color="#dc2626"
-                                    value={`Mesa ${reporteMesas?.mesas?.[0]?.mesa?.numero||'—'}`}
-                                    sub={fmt(reporteMesas?.mesas?.[0]?.ingresos_totales)} />
+                                <DeskKpi icon="fa-table"       label="Mesas"            color={A}       value={reporteMesas?.mesas?.length || 0} />
+                                <DeskKpi icon="fa-dollar-sign" label="Ingresos totales"  color="#16a34a" value={fmt(reporteMesas?.mesas?.reduce((a,m)=>a+parseFloat(m.ingresos_totales||0),0))} />
+                                <DeskKpi icon="fa-fire"        label="Mesa top"          color="#dc2626" value={`Mesa ${reporteMesas?.mesas?.[0]?.mesa?.numero||'—'}`} sub={fmt(reporteMesas?.mesas?.[0]?.ingresos_totales)} />
                             </div>
-
                             {reporteMesas?.mesas?.length > 0 && (
                                 <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
                                     <DeskCard title="Ranking completo">
@@ -844,9 +738,7 @@ const DesktopLayout = ({ data }) => {
                                     <DeskCard title="Comparativa de ingresos">
                                         <div style={{ padding: '16px 20px' }}>
                                             {reporteMesas.mesas.map((m,i) => (
-                                                <ProgressBar key={i} name={`Mesa ${m.mesa?.numero||'?'}`}
-                                                    sub={`${m.mesa?.capacidad||0} personas · ${m.total_pedidos} pedidos`}
-                                                    value={m.ingresos_totales} max={mxMesa} color={BAR_COLORS[i%BAR_COLORS.length]} />
+                                                <ProgressBar key={i} name={`Mesa ${m.mesa?.numero||'?'}`} sub={`${m.mesa?.capacidad||0} personas · ${m.total_pedidos} pedidos`} value={m.ingresos_totales} max={mxMesa} color={BAR_COLORS[i%BAR_COLORS.length]} />
                                             ))}
                                         </div>
                                     </DeskCard>
@@ -861,9 +753,6 @@ const DesktopLayout = ({ data }) => {
     );
 };
 
-/* ══════════════════════════════════════════════════════
-   ROOT
-══════════════════════════════════════════════════════ */
 const ReportesManagement = () => {
     const isDesktop = useIsDesktop();
     const data = useReportes();
