@@ -152,18 +152,21 @@ const Login = () => {
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: 20 }}>
-                <label style={labelSt}>DNI o Correo electrónico</label>
+                <label style={labelSt}>DNI</label>
                 <div style={{ ...wrapSt, borderColor: focused === 'cred' ? focusRed : C.border, boxShadow: focused === 'cred' ? `0 0 0 3px ${focusRedRgba}` : 'none' }}>
                   <div style={iconBoxSt}>
                     <i className="fas fa-id-card" style={{ color: focused === 'cred' ? focusRed : C.textMuted, fontSize: 15 }}></i>
                   </div>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={8}
                     value={credential}
-                    onChange={e => setCredential(e.target.value)}
+                    onChange={e => setCredential(e.target.value.replace(/\D/g, ''))}
                     onFocus={() => setFocused('cred')}
                     onBlur={() => setFocused(null)}
-                    placeholder="12345678 ó correo@ejemplo.com"
+                    placeholder="Ingresa tu DNI"
                     required
                     disabled={submitting}
                     style={inputSt}
@@ -171,7 +174,7 @@ const Login = () => {
                 </div>
                 <div style={{ fontSize: 11, color: C.textMuted, marginTop: 5 }}>
                   <i className="fas fa-info-circle" style={{ marginRight: 4 }}></i>
-                  Puedes ingresar tu DNI o correo electrónico
+                  Ingresa tu número de DNI
                 </div>
               </div>
 
@@ -248,19 +251,21 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
-            <label style={labelSt}>DNI o Correo electrónico</label>
+            <label style={labelSt}>DNI</label>
             <div style={{ ...wrapSt, borderColor: focused === 'cred' ? focusRed : C.border, boxShadow: focused === 'cred' ? `0 0 0 3px ${focusRedRgba}` : 'none' }}>
               <div style={iconBoxSt}>
                 <i className="fas fa-id-card" style={{ color: focused === 'cred' ? focusRed : C.textMuted, fontSize: 15 }}></i>
               </div>
               <input
                 type="text"
-                inputMode="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={8}
                 value={credential}
-                onChange={e => setCredential(e.target.value)}
+                onChange={e => setCredential(e.target.value.replace(/\D/g, ''))}
                 onFocus={() => setFocused('cred')}
                 onBlur={() => setFocused(null)}
-                placeholder="12345678 ó correo@ejemplo.com"
+                placeholder="Ingresa tu DNI"
                 required
                 disabled={submitting}
                 style={inputSt}
@@ -268,7 +273,7 @@ const Login = () => {
             </div>
             <div style={{ fontSize: 11, color: C.textMuted, marginTop: 5 }}>
               <i className="fas fa-info-circle" style={{ marginRight: 4 }}></i>
-              Puedes ingresar tu DNI o correo electrónico
+              Ingresa tu número de DNI
             </div>
           </div>
 

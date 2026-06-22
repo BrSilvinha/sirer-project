@@ -63,8 +63,7 @@ const useUsuarios = () => {
   const openNew = () => { setEditing(null); setFormData({ nombre: '', email: '', password: '', rol: 'mozo', activo: true }); setShowForm(true); };
   const openEdit = (u) => {
     setEditing(u);
-    const dniVal = u.email?.endsWith('@sirer.pe') ? u.email.replace('@sirer.pe', '') : u.email;
-    setFormData({ nombre: dniVal, email: u.email, password: '', rol: u.rol, activo: u.activo });
+    setFormData({ nombre: u.email, email: u.email, password: '', rol: u.rol, activo: u.activo });
     setShowForm(true);
   };
   const openPassword = (u) => { setPassData({ usuarioId: u.id, nuevaPassword: '', confirmarPassword: '' }); setShowPass(true); };
@@ -135,13 +134,13 @@ const FormFields = ({ formData, setFormData, editing }) => {
           <i className="fas fa-id-card" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.textMuted, fontSize: 13 }} />
           <input style={{ ...inp, paddingLeft: 36 }} type="text" inputMode="numeric" placeholder="Ej: 12345678"
             value={formData.nombre}
-            onChange={e => { const dni = e.target.value.replace(/\D/g,'').slice(0,8); setFormData(f => ({ ...f, nombre: dni, email: dni ? `${dni}@sirer.pe` : '' })); }}
+            onChange={e => { const dni = e.target.value.replace(/\D/g,'').slice(0,8); setFormData(f => ({ ...f, nombre: dni, email: dni })); }}
             maxLength={8} />
         </div>
         {formData.nombre && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, padding: '5px 10px', background: A + '10', borderRadius: 8 }}>
-            <i className="fas fa-envelope" style={{ color: A, fontSize: 11 }} />
-            <span style={{ fontSize: 12, color: A, fontWeight: 600 }}>Login: {formData.nombre}@sirer.pe</span>
+            <i className="fas fa-id-card" style={{ color: A, fontSize: 11 }} />
+            <span style={{ fontSize: 12, color: A, fontWeight: 600 }}>Login: {formData.nombre}</span>
           </div>
         )}
       </div>
@@ -266,7 +265,7 @@ const UsuarioCard = ({ usuario, onTap }) => {
         <div style={{ fontWeight: 700, fontSize: 15, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{usuario.nombre}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
           <span style={{ background: r.color + '18', color: r.color, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{r.label}</span>
-          <span style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{usuario.email}</span>
+          <span style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>DNI: {usuario.email}</span>
         </div>
       </div>
       <i className="fas fa-chevron-right" style={{ color: C.textMuted, fontSize: 13, flexShrink: 0 }} />
@@ -303,7 +302,7 @@ const UserDetailSheet = ({ usuario, onClose, onEdit, onPassword, onToggle }) => 
               {usuario.activo ? 'Activo' : 'Inactivo'}
             </span>
           </div>
-          <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>{usuario.email}</div>
+          <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>DNI: {usuario.email}</div>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -526,7 +525,7 @@ const TableRow = ({ usuario, onEdit, onPassword, onToggle }) => {
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: C.text, whiteSpace: 'nowrap' }}>{usuario.nombre}</div>
-            <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{usuario.email}</div>
+            <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>DNI: {usuario.email}</div>
           </div>
         </div>
       </td>
