@@ -169,7 +169,6 @@ const MesaCardMobile = ({ mesa, onTap, onCobrar }) => {
 
 /* ── Sheet pedidos (mobile) ── */
 const SheetPedidos = ({ mesa, pedidos, loading, onClose, onAgregar, onCobrar, onMarcarEntregado }) => {
-  const e = mesa?(EST[mesa.estado]||EST.libre):EST.libre;
   const { C } = useTheme();
   const total = pedidos.reduce((s,p)=>s+parseFloat(p.total||0),0);
   const pendientes = pedidos.filter(p=>p.estado==='preparado').length;

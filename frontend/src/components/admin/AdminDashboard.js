@@ -332,7 +332,7 @@ const AdminHome = () => {
             { key: 'pedidos', label: 'Pedidos', icon: 'fa-chart-bar' },
           ].map(t => (
             <button key={t.key} onClick={() => setChartTab(t.key)} style={{
-              flex: 1, padding: '10px 0', borderRadius: 12, border: 'none',
+              flex: 1, padding: '10px 0', borderRadius: 12,
               background: chartTab === t.key ? P.red : C.surface,
               color: chartTab === t.key ? '#fff' : C.textSub,
               fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',

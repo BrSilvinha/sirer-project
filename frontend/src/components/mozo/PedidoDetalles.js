@@ -24,14 +24,6 @@ const SIGUIENTE = {
   pagado:    [],
 };
 
-const tiempoDesde = (fecha) => {
-  if (!fecha) return null;
-  const mins = Math.floor((Date.now() - new Date(fecha)) / 60000);
-  if (mins < 1) return 'Ahora';
-  if (mins < 60) return `${mins} min`;
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-};
-
 /* ── Spinner ── */
 const Spin = () => (
   <div style={{ width: 36, height: 36, border: '3px solid #FFEBEE', borderTop: '3px solid #C62828', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />

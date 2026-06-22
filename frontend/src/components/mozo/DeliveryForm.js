@@ -19,7 +19,6 @@ const DeliveryForm = () => {
   const [carrito, setCarrito] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCarrito, setShowCarrito] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [clienteNombre, setClienteNombre] = useState('');
   const [metodoPago, setMetodoPago] = useState('efectivo');
   const [obs, setObs] = useState('');
@@ -142,7 +141,7 @@ const DeliveryForm = () => {
         WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
       }}>
         <button onClick={() => setCatActiva('all')} style={{
-          padding: '8px 18px', borderRadius: 20, border: 'none', flexShrink: 0,
+          padding: '8px 18px', borderRadius: 20, flexShrink: 0,
           background: catActiva === 'all' ? P.red : C.surface,
           color: catActiva === 'all' ? '#fff' : C.textSub,
           fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
@@ -155,7 +154,7 @@ const DeliveryForm = () => {
           const active = catActiva === g.categoria?.nombre;
           return (
             <button key={g.categoria?.nombre} onClick={() => setCatActiva(g.categoria?.nombre)} style={{
-              padding: '8px 18px', borderRadius: 20, border: 'none', flexShrink: 0,
+              padding: '8px 18px', borderRadius: 20, flexShrink: 0,
               background: active ? P.red : C.surface,
               color: active ? '#fff' : C.textSub,
               fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',

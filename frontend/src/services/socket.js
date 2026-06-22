@@ -112,6 +112,8 @@ class SocketService {
             case 'administrador':
                 this.setupAdminEvents();
                 break;
+            default:
+                break;
         }
     }
 
