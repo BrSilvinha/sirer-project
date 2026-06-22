@@ -141,6 +141,10 @@ export const authService = {
 
     changePassword: async (id, passwordData) => {
         return await api.patch(`/users/${id}/password`, passwordData);
+    },
+
+    deleteUser: async (id) => {
+        return await api.delete(`/users/${id}`);
     }
 };
 

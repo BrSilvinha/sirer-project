@@ -102,9 +102,18 @@ const useUsuarios = () => {
     finally { setSaving(false); }
   };
 
+  const handleDelete = async (u) => {
+    if (!window.confirm(`¿Eliminar al usuario ${u.nombre}?`)) return;
+    try {
+      await authService.deleteUser(u.id);
+      toast.success('Usuario eliminado');
+      fetchUsuarios();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error al eliminar'); }
+  };
+
   const passOk = passData.nuevaPassword.length >= 6 && passData.nuevaPassword === passData.confirmarPassword;
 
-  return { usuarios, loading, saving, stats, filtros, setFiltros, filtrados, showForm, setShowForm, showPass, setShowPass, editing, formData, setFormData, passData, setPassData, passOk, openNew, openEdit, openPassword, handleSubmit, handleToggle, handleChangePassword, fetchUsuarios };
+  return { usuarios, loading, saving, stats, filtros, setFiltros, filtrados, showForm, setShowForm, showPass, setShowPass, editing, formData, setFormData, passData, setPassData, passOk, openNew, openEdit, openPassword, handleSubmit, handleToggle, handleChangePassword, handleDelete, fetchUsuarios };
 };
 
 const ROLES_FILTRO = [
@@ -274,7 +283,7 @@ const UsuarioCard = ({ usuario, onTap }) => {
 };
 
 /* ── Detail sheet mobile ── */
-const UserDetailSheet = ({ usuario, onClose, onEdit, onPassword, onToggle }) => {
+const UserDetailSheet = ({ usuario, onClose, onEdit, onPassword, onToggle, onDelete }) => {
   const { C } = useTheme();
   if (!usuario) return null;
   const r = ROL[usuario.rol] || { label: usuario.rol, color: '#64748b', bg: '#f1f5f9', icon: 'fa-user' };
@@ -286,6 +295,7 @@ const UserDetailSheet = ({ usuario, onClose, onEdit, onPassword, onToggle }) => 
       color: usuario.activo ? '#ef4444' : '#22c55e',
       bg:    usuario.activo ? '#fef2f2' : '#f0fdf4',
       fn: onToggle },
+    { label: 'Eliminar usuario', icon: 'fa-trash', color: '#dc2626', bg: '#fef2f2', fn: onDelete },
   ];
   return (
     <Sheet open title="Gestionar usuario" onClose={onClose}>
@@ -362,6 +372,7 @@ const MobileLayout = ({ d }) => {
   const handleEdit = () => { const u = selected; setSelected(null); setTimeout(() => d.openEdit(u), 200); };
   const handlePassOpen = () => { const u = selected; setSelected(null); setTimeout(() => d.openPassword(u), 200); };
   const handleToggle = () => { const u = selected; setSelected(null); d.handleToggle(u); };
+  const handleDelete = () => { const u = selected; setSelected(null); d.handleDelete(u); };
 
   return (
     <div style={{ background: C.bg, minHeight: '100vh', paddingBottom: 100 }}>
@@ -465,7 +476,7 @@ const MobileLayout = ({ d }) => {
         <i className="fas fa-plus" style={{ fontSize: 20 }} />
       </button>
 
-      {selected && <UserDetailSheet usuario={selected} onClose={() => setSelected(null)} onEdit={handleEdit} onPassword={handlePassOpen} onToggle={handleToggle} />}
+      {selected && <UserDetailSheet usuario={selected} onClose={() => setSelected(null)} onEdit={handleEdit} onPassword={handlePassOpen} onToggle={handleToggle} onDelete={handleDelete} />}
 
       <Sheet open={d.showForm} onClose={() => d.setShowForm(false)} title={d.editing ? 'Editar Usuario' : 'Nuevo Usuario'}
         footer={
@@ -510,7 +521,7 @@ const Modal = ({ open, onClose, title, children, footer, width = 520 }) => {
   );
 };
 
-const TableRow = ({ usuario, onEdit, onPassword, onToggle }) => {
+const TableRow = ({ usuario, onEdit, onPassword, onToggle, onDelete }) => {
   const { C } = useTheme();
   const r = ROL[usuario.rol] || { label: usuario.rol, color: '#64748b', bg: '#f1f5f9', icon: 'fa-user' };
   const [hov, setHov] = useState(false);
@@ -557,6 +568,11 @@ const TableRow = ({ usuario, onEdit, onPassword, onToggle }) => {
             onMouseEnter={e => e.currentTarget.style.background = usuario.activo ? '#fee2e2' : '#dcfce7'}
             onMouseLeave={e => e.currentTarget.style.background = usuario.activo ? '#fef2f2' : '#f0fdf4'}>
             <i className={`fas ${usuario.activo ? 'fa-user-slash' : 'fa-user-check'}`} />
+          </button>
+          <button onClick={() => onDelete(usuario)} title="Eliminar"
+            style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer', background: '#fef2f2', color: '#dc2626', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onMouseEnter={e => e.currentTarget.style.background='#fee2e2'} onMouseLeave={e => e.currentTarget.style.background='#fef2f2'}>
+            <i className="fas fa-trash" />
           </button>
         </div>
       </td>
@@ -696,7 +712,7 @@ const DesktopLayout = ({ d }) => {
               </thead>
               <tbody>
                 {paginados.map(u => (
-                  <TableRow key={u.id} usuario={u} onEdit={d.openEdit} onPassword={d.openPassword} onToggle={d.handleToggle} />
+                  <TableRow key={u.id} usuario={u} onEdit={d.openEdit} onPassword={d.openPassword} onToggle={d.handleToggle} onDelete={d.handleDelete} />
                 ))}
               </tbody>
             </table>
