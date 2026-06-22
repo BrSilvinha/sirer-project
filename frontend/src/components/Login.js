@@ -3,11 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
-const resolveLogin = (input) => {
-  const clean = input.trim();
-  if (/^\d+$/.test(clean)) return `${clean}@sirer.pe`;
-  return clean;
-};
+const resolveLogin = (input) => input.trim();
 
 const useIsDesktop = () => {
   const [desk, setDesk] = useState(() => window.innerWidth >= 768);
