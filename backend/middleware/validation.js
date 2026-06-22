@@ -18,9 +18,9 @@ const validateUsuario = [
         .isLength({ min: 2, max: 100 })
         .withMessage('El nombre debe tener entre 2 y 100 caracteres'),
     body('email')
-        .isEmail()
-        .normalizeEmail()
-        .withMessage('Email inválido'),
+        .trim()
+        .notEmpty()
+        .withMessage('El usuario es requerido'),
     body('password')
         .isLength({ min: 6 })
         .withMessage('La contraseña debe tener al menos 6 caracteres'),
@@ -33,9 +33,9 @@ const validateUsuario = [
 // Validaciones para Login
 const validateLogin = [
     body('email')
-        .isEmail()
-        .normalizeEmail()
-        .withMessage('Email inválido'),
+        .trim()
+        .notEmpty()
+        .withMessage('El usuario es requerido'),
     body('password')
         .notEmpty()
         .withMessage('La contraseña es requerida'),
