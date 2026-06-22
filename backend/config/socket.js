@@ -15,7 +15,11 @@ class SocketManager {
     initialize(server) {
         this.io = new Server(server, {
             cors: {
-                origin: process.env.SOCKET_ORIGIN || "http://localhost:3000",
+                origin: [
+                    process.env.SOCKET_ORIGIN || "http://localhost:3000",
+                    /\.vercel\.app$/,
+                    /\.onrender\.com$/
+                ],
                 methods: ["GET", "POST"],
                 credentials: true
             },

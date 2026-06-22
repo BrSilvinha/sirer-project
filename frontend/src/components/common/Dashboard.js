@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import AdminDashboard from '../admin/AdminDashboard';
-import MozoDashboard from '../mozo/MozoDashboard';
+
+const AdminDashboard = lazy(() => import('../admin/AdminDashboard'));
+const MozoDashboard = lazy(() => import('../mozo/MozoDashboard'));
 
 /* ─────────────────────────────────────────
    DESIGN TOKENS  (fuente de verdad única)
@@ -243,23 +244,31 @@ const BottomNav = ({ navItems, location }) => {
 /* ══════════════════════════════════════════
    ROUTES COMPARTIDAS
 ══════════════════════════════════════════ */
+const LazyFallback = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+    <div style={{ width: 40, height: 40, border: '3px solid #FFEBEE', borderTop: '3px solid #C62828', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
+  </div>
+);
+
 const AppRoutes = ({ user }) => (
-  <Routes>
-    {user.rol === 'administrador' && (
-      <>
-        <Route path="/admin/*" element={<AdminDashboard />} />
-        <Route path="/" element={<Navigate to="/dashboard/admin" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />
-      </>
-    )}
-    {user.rol === 'mozo' && (
-      <>
-        <Route path="/mozo/*" element={<MozoDashboard />} />
-        <Route path="/" element={<Navigate to="/dashboard/mozo" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard/mozo" replace />} />
-      </>
-    )}
-  </Routes>
+  <Suspense fallback={<LazyFallback />}>
+    <Routes>
+      {user.rol === 'administrador' && (
+        <>
+          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/" element={<Navigate to="/dashboard/admin" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />
+        </>
+      )}
+      {user.rol === 'mozo' && (
+        <>
+          <Route path="/mozo/*" element={<MozoDashboard />} />
+          <Route path="/" element={<Navigate to="/dashboard/mozo" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard/mozo" replace />} />
+        </>
+      )}
+    </Routes>
+  </Suspense>
 );
 
 /* ══════════════════════════════════════════

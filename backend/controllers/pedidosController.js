@@ -200,8 +200,12 @@ const crearPedido = async (req, res) => {
         let total = 0;
         const productosValidados = [];
 
+        const productoIds = productos.map(item => item.producto_id);
+        const productosDb = await Producto.findAll({ where: { id: productoIds } });
+        const productosMap = new Map(productosDb.map(p => [p.id, p]));
+
         for (const item of productos) {
-            const producto = await Producto.findByPk(item.producto_id);
+            const producto = productosMap.get(item.producto_id);
             if (!producto || !producto.activo) {
                 return res.status(400).json({ success: false, error: `Producto con ID ${item.producto_id} no encontrado o inactivo` });
             }
@@ -872,8 +876,12 @@ const agregarProductosPedido = async (req, res) => {
         let totalAdicional = 0;
         const productosValidados = [];
 
+        const productoIds = productos.map(item => item.producto_id);
+        const productosDb = await Producto.findAll({ where: { id: productoIds } });
+        const productosMap = new Map(productosDb.map(p => [p.id, p]));
+
         for (const item of productos) {
-            const producto = await Producto.findByPk(item.producto_id);
+            const producto = productosMap.get(item.producto_id);
             if (!producto || !producto.activo) {
                 return res.status(400).json({
                     success: false,

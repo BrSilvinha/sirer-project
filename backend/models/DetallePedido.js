@@ -35,7 +35,11 @@ const DetallePedido = sequelize.define('DetallePedido', {
         allowNull: false
     }
 }, {
-    tableName: 'detalle_pedidos'
+    tableName: 'detalle_pedidos',
+    indexes: [
+        { fields: ['pedido_id'] },
+        { fields: ['producto_id'] },
+    ]
 });
 
 module.exports = DetallePedido;

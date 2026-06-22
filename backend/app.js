@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
+const helmet = require('helmet');
 const { sequelize, testConnection } = require('./config/database');
 const socketManager = require('./config/socket');
 const { createServer } = require('http');
@@ -20,12 +22,15 @@ const server = createServer(app);
 const io = socketManager.initialize(server);
 
 // Middleware
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(compression());
 app.use(cors({
     origin: [
         process.env.FRONTEND_URL || 'http://localhost:3000',
         'http://localhost:3001',
         'https://sirer-frontend.onrender.com',
-        /\.onrender\.com$/
+        /\.onrender\.com$/,
+        /\.vercel\.app$/
     ],
     credentials: true
 }));
@@ -79,11 +84,8 @@ const startServer = async () => {
         // Probar conexión a la base de datos
         await testConnection();
         
-        // Sincronizar modelos (solo en desarrollo)
-        if (process.env.NODE_ENV === 'development') {
-            await sequelize.sync({ alter: false });
-            console.log('📊 Modelos sincronizados con la base de datos');
-        }
+        await sequelize.sync({ alter: false });
+        console.log('📊 Modelos sincronizados con la base de datos');
 
         const PORT = process.env.PORT || 5000;
         

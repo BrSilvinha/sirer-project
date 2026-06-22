@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement,
@@ -7,11 +7,12 @@ import {
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { reportesService, mesasService } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
-import MesasManagement from './MesasManagement';
-import ProductosManagement from './ProductosManagement';
-import UsuariosManagement from './UsuariosManagement';
-import ReportesManagement from './ReportesManagement';
 import toast from 'react-hot-toast';
+
+const MesasManagement = lazy(() => import('./MesasManagement'));
+const ProductosManagement = lazy(() => import('./ProductosManagement'));
+const UsuariosManagement = lazy(() => import('./UsuariosManagement'));
+const ReportesManagement = lazy(() => import('./ReportesManagement'));
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
@@ -499,14 +500,22 @@ const AdminHome = () => {
   );
 };
 
+const AdminFallback = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+    <Spin />
+  </div>
+);
+
 const AdminDashboard = () => (
-  <Routes>
-    <Route path="/" element={<AdminHome />} />
-    <Route path="/mesas" element={<MesasManagement />} />
-    <Route path="/productos" element={<ProductosManagement />} />
-    <Route path="/reportes" element={<ReportesManagement />} />
-    <Route path="/usuarios" element={<UsuariosManagement />} />
-  </Routes>
+  <Suspense fallback={<AdminFallback />}>
+    <Routes>
+      <Route path="/" element={<AdminHome />} />
+      <Route path="/mesas" element={<MesasManagement />} />
+      <Route path="/productos" element={<ProductosManagement />} />
+      <Route path="/reportes" element={<ReportesManagement />} />
+      <Route path="/usuarios" element={<UsuariosManagement />} />
+    </Routes>
+  </Suspense>
 );
 
 export default AdminDashboard;

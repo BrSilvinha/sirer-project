@@ -45,7 +45,14 @@ const Pedido = sequelize.define('Pedido', {
         allowNull: true
     }
 }, {
-    tableName: 'pedidos'
+    tableName: 'pedidos',
+    indexes: [
+        { fields: ['mesa_id'] },
+        { fields: ['usuario_id'] },
+        { fields: ['estado'] },
+        { fields: ['created_at'] },
+        { fields: ['tipo'] },
+    ]
 });
 
 module.exports = Pedido;

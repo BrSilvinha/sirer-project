@@ -1,4 +1,5 @@
 const { Mesa } = require('../models/associations');
+const { sequelize } = require('../config/database');
 
 // Obtener todas las mesas
 const obtenerMesas = async (req, res) => {
@@ -232,16 +233,24 @@ const eliminarMesa = async (req, res) => {
 // Obtener estadísticas de mesas
 const obtenerEstadisticasMesas = async (req, res) => {
     try {
-        const total = await Mesa.count({ where: { activa: true } });
-        const libres = await Mesa.count({ where: { activa: true, estado: 'libre' } });
-        const ocupadas = await Mesa.count({ where: { activa: true, estado: 'ocupada' } });
-        const cuentaSolicitada = await Mesa.count({ where: { activa: true, estado: 'cuenta_solicitada' } });
+        const [results] = await sequelize.query(`
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE estado = 'libre') AS libres,
+                COUNT(*) FILTER (WHERE estado = 'ocupada') AS ocupadas,
+                COUNT(*) FILTER (WHERE estado = 'cuenta_solicitada') AS cuenta_solicitada
+            FROM mesas WHERE activa = true
+        `);
+        const s = results[0];
+        const total = parseInt(s.total);
+        const ocupadas = parseInt(s.ocupadas);
+        const cuentaSolicitada = parseInt(s.cuenta_solicitada);
 
         res.json({
             success: true,
             data: {
                 total,
-                libres,
+                libres: parseInt(s.libres),
                 ocupadas,
                 cuenta_solicitada: cuentaSolicitada,
                 porcentaje_ocupacion: total > 0 ? Math.round(((ocupadas + cuentaSolicitada) / total) * 100) : 0
