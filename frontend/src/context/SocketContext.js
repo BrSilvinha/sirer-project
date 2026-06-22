@@ -15,7 +15,7 @@ export const SocketProvider = ({ children }) => {
         if (isAuthenticated && user) {
             const token = localStorage.getItem('accessToken');
             if (token) {
-                console.log('🚀 Iniciando conexión Socket.io...');
+                void('🚀 Iniciando conexión Socket.io...');
                 socketService.connect(token, user);
                 
                 // Configurar listeners para el estado de conexión
@@ -29,7 +29,7 @@ export const SocketProvider = ({ children }) => {
         } else {
             // Desconectar si no hay usuario autenticado
             if (socketService.isConnected()) {
-                console.log('🔌 Desconectando Socket.io - usuario no autenticado');
+                void('🔌 Desconectando Socket.io - usuario no autenticado');
                 socketService.disconnect();
                 setIsConnected(false);
                 setConnectionStats(null);

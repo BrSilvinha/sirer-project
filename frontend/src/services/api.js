@@ -81,7 +81,6 @@ api.interceptors.response.use(
                                error.response?.data?.message || 
                                'Error de conexión';
             
-            console.error('API Error:', errorMessage);
             toast.error(errorMessage);
         }
         
@@ -206,90 +205,13 @@ export const pedidosService = {
 // ✅ CORREGIDO: Servicios de reportes SIN fallbacks - datos reales solamente
 export const reportesService = {
     // Dashboard básico con datos reales
-    getDashboard: async () => {
-        try {
-            const response = await api.get('/reportes/dashboard');
-            console.log('✅ Dashboard obtenido del servidor:', response.data);
-            return response;
-        } catch (error) {
-            console.error('❌ Error obteniendo dashboard:', error);
-            throw error; // ✅ No fallback, lanzar error para manejo en componente
-        }
-    },
-
-    // Reportes de ventas con datos reales
-    getVentas: async (params) => {
-        try {
-            const response = await api.get('/reportes/ventas', { params });
-            console.log('✅ Reporte de ventas obtenido:', response.data);
-            return response;
-        } catch (error) {
-            console.error('❌ Error obteniendo reporte de ventas:', error);
-            throw error; // ✅ No fallback
-        }
-    },
-
-    // Productos más vendidos con datos reales
-    getProductosMasVendidos: async (params) => {
-        try {
-            const response = await api.get('/reportes/productos/mas-vendidos', { params });
-            console.log('✅ Productos más vendidos obtenidos:', response.data);
-            return response;
-        } catch (error) {
-            console.error('❌ Error obteniendo productos más vendidos:', error);
-            throw error; // ✅ No fallback
-        }
-    },
-
-    // Rendimiento de mozos con datos reales
-    getMozosRendimiento: async (params) => {
-        try {
-            const response = await api.get('/reportes/mozos/rendimiento', { params });
-            console.log('✅ Rendimiento de mozos obtenido:', response.data);
-            return response;
-        } catch (error) {
-            console.error('❌ Error obteniendo rendimiento de mozos:', error);
-            throw error; // ✅ No fallback
-        }
-    },
-
-    // Rendimiento de mesas con datos reales
-    getMesasRendimiento: async (params) => {
-        try {
-            const response = await api.get('/reportes/mesas/rendimiento', { params });
-            console.log('✅ Rendimiento de mesas obtenido:', response.data);
-            return response;
-        } catch (error) {
-            console.error('❌ Error obteniendo rendimiento de mesas:', error);
-            throw error; // ✅ No fallback
-        }
-    },
-
-    // Ventas por categoría con datos reales
-    getVentasPorCategoria: async (params) => {
-        try {
-            const response = await api.get('/reportes/categorias/ventas', { params });
-            console.log('✅ Ventas por categoría obtenidas:', response.data);
-            return response;
-        } catch (error) {
-            console.error('❌ Error obteniendo ventas por categoría:', error);
-            throw error; // ✅ No fallback
-        }
-    },
-
-    // Exportar reportes
-    exportar: async (tipo, params = {}) => {
-        try {
-            const response = await api.get(`/reportes/exportar/${tipo}`, { 
-                params,
-                responseType: 'blob'
-            });
-            return response;
-        } catch (error) {
-            console.error('Error exportando reporte:', error);
-            throw error;
-        }
-    }
+    getDashboard: () => api.get('/reportes/dashboard'),
+    getVentas: (params) => api.get('/reportes/ventas', { params }),
+    getProductosMasVendidos: (params) => api.get('/reportes/productos/mas-vendidos', { params }),
+    getMozosRendimiento: (params) => api.get('/reportes/mozos/rendimiento', { params }),
+    getMesasRendimiento: (params) => api.get('/reportes/mesas/rendimiento', { params }),
+    getVentasPorCategoria: (params) => api.get('/reportes/categorias/ventas', { params }),
+    exportar: (tipo, params = {}) => api.get(`/reportes/exportar/${tipo}`, { params, responseType: 'blob' })
 };
 
 export default api;

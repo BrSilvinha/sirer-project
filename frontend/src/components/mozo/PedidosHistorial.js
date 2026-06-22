@@ -16,10 +16,10 @@ const useIsDesktop = () => {
 };
 
 const ESTADO = {
-  nuevo:     { label:'Nuevo',     color:'#3b82f6', bg:'#eff6ff', border:'#bfdbfe', icon:'fa-circle-dot',   gradient:'linear-gradient(135deg,#2563eb,#3b82f6)' },
+  nuevo:     { label:'Nuevo',     color:'#C62828', bg:'#FFEBEE', border:'#FFCDD2', icon:'fa-circle-dot',   gradient:'linear-gradient(135deg,#9B1B1B,#C62828)' },
   preparado: { label:'Listo',     color:'#16a34a', bg:'#f0fdf4', border:'#86efac', icon:'fa-check-circle', gradient:'linear-gradient(135deg,#15803d,#22c55e)' },
-  entregado: { label:'Entregado', color:'#6b7280', bg:'#f9fafb', border:'#d1d5db', icon:'fa-hand-holding', gradient:'linear-gradient(135deg,#4b5563,#6b7280)' },
-  pagado:    { label:'Pagado',    color:'#7c3aed', bg:'#f5f3ff', border:'#c4b5fd', icon:'fa-credit-card',  gradient:'linear-gradient(135deg,#6d28d9,#7c3aed)' },
+  entregado: { label:'Entregado', color:'#8D6E63', bg:'#EFEBE9', border:'#D7CCC8', icon:'fa-hand-holding', gradient:'linear-gradient(135deg,#5D4037,#8D6E63)' },
+  pagado:    { label:'Pagado',    color:'#F9A825', bg:'#FFF8E1', border:'#FFE082', icon:'fa-credit-card',  gradient:'linear-gradient(135deg,#F57F17,#F9A825)' },
 };
 
 const CSS = `
@@ -93,8 +93,8 @@ const DetallePedido = ({ pedido, onClose, onEntregado }) => {
   const { C } = useTheme();
   if (!pedido) return null;
   const est   = ESTADO[pedido.estado] || { label:pedido.estado, color:'#9ca3af', bg:'#f9fafb', icon:'fa-circle', gradient:'#9ca3af' };
-  const hora  = new Date(pedido.created_at).toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
-  const fecha = new Date(pedido.created_at).toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' });
+  const hora  = new Date(pedido.createdAt).toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+  const fecha = new Date(pedido.createdAt).toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' });
   return (
     <>
       {/* Hero */}
@@ -105,7 +105,7 @@ const DetallePedido = ({ pedido, onClose, onEntregado }) => {
             <div style={{ fontSize:12, color:'rgba(255,255,255,.75)', fontWeight:700, letterSpacing:1, marginBottom:4 }}>PEDIDO</div>
             <div style={{ fontSize:28, fontWeight:900, color:'#fff', lineHeight:1 }}>#{pedido.id}</div>
             <div style={{ fontSize:13, color:'rgba(255,255,255,.8)', marginTop:6, display:'flex', alignItems:'center', gap:6 }}>
-              <i className="fas fa-table" style={{ fontSize:11 }} />Mesa {pedido.mesa?.numero}
+              <i className={`fas ${pedido.tipo==='delivery'?'fa-motorcycle':'fa-table'}`} style={{ fontSize:11 }} />{pedido.tipo==='delivery'?'Delivery':`Mesa ${pedido.mesa?.numero}`}
             </div>
           </div>
           <div style={{ textAlign:'right' }}>
@@ -190,8 +190,8 @@ const Sheet = ({ open, onClose, title, subtitle, children }) => {
 
 const PedidoCardMobile = ({ pedido, onClick }) => {
   const est    = ESTADO[pedido.estado]||{label:pedido.estado,color:'#9ca3af',bg:'#f9fafb',border:'#e2e8f0',icon:'fa-circle',gradient:'#9ca3af'};
-  const hora   = new Date(pedido.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
-  const tiempo = tiempoDesde(pedido.created_at);
+  const hora   = new Date(pedido.createdAt).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+  const tiempo = tiempoDesde(pedido.createdAt);
   const [pressed,setPressed]=useState(false);
   const esListo=pedido.estado==='preparado';
   const { C } = useTheme();
@@ -208,7 +208,7 @@ const PedidoCardMobile = ({ pedido, onClick }) => {
         {/* Info central */}
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:5 }}>
-            <div style={{ fontWeight:800, fontSize:15, color:C.text }}>Mesa {pedido.mesa?.numero}</div>
+            <div style={{ fontWeight:800, fontSize:15, color:C.text }}>{pedido.tipo==='delivery'?'Delivery':`Mesa ${pedido.mesa?.numero}`}</div>
             <div style={{ fontWeight:900, fontSize:16, color:'#16a34a' }}>S/ {parseFloat(pedido.total).toFixed(2)}</div>
           </div>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -324,7 +324,7 @@ const MobileLayout = ({ d }) => {
         </>
       )}
 
-      <Sheet open={!!pedidoDetalle} onClose={()=>setPedidoDetalle(null)} title={`Pedido #${pedidoDetalle?.id}`} subtitle={pedidoDetalle?`Mesa ${pedidoDetalle.mesa?.numero}`:''}>
+      <Sheet open={!!pedidoDetalle} onClose={()=>setPedidoDetalle(null)} title={`Pedido #${pedidoDetalle?.id}`} subtitle={pedidoDetalle?(pedidoDetalle.tipo==='delivery'?'Delivery':`Mesa ${pedidoDetalle.mesa?.numero}`):''}>
         <DetallePedido pedido={pedidoDetalle} onClose={()=>setPedidoDetalle(null)} onEntregado={(id,cb)=>d.marcarEntregado(id,()=>{ cb?.(); setPedidoDetalle(null); })} />
       </Sheet>
     </div>
@@ -369,8 +369,8 @@ const DesktopLayout = ({ d }) => {
     { value:'pagado', label:'Solo pagados',       icon:'fa-credit-card', color:'#7c3aed' },
   ];
 
-  const hora  = p => new Date(p.created_at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
-  const fecha = p => new Date(p.created_at).toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
+  const hora  = p => new Date(p.createdAt).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+  const fecha = p => new Date(p.createdAt).toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
 
   return (
     <div style={{ display:'flex', minHeight:'calc(100vh - 58px)', background:'#f1f5f9' }}>
@@ -491,7 +491,7 @@ const DesktopLayout = ({ d }) => {
                   >
                     <div style={{ fontWeight:800, color:'#64748b', fontSize:14 }}>#{p.id}</div>
                     <div style={{ fontWeight:700, color:'#2C1810', fontSize:14, display:'flex', alignItems:'center', gap:6 }}>
-                      <i className="fas fa-table" style={{ color:'#94a3b8', fontSize:12 }} />Mesa {p.mesa?.numero}
+                      <i className={`fas ${p.tipo==='delivery'?'fa-motorcycle':'fa-table'}`} style={{ color:'#94a3b8', fontSize:12 }} />{p.tipo==='delivery'?'Delivery':`Mesa ${p.mesa?.numero}`}
                     </div>
                     <div style={{ display:'flex', alignItems:'center' }}>
                       <span style={{ display:'inline-flex', alignItems:'center', gap:5, background:est.bg, border:`1px solid ${est.border}`, color:est.color, borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700 }}>
@@ -501,7 +501,7 @@ const DesktopLayout = ({ d }) => {
                     </div>
                     <div style={{ fontSize:13, color:'#64748b', display:'flex', alignItems:'center', gap:5 }}>
                       <i className="fas fa-clock" style={{ fontSize:11 }} />{fecha(p)} · {hora(p)}
-                      <span style={{ background:'#f1f5f9', borderRadius:20, padding:'2px 7px', fontSize:11, fontWeight:700, color:'#64748b' }}>{tiempoDesde(p.created_at)}</span>
+                      <span style={{ background:'#f1f5f9', borderRadius:20, padding:'2px 7px', fontSize:11, fontWeight:700, color:'#64748b' }}>{tiempoDesde(p.createdAt)}</span>
                     </div>
                     <div style={{ fontSize:13, color:'#64748b' }}>{p.detalles?.length||0} ítem{p.detalles?.length!==1?'s':''}</div>
                     <div style={{ fontWeight:800, fontSize:15, color:'#16a34a' }}>S/ {parseFloat(p.total).toFixed(2)}</div>
@@ -514,7 +514,7 @@ const DesktopLayout = ({ d }) => {
       </main>
 
       {/* ── Modal detalle ── */}
-      <Modal open={!!pedidoDetalle} onClose={()=>setPedidoDetalle(null)} title={`Pedido #${pedidoDetalle?.id}`} subtitle={pedidoDetalle?`Mesa ${pedidoDetalle.mesa?.numero} · ${fecha(pedidoDetalle)}`:''}  width={520}>
+      <Modal open={!!pedidoDetalle} onClose={()=>setPedidoDetalle(null)} title={`Pedido #${pedidoDetalle?.id}`} subtitle={pedidoDetalle?`${pedidoDetalle.tipo==='delivery'?'Delivery':`Mesa ${pedidoDetalle.mesa?.numero}`} · ${fecha(pedidoDetalle)}`:''}  width={520}>
         <DetallePedido pedido={pedidoDetalle} onClose={()=>setPedidoDetalle(null)} onEntregado={(id,cb)=>d.marcarEntregado(id,()=>{ cb?.(); setPedidoDetalle(null); })} />
       </Modal>
     </div>

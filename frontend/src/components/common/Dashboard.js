@@ -39,8 +39,9 @@ const NAV = {
     { path: '/dashboard/admin/usuarios',  label: 'Usuarios',  icon: 'fa-users'                },
   ],
   mozo: [
-    { path: '/dashboard/mozo',           label: 'Mesas',    icon: 'fa-table', exact: true },
-    { path: '/dashboard/mozo/historial', label: 'Historial', icon: 'fa-clock'             },
+    { path: '/dashboard/mozo',           label: 'Mesas',    icon: 'fa-table',      exact: true },
+    { path: '/dashboard/mozo/delivery',  label: 'Delivery', icon: 'fa-motorcycle'              },
+    { path: '/dashboard/mozo/historial', label: 'Historial', icon: 'fa-clock'                  },
   ],
 };
 
@@ -90,9 +91,7 @@ const TopBarDesktop = ({ user, logout, navItems, location }) => {
     }}>
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 32, flexShrink: 0 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#C62828,#EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <i className="fas fa-drumstick-bite" style={{ color: '#F9A825', fontSize: 14 }} />
-        </div>
+        <img src={`${process.env.PUBLIC_URL}/logo-chavo.png`} alt="El Chavo" style={{ width: 38, height: 38, objectFit: 'contain', borderRadius: 8 }} />
         <div>
           <div style={{ fontWeight: 900, fontSize: 17, color: '#F9A825', letterSpacing: 1, lineHeight: 1 }}>EL CHAVO</div>
           <div style={{ fontSize: 9, color: T.muted, letterSpacing: 0.4 }}>Pollería y Parrilla</div>
@@ -178,9 +177,7 @@ const TopBarMobile = ({ user, logout }) => {
     }}>
       {/* Logo */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg,#C62828,#EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <i className="fas fa-drumstick-bite" style={{ color: '#F9A825', fontSize: 13 }} />
-        </div>
+        <img src={`${process.env.PUBLIC_URL}/logo-chavo.png`} alt="El Chavo" style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 8, flexShrink: 0 }} />
         <div>
           <div style={{ fontWeight: 900, fontSize: 16, color: '#F9A825', letterSpacing: 0.8, lineHeight: 1 }}>EL CHAVO</div>
           <div style={{ fontSize: 10, color: rol.color, fontWeight: 600 }}>{rol.label}</div>

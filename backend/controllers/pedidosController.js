@@ -175,77 +175,57 @@ const obtenerPedidosPorMesa = async (req, res) => {
     }
 };
 
-// ✅ CORREGIDO: Crear nuevo pedido con notificaciones Socket.io mejoradas
 const crearPedido = async (req, res) => {
     try {
-        const { mesa_id, productos, observaciones } = req.body;
+        const { mesa_id, productos, observaciones, tipo, metodo_pago, cliente_nombre } = req.body;
         const usuario_id = req.user.id;
 
-        console.log('🍽️ Creando pedido:', { mesa_id, productos, observaciones, usuario_id });
+        const esDelivery = tipo === 'delivery';
 
-        // Verificar que la mesa existe
-        const mesa = await Mesa.findByPk(mesa_id);
-        if (!mesa) {
-            return res.status(404).json({
-                success: false,
-                error: 'Mesa no encontrada'
-            });
+        let mesa = null;
+        if (!esDelivery) {
+            if (!mesa_id) {
+                return res.status(400).json({ success: false, error: 'mesa_id es requerido para pedidos en mesa' });
+            }
+            mesa = await Mesa.findByPk(mesa_id);
+            if (!mesa) {
+                return res.status(404).json({ success: false, error: 'Mesa no encontrada' });
+            }
         }
 
-        // Validar productos
         if (!productos || productos.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Debe incluir al menos un producto'
-            });
+            return res.status(400).json({ success: false, error: 'Debe incluir al menos un producto' });
         }
 
-        // Calcular total y validar productos
         let total = 0;
         const productosValidados = [];
 
         for (const item of productos) {
             const producto = await Producto.findByPk(item.producto_id);
             if (!producto || !producto.activo) {
-                return res.status(400).json({
-                    success: false,
-                    error: `Producto con ID ${item.producto_id} no encontrado o inactivo`
-                });
+                return res.status(400).json({ success: false, error: `Producto con ID ${item.producto_id} no encontrado o inactivo` });
             }
-
             if (!producto.disponible) {
-                return res.status(400).json({
-                    success: false,
-                    error: `Producto "${producto.nombre}" no está disponible`
-                });
+                return res.status(400).json({ success: false, error: `Producto "${producto.nombre}" no está disponible` });
             }
-
             const cantidad = parseInt(item.cantidad);
             if (cantidad <= 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'La cantidad debe ser mayor a 0'
-                });
+                return res.status(400).json({ success: false, error: 'La cantidad debe ser mayor a 0' });
             }
-
             const subtotal = parseFloat(producto.precio) * cantidad;
             total += subtotal;
-
-            productosValidados.push({
-                producto_id: producto.id,
-                cantidad,
-                precio_unitario: producto.precio,
-                subtotal
-            });
+            productosValidados.push({ producto_id: producto.id, cantidad, precio_unitario: producto.precio, subtotal });
         }
 
-        // Crear pedido
         const nuevoPedido = await Pedido.create({
-            mesa_id,
+            mesa_id: esDelivery ? null : mesa_id,
             usuario_id,
             observaciones,
-            estado: 'nuevo',
-            total
+            estado: esDelivery ? 'pagado' : 'nuevo',
+            total,
+            tipo: esDelivery ? 'delivery' : 'mesa',
+            metodo_pago: esDelivery ? (metodo_pago || 'efectivo') : null,
+            cliente_nombre: esDelivery ? (cliente_nombre || null) : null,
         });
 
         // Crear detalles del pedido
@@ -258,8 +238,7 @@ const crearPedido = async (req, res) => {
             detallesCreados.push(detalleCreado);
         }
 
-        // Cambiar estado de mesa a ocupada si estaba libre
-        if (mesa.estado === 'libre') {
+        if (mesa && mesa.estado === 'libre') {
             await mesa.update({ estado: 'ocupada' });
         }
 
@@ -293,37 +272,28 @@ const crearPedido = async (req, res) => {
             ]
         });
 
-        // ✅ CORREGIDO: Emitir eventos de socket correctamente
         if (req.io) {
-            console.log('📡 Emitiendo eventos Socket.io para nuevo pedido...');
-            
-            req.io.to('cajero').emit('actividad-mesa', {
-                mesa: pedidoCompleto.mesa,
-                accion: 'nuevo_pedido',
-                total: pedidoCompleto.total,
-                mozo: pedidoCompleto.mozo.nombre,
-                pedido_id: pedidoCompleto.id,
-                productos: pedidoCompleto.detalles.length,
-                timestamp: new Date().toISOString()
-            });
-
-            // 3. ✅ AGREGADO: Notificar a ADMINISTRADORES
+            if (mesa) {
+                req.io.to('cajero').emit('actividad-mesa', {
+                    mesa: pedidoCompleto.mesa,
+                    accion: 'nuevo_pedido',
+                    total: pedidoCompleto.total,
+                    mozo: pedidoCompleto.mozo.nombre,
+                    pedido_id: pedidoCompleto.id,
+                    productos: pedidoCompleto.detalles.length,
+                    timestamp: new Date().toISOString()
+                });
+                req.io.emit('mesa-estado-actualizada', {
+                    mesa_id: mesa.id,
+                    mesa_numero: mesa.numero,
+                    nuevo_estado: 'ocupada',
+                    timestamp: new Date().toISOString()
+                });
+            }
             req.io.to('administrador').emit('pedido-creado', {
                 pedido: pedidoCompleto,
                 timestamp: new Date().toISOString()
             });
-
-            // 4. ✅ AGREGADO: Notificar cambio de estado de mesa
-            req.io.emit('mesa-estado-actualizada', {
-                mesa_id: mesa.id,
-                mesa_numero: mesa.numero,
-                nuevo_estado: 'ocupada',
-                timestamp: new Date().toISOString()
-            });
-
-            console.log('✅ Eventos Socket.io emitidos correctamente');
-        } else {
-            console.warn('⚠️ req.io no disponible, eventos no emitidos');
         }
 
         res.status(201).json({

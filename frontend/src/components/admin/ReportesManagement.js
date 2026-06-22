@@ -18,7 +18,7 @@ const A       = '#C62828';
 const SDARK   = '#1A0E0A';
 const SDARK2  = '#2C1810';
 const SDARK3  = '#4E342E';
-const BAR_COLORS = ['#C62828','#16a34a','#f59e0b','#0ea5e9','#ec4899','#8b5cf6','#14b8a6','#dc2626'];
+const BAR_COLORS = ['#C62828','#16a34a','#F9A825','#0ea5e9','#ec4899','#8b5cf6','#14b8a6','#E65100'];
 
 const useIsDesktop = () => {
     const [desk, setDesk] = useState(() => window.innerWidth >= 768);
@@ -139,7 +139,7 @@ const EmptyState = ({ icon, msg }) => {
     );
 };
 
-/* ── Mobile KPI card ── */
+/* -- Mobile KPI card -- */
 const MobileKpiCard = ({ icon, label, value, color }) => {
     const { C } = useTheme();
     const [pressed, setPressed] = useState(false);
@@ -147,7 +147,7 @@ const MobileKpiCard = ({ icon, label, value, color }) => {
         <div
             onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
             onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
-            style={{ background: C.surface, borderRadius: 16, padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.06)' : '0 2px 10px rgba(0,0,0,0.08)', flex: '1 1 0', minWidth: 0, transform: pressed ? 'scale(0.97)' : 'scale(1)', transition: 'transform 0.12s', border: `1px solid ${C.borderLight}` }}>
+            style={{ background: C.surface, borderRadius: 16, padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.06)' : '0 2px 10px rgba(0,0,0,0.08)', flex: '1 1 0', minWidth: 0, transform: pressed ? 'scale(0.97)' : 'scale(1)', transition: 'transform 0.12s', border: `1px solid ${C.borderLight}`, borderLeft: `4px solid ${color}` }}>
             <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <i className={`fas ${icon}`} style={{ color, fontSize: 18 }} />
             </div>
@@ -161,12 +161,12 @@ const MobileKpiCard = ({ icon, label, value, color }) => {
 
 const MobileRankRow = ({ pos, name, sub, ingresos, maxIngresos, extra }) => {
     const { C } = useTheme();
-    const medal = pos === 1 ? '#f59e0b' : pos === 2 ? '#94a3b8' : pos === 3 ? '#cd7f32' : null;
+    const medal = pos === 1 ? '#F9A825' : pos === 2 ? '#8B6914' : pos === 3 ? '#cd7f32' : null;
     const pct = maxIngresos > 0 ? Math.round((parseFloat(ingresos) / maxIngresos) * 100) : 0;
     return (
         <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.borderLight}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: medal ? medal + '20' : C.surfaceAlt2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, color: medal || C.textMuted }}>
+                <div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: medal ? medal + '20' : SDARK3 + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, color: medal || C.textMuted }}>
                     {medal ? <i className="fas fa-crown" style={{ color: medal, fontSize: 11 }} /> : `#${pos}`}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -176,7 +176,7 @@ const MobileRankRow = ({ pos, name, sub, ingresos, maxIngresos, extra }) => {
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#16a34a', flexShrink: 0 }}>{fmt(ingresos)}</div>
             </div>
             <div style={{ height: 4, background: C.surfaceAlt2, borderRadius: 4, overflow: 'hidden', marginLeft: 42 }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${A},#EF5350)`, borderRadius: 4, transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)' }} />
+                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${A},#F9A825)`, borderRadius: 4, transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)' }} />
             </div>
             {extra && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4, marginLeft: 42 }}>{extra}</div>}
         </div>
@@ -186,7 +186,7 @@ const MobileRankRow = ({ pos, name, sub, ingresos, maxIngresos, extra }) => {
 const TabChip = ({ label, icon, active, onClick }) => {
     const { C } = useTheme();
     return (
-        <button onClick={onClick} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', background: active ? A : C.surface, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 13, boxShadow: active ? `0 3px 10px ${A}50` : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.15s', border: `1px solid ${active ? A : C.borderLight}` }}>
+        <button onClick={onClick} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 20, border: `1px solid ${active ? A : C.borderLight}`, cursor: 'pointer', background: active ? A : C.surface, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 13, boxShadow: active ? `0 3px 10px ${A}50` : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.15s' }}>
             <i className={`fas ${icon}`} style={{ fontSize: 12 }} />{label}
         </button>
     );
@@ -202,11 +202,11 @@ const MobileLayout = ({ data }) => {
         labels: reporteVentas?.ventas_por_periodo?.map(v => new Date(v.periodo).toLocaleDateString('es', { month: 'short', day: 'numeric' })) || [],
         datasets: [
             { label: 'Ventas S/', data: reporteVentas?.ventas_por_periodo?.map(v => parseFloat(v.total_ventas)) || [], borderColor: A, backgroundColor: A+'20', tension: 0.4, fill: true },
-            { label: 'Pedidos',   data: reporteVentas?.ventas_por_periodo?.map(v => parseInt(v.total_pedidos)) || [],   borderColor: '#f59e0b', backgroundColor: '#f59e0b10', tension: 0.4, yAxisID: 'y1' },
+            { label: 'Pedidos',   data: reporteVentas?.ventas_por_periodo?.map(v => parseInt(v.total_pedidos)) || [],   borderColor: '#F9A825', backgroundColor: '#F9A82510', tension: 0.4, yAxisID: 'y1' },
         ],
     };
     const prodCD = { labels: reporteProductos?.productos?.slice(0,6).map(p => p.producto?.nombre||'') || [], datasets: [{ label: 'Ingresos S/', data: reporteProductos?.productos?.slice(0,6).map(p => parseFloat(p.ingresos_totales||0)) || [], backgroundColor: BAR_COLORS }] };
-    const mozoCD = { labels: reporteMozos?.mozos?.map(m => (m.mozo?.nombre||'').split(' ')[0]) || [], datasets: [{ label: 'Ventas S/', data: reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [], backgroundColor: A }, { label: 'Pedidos', data: reporteMozos?.mozos?.map(m => parseInt(m.total_pedidos||0)) || [], backgroundColor: '#f59e0b' }] };
+    const mozoCD = { labels: reporteMozos?.mozos?.map(m => (m.mozo?.nombre||'').split(' ')[0]) || [], datasets: [{ label: 'Ventas S/', data: reporteMozos?.mozos?.map(m => parseFloat(m.total_ventas||0)) || [], backgroundColor: A }, { label: 'Pedidos', data: reporteMozos?.mozos?.map(m => parseInt(m.total_pedidos||0)) || [], backgroundColor: '#F9A825' }] };
 
     const mxVenta = Math.max(...(reporteVentas?.ventas_por_periodo?.map(v => parseFloat(v.total_ventas||0)) || [0]));
     const mxProd  = Math.max(...(reporteProductos?.productos?.map(p => parseFloat(p.ingresos_totales||0)) || [0]));
@@ -230,10 +230,10 @@ const MobileLayout = ({ data }) => {
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
                         {[
-                            { icon: 'fa-sliders-h', fn: () => setShowFiltros(v=>!v), bg: showFiltros ? A : C.surfaceAlt2, cl: showFiltros ? '#fff' : C.textSub },
+                            { icon: 'fa-sliders-h', fn: () => setShowFiltros(v=>!v), bg: showFiltros ? A : SDARK3+'25', cl: showFiltros ? '#fff' : SDARK3 },
                             { icon: 'fa-file-csv',  fn: () => exportarCSV(activeTab), bg: '#f0fdf4', cl: '#16a34a' },
                             { icon: 'fa-file-pdf',  fn: () => exportarPDF(activeTab), bg: '#fef2f2', cl: '#dc2626' },
-                            { icon: loading ? 'fa-spinner fa-spin' : 'fa-sync-alt', fn: fetchReportes, bg: A+'15', cl: A },
+                            { icon: loading ? 'fa-spinner fa-spin' : 'fa-sync-alt', fn: fetchReportes, bg: '#FFF8E1', cl: '#F57F17' },
                         ].map((b, i) => (
                             <button key={i} onClick={b.fn} disabled={loading && i===3}
                                 style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer', background: b.bg, color: b.cl, fontSize: 13 }}>
@@ -243,11 +243,11 @@ const MobileLayout = ({ data }) => {
                     </div>
                 </div>
                 {showFiltros && (
-                    <div style={{ background: C.surfaceAlt, borderRadius: 14, padding: '12px', marginBottom: 10, border: `1px solid ${C.borderLight}` }}>
+                    <div style={{ background: '#FFF8E1', borderRadius: 14, padding: '12px', marginBottom: 10, border: `1px solid #F9A82530` }}>
                         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                             {[['Desde','fechaInicio'],['Hasta','fechaFin']].map(([lbl,key]) => (
                                 <div key={key} style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 10, fontWeight: 700, color: C.textSub, marginBottom: 4 }}>{lbl}</div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: SDARK3, marginBottom: 4 }}>{lbl}</div>
                                     <input type="date" value={filtros[key]} onChange={e => setFiltros(f=>({...f,[key]:e.target.value}))}
                                         style={{ width: '100%', padding: '7px 8px', borderRadius: 9, border: `1.5px solid ${C.border}`, fontSize: 12, outline: 'none', boxSizing: 'border-box', background: C.inputBg, color: C.text }} />
                                 </div>
@@ -264,7 +264,7 @@ const MobileLayout = ({ data }) => {
                     </div>
                 )}
                 <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
-                    {TABS.map(t => <TabChip key={t.key} {...t} active={activeTab===t.key} onClick={() => setActiveTab(t.key)} />)}
+                    {TABS.map(t => <TabChip key={t.key} label={t.label} icon={t.icon} active={activeTab===t.key} onClick={() => setActiveTab(t.key)} />)}
                 </div>
             </div>
 
@@ -290,7 +290,7 @@ const MobileLayout = ({ data }) => {
                         <MobileKpiCard icon="fa-receipt"     label="Pedidos"       color={A}       value={reporteVentas?.resumen_total?.total_pedidos || 0} />
                     </div>
                     <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-                        <MobileKpiCard icon="fa-chart-line"  label="Prom/pedido"  color="#f59e0b" value={fmtK(reporteVentas?.resumen_total?.promedio_pedido)} />
+                        <MobileKpiCard icon="fa-chart-line"  label="Prom/pedido"  color="#F9A825" value={fmtK(reporteVentas?.resumen_total?.promedio_pedido)} />
                         <MobileKpiCard icon="fa-calendar"    label="Períodos"      color="#0ea5e9" value={reporteVentas?.ventas_por_periodo?.length || 0} />
                     </div>
                     <div style={{ background: C.surface, borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
@@ -318,7 +318,7 @@ const MobileLayout = ({ data }) => {
                 <div style={{ padding: '14px 16px 0' }}>
                     <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
                         <MobileKpiCard icon="fa-utensils" label="Productos"  color={A}       value={reporteProductos?.productos?.length || 0} />
-                        <MobileKpiCard icon="fa-fire"     label="Top item"   color="#dc2626" value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]} />
+                        <MobileKpiCard icon="fa-fire"     label="Top item"   color="#E65100" value={(reporteProductos?.productos?.[0]?.producto?.nombre||'—').split(' ')[0]} />
                     </div>
                     <div style={{ background: C.surface, borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
                         <div style={{ fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 12 }}>Top 6 por ingresos</div>
@@ -344,7 +344,7 @@ const MobileLayout = ({ data }) => {
                 <div style={{ padding: '14px 16px 0' }}>
                     <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
                         <MobileKpiCard icon="fa-user-tie" label="Mozos"    color={A}       value={reporteMozos?.mozos?.length || 0} />
-                        <MobileKpiCard icon="fa-trophy"   label="Top mozo" color="#f59e0b" value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]} />
+                        <MobileKpiCard icon="fa-trophy"   label="Top mozo" color="#F9A825" value={(reporteMozos?.mozos?.[0]?.mozo?.nombre||'—').split(' ')[0]} />
                     </div>
                     <div style={{ background: C.surface, borderRadius: 18, padding: '14px 12px', marginBottom: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', border: `1px solid ${C.borderLight}` }}>
                         <div style={{ fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 12 }}>Performance</div>
@@ -390,7 +390,7 @@ const MobileLayout = ({ data }) => {
     );
 };
 
-/* ── Desktop KPI card ── */
+/* -- Desktop KPI card -- */
 const DeskKpi = ({ icon, label, value, color, sub }) => {
     const { C } = useTheme();
     const [hov, setHov] = useState(false);
@@ -464,7 +464,7 @@ const ProgressBar = ({ name, value, max, color, sub }) => {
                 <span style={{ fontWeight: 800, color: color || '#16a34a', flexShrink: 0, marginLeft: 8 }}>{fmt(value)}</span>
             </div>
             <div style={{ height: 7, background: C.surfaceAlt2, borderRadius: 6, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: color ? `linear-gradient(90deg,${color},${color}99)` : `linear-gradient(90deg,${A},#EF5350)`, borderRadius: 6, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
+                <div style={{ height: '100%', width: `${pct}%`, background: color ? `linear-gradient(90deg,${color},#F9A825)` : `linear-gradient(90deg,${A},#F9A825)`, borderRadius: 6, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
             </div>
         </div>
     );
@@ -566,9 +566,7 @@ const DesktopLayout = ({ data }) => {
             <div style={{ width: 272, flexShrink: 0, background: SDARK, display: 'flex', flexDirection: 'column', position: 'sticky', top: 58, height: 'calc(100vh - 58px)', overflowY: 'auto' }}>
                 <div style={{ padding: '22px 18px 16px', borderBottom: `1px solid ${SDARK2}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 14, background: 'linear-gradient(135deg,#9B1B1B,#EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 14px ${A}60` }}>
-                            <i className="fas fa-chart-bar" style={{ color: '#fff', fontSize: 18 }} />
-                        </div>
+                        <img src={`${process.env.PUBLIC_URL}/logo-chavo.png`} alt="El Chavo" style={{ width: 42, height: 42, objectFit: 'contain', borderRadius: 14, flexShrink: 0 }} />
                         <div>
                             <div style={{ fontWeight: 900, fontSize: 17, color: '#fff', letterSpacing: 0.3 }}>Reportes</div>
                             <div style={{ fontSize: 11, color: '#64748b' }}>Análisis del negocio</div>

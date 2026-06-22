@@ -96,19 +96,15 @@ const Login = () => {
           <div style={{ position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: '50%', border: '1px solid rgba(198,40,40,0.1)' }} />
           <div style={{ position: 'absolute', bottom: -30, left: -30, width: 140, height: 140, borderRadius: '50%', border: '1px solid rgba(198,40,40,0.08)', background: 'rgba(198,40,40,0.04)' }} />
 
-          <div style={{
-            width: 100, height: 100, borderRadius: 28,
-            background: 'linear-gradient(145deg, #C62828, #EF5350)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 28, boxShadow: '0 16px 48px rgba(198,40,40,0.5)',
-          }}>
-            <i className="fas fa-drumstick-bite" style={{ fontSize: 42, color: '#F9A825' }}></i>
-          </div>
-
-          <h1 style={{ fontWeight: 900, fontSize: 44, color: '#F9A825', letterSpacing: 3, margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>El Chavo</h1>
-          <p style={{ color: '#BCAAA4', fontSize: 16, marginTop: 8, fontWeight: 600, letterSpacing: 1.5, textAlign: 'center', textTransform: 'uppercase' }}>
-            Pollería y Parrilla
-          </p>
+          <img
+            src={`${process.env.PUBLIC_URL}/logo-chavo.png`}
+            alt="El Chavo - Pollería y Parrilla"
+            style={{
+              width: 380, height: 380, objectFit: 'contain',
+              marginBottom: 12,
+              filter: 'drop-shadow(0 8px 32px rgba(249,168,37,0.35))',
+            }}
+          />
 
           <div style={{ width: 48, height: 3, background: 'linear-gradient(90deg, #C62828, #F9A825)', borderRadius: 2, margin: '28px 0' }} />
 
@@ -230,11 +226,15 @@ const Login = () => {
         <div style={{ position: 'absolute', top: -60,  right: -60,  width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(249,168,37,0.08)', background: 'rgba(249,168,37,0.04)' }} />
         <div style={{ position: 'absolute', bottom: 0, left: -80, width: 200, height: 200, borderRadius: '50%', border: '1px solid rgba(198,40,40,0.1)' }} />
 
-        <div style={{ width: 84, height: 84, borderRadius: 24, background: 'linear-gradient(145deg, #C62828, #EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, boxShadow: '0 12px 40px rgba(198,40,40,0.5)' }}>
-          <i className="fas fa-drumstick-bite" style={{ fontSize: 36, color: '#F9A825' }}></i>
-        </div>
-        <h1 style={{ fontWeight: 900, fontSize: 36, color: '#F9A825', letterSpacing: 2, margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>El Chavo</h1>
-        <p style={{ color: '#8D6E63', fontSize: 14, marginTop: 6, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>Pollería y Parrilla</p>
+        <img
+          src={`${process.env.PUBLIC_URL}/logo-chavo.png`}
+          alt="El Chavo - Pollería y Parrilla"
+          style={{
+            width: 300, height: 300, objectFit: 'contain',
+            marginBottom: 4,
+            filter: 'drop-shadow(0 6px 24px rgba(249,168,37,0.35))',
+          }}
+        />
       </div>
 
       {/* Card formulario */}

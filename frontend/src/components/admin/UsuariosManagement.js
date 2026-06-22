@@ -4,8 +4,8 @@ import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const ROL = {
-  administrador: { label: 'Admin', color: '#C62828', bg: '#FFEBEE', icon: 'fa-crown'    },
-  mozo:          { label: 'Mozo',  color: '#0ea5e9', bg: '#f0f9ff', icon: 'fa-user-tie' },
+  administrador: { label: 'Admin', color: '#F9A825', bg: '#FFF8E1', icon: 'fa-crown'    },
+  mozo:          { label: 'Mozo',  color: '#EF5350', bg: '#FFEBEE', icon: 'fa-user-tie' },
 };
 const A        = '#C62828';
 const PAGE_SIZE = 20;
@@ -114,8 +114,8 @@ const ROLES_FILTRO = [
   { value: 'mozo',          label: 'Mozo',  icon: 'fa-user-tie' },
 ];
 const ROLES_FORM = [
-  { value: 'mozo',          label: 'Mozo',  icon: 'fa-user-tie', color: '#0ea5e9' },
-  { value: 'administrador', label: 'Admin', icon: 'fa-crown',    color: A         },
+  { value: 'mozo',          label: 'Mozo',  icon: 'fa-user-tie', color: '#EF5350' },
+  { value: 'administrador', label: 'Admin', icon: 'fa-crown',    color: '#F9A825' },
 ];
 const ESTADOS_FILTRO = [
   { value: 'todos',     label: 'Todos',     icon: 'fa-list'         },
@@ -257,8 +257,8 @@ const UsuarioCard = ({ usuario, onTap }) => {
     <div onClick={() => onTap(usuario)}
       onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
       onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
-      style={{ background: C.surface, borderRadius: 18, padding: '14px 16px', marginBottom: 10, border: `1.5px solid ${usuario.activo ? C.borderLight : '#fee2e2'}`, boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.05)' : '0 2px 10px rgba(0,0,0,0.07)', transform: pressed ? 'scale(0.98)' : 'scale(1)', transition: 'transform 0.12s', cursor: 'pointer', opacity: usuario.activo ? 1 : 0.65, display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div style={{ width: 52, height: 52, borderRadius: 16, flexShrink: 0, background: r.bg, border: `2px solid ${r.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      style={{ background: C.surface, borderRadius: 18, padding: '14px 16px', marginBottom: 10, border: `1.5px solid ${usuario.activo ? C.borderLight : '#FFCDD2'}`, boxShadow: pressed ? '0 1px 4px rgba(0,0,0,0.05)' : '0 2px 10px rgba(0,0,0,0.07)', transform: pressed ? 'scale(0.97)' : 'scale(1)', transition: 'transform 0.15s ease, box-shadow 0.15s ease', cursor: 'pointer', opacity: usuario.activo ? 1 : 0.65, display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: 52, height: 52, borderRadius: 16, flexShrink: 0, background: `linear-gradient(135deg, ${r.bg}, ${r.color}15)`, border: `2px solid ${r.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', boxShadow: `0 2px 8px ${r.color}15` }}>
         <i className={`fas ${r.icon}`} style={{ color: r.color, fontSize: 20 }} />
         <div style={{ position: 'absolute', bottom: -2, right: -2, width: 14, height: 14, borderRadius: '50%', background: usuario.activo ? '#22c55e' : '#ef4444', border: '2px solid ' + C.surface }} />
       </div>
@@ -367,9 +367,9 @@ const MobileLayout = ({ d }) => {
   return (
     <div style={{ background: C.bg, minHeight: '100vh', paddingBottom: 100 }}>
       {/* Header sticky */}
-      <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '14px 16px', position: 'sticky', top: 58, zIndex: 20 }}>
+      <div style={{ background: `linear-gradient(180deg, #FFF8F0 0%, ${C.surface} 100%)`, borderBottom: `1px solid ${C.border}`, padding: '14px 16px', position: 'sticky', top: 58, zIndex: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 12, background: A + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 12, background: `linear-gradient(135deg, ${A}20, #F9A82520)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 2px 8px ${A}15` }}>
             <i className="fas fa-users" style={{ color: A, fontSize: 16 }} />
           </div>
           <div style={{ flex: 1 }}>
@@ -396,7 +396,7 @@ const MobileLayout = ({ d }) => {
             const active = d.filtros.rol === r.value;
             return (
               <button key={r.value} onClick={() => d.setFiltros(f => ({ ...f, rol: r.value }))}
-                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', background: active ? A : C.surfaceAlt2, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, boxShadow: active ? `0 2px 8px ${A}40` : 'none' }}>
+                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', background: active ? A : C.surfaceAlt2, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, boxShadow: active ? '0 2px 8px rgba(198,40,40,0.4)' : 'none' }}>
                 <i className={`fas ${r.icon}`} style={{ fontSize: 10 }} />{r.label}
               </button>
             );
@@ -408,13 +408,14 @@ const MobileLayout = ({ d }) => {
         {/* Stats */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
           {[
-            { label: 'Total',   value: d.stats.total,   color: A,        icon: 'fa-users'        },
-            { label: 'Activos', value: d.stats.activos,  color: '#22c55e', icon: 'fa-circle-check' },
-            { label: 'Mozos',   value: d.stats.mozos,   color: '#0ea5e9', icon: 'fa-user-tie'    },
-            { label: 'Staff',   value: d.stats.staff,   color: '#f59e0b', icon: 'fa-fire'         },
+            { label: 'Total',   value: d.stats.total,   color: A,         icon: 'fa-users'        },
+            { label: 'Activos', value: d.stats.activos,  color: '#16a34a', icon: 'fa-circle-check' },
+            { label: 'Mozos',   value: d.stats.mozos,    color: '#EF5350', icon: 'fa-user-tie'     },
+            { label: 'Staff',   value: d.stats.staff,    color: '#F9A825', icon: 'fa-crown'        },
           ].map(s => (
-            <div key={s.label} style={{ flex: 1, background: C.surface, borderRadius: 14, padding: '10px 6px', textAlign: 'center', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', border: `1px solid ${C.borderLight}` }}>
-              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: 13, display: 'block', marginBottom: 4 }} />
+            <div key={s.label} style={{ flex: 1, background: C.surface, borderRadius: 14, padding: '10px 6px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: `1px solid ${C.borderLight}`, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${s.color}, ${s.color}80)`, borderRadius: '14px 14px 0 0' }} />
+              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: 13, display: 'block', marginBottom: 4, marginTop: 2 }} />
               <div style={{ fontSize: 20, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
               <div style={{ fontSize: 9, color: C.textMuted, fontWeight: 700, letterSpacing: 0.5, marginTop: 2 }}>{s.label.toUpperCase()}</div>
             </div>
@@ -427,7 +428,7 @@ const MobileLayout = ({ d }) => {
             const active = d.filtros.estado === e.value;
             return (
               <button key={e.value} onClick={() => d.setFiltros(f => ({ ...f, estado: e.value }))}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: 'none', cursor: 'pointer', background: active ? C.text : C.surface, color: active ? C.bg : C.textSub, fontWeight: 700, fontSize: 12, boxShadow: active ? '0 2px 8px rgba(0,0,0,0.2)' : '0 1px 4px rgba(0,0,0,0.06)' }}>
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: 'none', cursor: 'pointer', background: active ? A : C.surface, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, boxShadow: active ? '0 2px 8px rgba(198,40,40,0.35)' : '0 1px 4px rgba(0,0,0,0.06)' }}>
                 <i className={`fas ${e.icon}`} style={{ fontSize: 11 }} />{e.label}
               </button>
             );
@@ -461,7 +462,7 @@ const MobileLayout = ({ d }) => {
       </div>
 
       {/* FAB */}
-      <button onClick={d.openNew} style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', border: 'none', boxShadow: `0 4px 20px ${A}55`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <button onClick={d.openNew} style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #C62828, #EF5350)', color: '#fff', border: 'none', boxShadow: '0 4px 20px rgba(198,40,40,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <i className="fas fa-plus" style={{ fontSize: 20 }} />
       </button>
 
@@ -469,7 +470,7 @@ const MobileLayout = ({ d }) => {
 
       <Sheet open={d.showForm} onClose={() => d.setShowForm(false)} title={d.editing ? 'Editar Usuario' : 'Nuevo Usuario'}
         footer={
-          <button onClick={d.handleSubmit} disabled={d.saving} style={{ width: '100%', padding: 15, background: d.saving ? '#94a3b8' : `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <button onClick={d.handleSubmit} disabled={d.saving} style={{ width: '100%', padding: 15, background: d.saving ? '#94a3b8' : 'linear-gradient(135deg, #C62828, #EF5350)', color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: d.saving ? 'none' : '0 4px 14px rgba(198,40,40,0.4)' }}>
             {d.saving ? <><i className="fas fa-spinner fa-spin" />Guardando...</> : d.editing ? <><i className="fas fa-save" />Actualizar</> : <><i className="fas fa-user-plus" />Crear Usuario</>}
           </button>
         }>
@@ -478,7 +479,7 @@ const MobileLayout = ({ d }) => {
 
       <Sheet open={d.showPass} onClose={() => d.setShowPass(false)} title="Cambiar Contraseña"
         footer={
-          <button onClick={d.handleChangePassword} disabled={d.saving || !d.passOk} style={{ width: '100%', padding: 15, background: (!d.passOk || d.saving) ? '#94a3b8' : 'linear-gradient(135deg,#f59e0b,#fbbf24)', color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: (!d.passOk || d.saving) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <button onClick={d.handleChangePassword} disabled={d.saving || !d.passOk} style={{ width: '100%', padding: 15, background: (!d.passOk || d.saving) ? '#94a3b8' : 'linear-gradient(135deg, #F9A825, #F57F17)', color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: (!d.passOk || d.saving) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: (!d.passOk || d.saving) ? 'none' : '0 4px 14px rgba(249,168,37,0.4)' }}>
             {d.saving ? <><i className="fas fa-spinner fa-spin" />Guardando...</> : <><i className="fas fa-key" />Cambiar Contraseña</>}
           </button>
         }>
@@ -544,7 +545,7 @@ const TableRow = ({ usuario, onEdit, onPassword, onToggle }) => {
         <div style={{ display: 'flex', gap: 6, opacity: hov ? 1 : 0.4, transition: 'opacity 0.15s' }}>
           <button onClick={() => onEdit(usuario)} title="Editar"
             style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer', background: '#FFEBEE', color: A, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            onMouseEnter={e => e.currentTarget.style.background='#e0e7ff'} onMouseLeave={e => e.currentTarget.style.background='#FFEBEE'}>
+            onMouseEnter={e => e.currentTarget.style.background='#FFCDD2'} onMouseLeave={e => e.currentTarget.style.background='#FFEBEE'}>
             <i className="fas fa-pen" />
           </button>
           <button onClick={() => onPassword(usuario)} title="Cambiar contraseña"
@@ -596,7 +597,7 @@ const DesktopLayout = ({ d }) => {
             <i className={`fas ${d.loading ? 'fa-spinner fa-spin' : 'fa-sync-alt'}`} />Actualizar
           </button>
           <button onClick={d.openNew}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: `0 4px 14px ${A}40` }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #C62828, #EF5350)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 14px rgba(198,40,40,0.4)' }}>
             <i className="fas fa-user-plus" />Nuevo Usuario
           </button>
         </div>
@@ -605,10 +606,10 @@ const DesktopLayout = ({ d }) => {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Total usuarios',   value: d.stats.total,   color: A,        icon: 'fa-users',        sub: 'registrados'      },
-          { label: 'Usuarios activos', value: d.stats.activos, color: '#22c55e', icon: 'fa-circle-check', sub: 'con acceso'        },
-          { label: 'Mozos',            value: d.stats.mozos,   color: '#0ea5e9', icon: 'fa-user-tie',     sub: 'en sala'           },
-          { label: 'Admins',           value: d.stats.staff,   color: '#EF5350', icon: 'fa-crown',        sub: 'administradores'   },
+          { label: 'Total usuarios',   value: d.stats.total,   color: A,         icon: 'fa-users',        sub: 'registrados'      },
+          { label: 'Usuarios activos', value: d.stats.activos, color: '#16a34a', icon: 'fa-circle-check', sub: 'con acceso'        },
+          { label: 'Mozos',            value: d.stats.mozos,   color: '#EF5350', icon: 'fa-user-tie',     sub: 'en sala'           },
+          { label: 'Admins',           value: d.stats.staff,   color: '#F9A825', icon: 'fa-crown',        sub: 'administradores'   },
         ].map(s => (
           <div key={s.label}
             style={{ background: C.surface, borderRadius: 20, padding: '20px 22px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', position: 'relative', overflow: 'hidden', border: `1px solid ${C.borderLight}`, cursor: 'default' }}
@@ -726,7 +727,7 @@ const DesktopLayout = ({ d }) => {
       <Modal open={d.showForm} onClose={() => d.setShowForm(false)} title={d.editing ? 'Editar Usuario' : 'Nuevo Usuario'}
         footer={
           <button onClick={d.handleSubmit} disabled={d.saving}
-            style={{ width: '100%', padding: 14, background: d.saving ? '#94a3b8' : `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: d.saving ? 'none' : `0 4px 14px ${A}40` }}>
+            style={{ width: '100%', padding: 14, background: d.saving ? '#94a3b8' : 'linear-gradient(135deg, #C62828, #EF5350)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: d.saving ? 'none' : '0 4px 14px rgba(198,40,40,0.4)' }}>
             {d.saving ? <><i className="fas fa-spinner fa-spin" />Guardando...</> : d.editing ? <><i className="fas fa-save" />Actualizar Usuario</> : <><i className="fas fa-user-plus" />Crear Usuario</>}
           </button>
         }>
@@ -737,7 +738,7 @@ const DesktopLayout = ({ d }) => {
       <Modal open={d.showPass} onClose={() => d.setShowPass(false)} title="Cambiar Contraseña" width={440}
         footer={
           <button onClick={d.handleChangePassword} disabled={d.saving || !d.passOk}
-            style={{ width: '100%', padding: 14, background: (!d.passOk || d.saving) ? '#94a3b8' : 'linear-gradient(135deg,#f59e0b,#fbbf24)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: (!d.passOk || d.saving) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            style={{ width: '100%', padding: 14, background: (!d.passOk || d.saving) ? '#94a3b8' : 'linear-gradient(135deg, #F9A825, #F57F17)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: (!d.passOk || d.saving) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: (!d.passOk || d.saving) ? 'none' : '0 4px 14px rgba(249,168,37,0.4)' }}>
             {d.saving ? <><i className="fas fa-spinner fa-spin" />Guardando...</> : <><i className="fas fa-key" />Cambiar Contraseña</>}
           </button>
         }>

@@ -3,7 +3,7 @@ import { productosService, categoriasService } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
-const CAT_COLORS = ['#C62828','#16a34a','#dc2626','#f59e0b','#0ea5e9','#8b5cf6','#ec4899','#14b8a6'];
+const CAT_COLORS = ['#C62828','#16a34a','#F9A825','#E65100','#0ea5e9','#8b5cf6','#ec4899','#14b8a6'];
 const catColor   = (id) => CAT_COLORS[(id ?? 0) % CAT_COLORS.length];
 const catLight   = (id) => catColor(id) + '18';
 const PAGE_SIZE  = 20;
@@ -75,7 +75,7 @@ const ProductoSheet = ({ producto, onClose, onEdit, onDelete, onToggle }) => {
           <div style={{ fontWeight: 900, fontSize: 20, color: '#2C1810', marginBottom: 6 }}>{producto.nombre}</div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: color, color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
             <i className="fas fa-tag" style={{ fontSize: 10 }}></i>
-            {producto.categoria?.nombre || 'Sin categoría'}
+            {producto.categoria?.nombre || 'Sin categoria'}
           </div>
           <div style={{ fontSize: 26, fontWeight: 900, color: '#16a34a' }}>S/ {parseFloat(producto.precio || 0).toFixed(2)}</div>
           {producto.descripcion && (
@@ -89,10 +89,10 @@ const ProductoSheet = ({ producto, onClose, onEdit, onDelete, onToggle }) => {
             <Toggle value={producto.disponible} onChange={() => onToggle(producto)} />
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onEdit} style={{ flex: 1, padding: '14px', borderRadius: 14, border: `1.5px solid ${C.border}`, background: C.surfaceAlt, color: C.textSub, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={onEdit} style={{ flex: 1, padding: '14px', borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, #F57F17, #F9A825)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 14px rgba(249,168,37,0.35)' }}>
               <i className="fas fa-pen" style={{ fontSize: 13 }}></i>Editar
             </button>
-            <button onClick={() => onDelete(producto)} style={{ flex: 1, padding: '14px', borderRadius: 14, border: '1.5px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={() => onDelete(producto)} style={{ flex: 1, padding: '14px', borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 14px rgba(198,40,40,0.35)' }}>
               <i className="fas fa-trash" style={{ fontSize: 13 }}></i>Eliminar
             </button>
           </div>
@@ -118,7 +118,9 @@ const ProductoCard = ({ producto, onTap }) => {
         boxShadow: pressed ? '0 1px 6px rgba(0,0,0,0.06)' : '0 3px 14px rgba(0,0,0,0.07)',
         cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
         transform: pressed ? 'scale(0.98)' : 'scale(1)', transition: 'transform 0.1s ease',
-        opacity: producto.disponible ? 1 : 0.6, border: `1.5px solid ${C.borderLight}`,
+        opacity: producto.disponible ? 1 : 0.6,
+        border: `1.5px solid ${C.borderLight}`,
+        borderLeft: `4px solid ${color}`,
       }}
     >
       <div style={{ width: 50, height: 50, borderRadius: 14, background: light, border: `1.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -149,7 +151,7 @@ const Pagination = ({ page, totalPages, onPrev, onNext, total, pageSize }) => {
   const end   = Math.min(page * pageSize, total);
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, padding: '10px 4px' }}>
-      <span style={{ fontSize: 12, color: C.textMuted, fontWeight: 600 }}>{start}–{end} de {total}</span>
+      <span style={{ fontSize: 12, color: C.textMuted, fontWeight: 600 }}>{start}--{end} de {total}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <button onClick={onPrev} disabled={page === 1}
           style={{ width: 36, height: 36, borderRadius: 10, border: `1.5px solid ${C.border}`, background: page === 1 ? C.surfaceAlt2 : C.surface, color: page === 1 ? C.textMuted : C.text, cursor: page === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -179,6 +181,7 @@ const ProductosManagement = () => {
   const [formData,    setFormData]    = useState({ nombre: '', descripcion: '', precio: '', categoria_id: '', disponible: true });
   const [catForm,     setCatForm]     = useState({ nombre: '', descripcion: '' });
   const [page,        setPage]        = useState(1);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const inputSt = {
     width: '100%', padding: '13px 14px', border: `1.5px solid ${C.border}`,
@@ -233,8 +236,8 @@ const ProductosManagement = () => {
   const handleSubmit = async () => {
     if (!formData.nombre.trim()) { toast.error('El nombre es requerido'); return; }
     const precio = parseFloat(formData.precio);
-    if (!formData.precio || isNaN(precio) || precio <= 0) { toast.error('Precio inválido'); return; }
-    if (!formData.categoria_id) { toast.error('Selecciona una categoría'); return; }
+    if (!formData.precio || isNaN(precio) || precio <= 0) { toast.error('Precio invalido'); return; }
+    if (!formData.categoria_id) { toast.error('Selecciona una categoria'); return; }
     setSaving(true);
     try {
       const payload = { nombre: formData.nombre.trim(), descripcion: formData.descripcion.trim(), precio, categoria_id: parseInt(formData.categoria_id), disponible: formData.disponible };
@@ -246,7 +249,7 @@ const ProductosManagement = () => {
   };
 
   const handleDelete = async (producto) => {
-    if (!window.confirm(`¿Eliminar "${producto.nombre}"?`)) return;
+    if (!window.confirm(`Eliminar "${producto.nombre}"?`)) return;
     setSelected(null);
     try { await productosService.delete(producto.id); toast.success('Producto eliminado'); fetchAll(); }
     catch (err) { toast.error(err.response?.data?.error || 'Error al eliminar'); }
@@ -256,7 +259,7 @@ const ProductosManagement = () => {
     const nuevo = !producto.disponible;
     try {
       await productosService.changeAvailability(producto.id, nuevo);
-      toast.success(`${producto.nombre} → ${nuevo ? 'Disponible' : 'Agotado'}`);
+      toast.success(`${producto.nombre} -> ${nuevo ? 'Disponible' : 'Agotado'}`);
       setProductos(prev => prev.map(p => p.id === producto.id ? { ...p, disponible: nuevo } : p));
       setSelected(prev => prev ? { ...prev, disponible: nuevo } : null);
     } catch { toast.error('Error al cambiar disponibilidad'); }
@@ -267,8 +270,8 @@ const ProductosManagement = () => {
     setSaving(true);
     try {
       await categoriasService.create({ nombre: catForm.nombre.trim(), descripcion: catForm.descripcion.trim() });
-      toast.success('Categoría creada'); setShowCatForm(false); setCatForm({ nombre: '', descripcion: '' }); fetchAll();
-    } catch (err) { toast.error(err.response?.data?.error || 'Error al crear categoría'); }
+      toast.success('Categoria creada'); setShowCatForm(false); setCatForm({ nombre: '', descripcion: '' }); fetchAll();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error al crear categoria'); }
     finally { setSaving(false); }
   };
 
@@ -279,15 +282,32 @@ const ProductosManagement = () => {
   return (
     <div style={{ paddingBottom: 100 }}>
 
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22, padding: '4px 0' }}>
+        <div style={{ width: 46, height: 46, borderRadius: 14, background: 'linear-gradient(135deg, #9B1B1B, #C62828)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(198,40,40,0.3)', flexShrink: 0 }}>
+          <i className="fas fa-utensils" style={{ fontSize: 20, color: '#fff' }}></i>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 900, fontSize: 22, color: C.text, lineHeight: 1.2 }}>Gestion de Productos</div>
+          <div style={{ fontSize: 13, color: C.textMuted, fontWeight: 600, marginTop: 2 }}>
+            {total} producto{total !== 1 ? 's' : ''} registrado{total !== 1 ? 's' : ''}
+          </div>
+        </div>
+      </div>
+
       {/* Stats */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         {[
           { label: 'Total',       value: total,            color: '#C62828', icon: 'fa-utensils'     },
           { label: 'Disponibles', value: disponibles,       color: '#16a34a', icon: 'fa-circle-check' },
           { label: 'Agotados',    value: agotados,          color: '#ef4444', icon: 'fa-ban'          },
-          { label: 'Categorías',  value: categorias.length, color: '#f59e0b', icon: 'fa-tags'         },
+          { label: 'Categorias',  value: categorias.length, color: '#F9A825', icon: 'fa-tags'         },
         ].map(s => (
-          <div key={s.label} style={{ flex: 1, background: C.surface, borderRadius: 16, padding: '12px 6px', textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', border: `1px solid ${C.borderLight}` }}>
+          <div key={s.label} style={{
+            flex: 1, background: C.surface, borderRadius: 16, padding: '12px 6px', textAlign: 'center',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: `1px solid ${C.borderLight}`,
+            borderBottom: `3px solid ${s.color}`,
+          }}>
             <div style={{ width: 32, height: 32, borderRadius: 10, background: `${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px' }}>
               <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: 13 }}></i>
             </div>
@@ -299,16 +319,32 @@ const ProductosManagement = () => {
 
       {/* Buscar */}
       <div style={{ position: 'relative', marginBottom: 12 }}>
-        <i className="fas fa-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.textMuted, fontSize: 14 }}></i>
+        <i className="fas fa-search" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: searchFocused ? '#C62828' : C.textMuted, fontSize: 14, transition: 'color 0.2s' }}></i>
         <input type="text" placeholder="Buscar producto..." value={filtros.busqueda}
           onChange={e => setFiltros(f => ({ ...f, busqueda: e.target.value }))}
-          style={{ ...inputSt, paddingLeft: 40 }} />
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
+          style={{
+            ...inputSt,
+            paddingLeft: 42,
+            borderRadius: 50,
+            border: searchFocused ? '1.5px solid #C62828' : `1.5px solid ${C.border}`,
+            boxShadow: searchFocused ? '0 4px 18px rgba(198,40,40,0.15)' : '0 2px 8px rgba(0,0,0,0.04)',
+            transition: 'box-shadow 0.2s, border-color 0.2s',
+          }} />
       </div>
 
-      {/* Filtro categoría */}
+      {/* Filtro categoria */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 10, WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
         <button onClick={() => setFiltros(f => ({ ...f, categoria: 'todas' }))}
-          style={{ padding: '7px 16px', borderRadius: 20, border: 'none', background: filtros.categoria === 'todas' ? C.text : C.surfaceAlt2, color: filtros.categoria === 'todas' ? C.bg : C.textSub, fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit' }}>
+          style={{
+            padding: '8px 18px', borderRadius: 20, border: 'none',
+            background: filtros.categoria === 'todas' ? 'linear-gradient(135deg, #9B1B1B, #C62828)' : C.surfaceAlt2,
+            color: filtros.categoria === 'todas' ? '#fff' : C.textSub,
+            fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit',
+            boxShadow: filtros.categoria === 'todas' ? '0 3px 12px rgba(198,40,40,0.3)' : 'none',
+            transition: 'all 0.2s',
+          }}>
           Todas
         </button>
         {categorias.map(c => {
@@ -316,7 +352,14 @@ const ProductosManagement = () => {
           const col = catColor(c.id);
           return (
             <button key={c.id} onClick={() => setFiltros(f => ({ ...f, categoria: String(c.id) }))}
-              style={{ padding: '7px 16px', borderRadius: 20, border: 'none', background: active ? col : C.surfaceAlt2, color: active ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit' }}>
+              style={{
+                padding: '8px 18px', borderRadius: 20, border: 'none',
+                background: active ? col : C.surfaceAlt2,
+                color: active ? '#fff' : C.textSub,
+                fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit',
+                boxShadow: active ? `0 3px 12px ${col}44` : 'none',
+                transition: 'all 0.2s',
+              }}>
               {c.nombre}
             </button>
           );
@@ -327,16 +370,23 @@ const ProductosManagement = () => {
       <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
         {[['todos','Todos'],['disponibles','Disponibles'],['agotados','Agotados']].map(([v, l]) => (
           <button key={v} onClick={() => setFiltros(f => ({ ...f, disponibilidad: v }))}
-            style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', background: filtros.disponibilidad === v ? '#C62828' : C.surfaceAlt2, color: filtros.disponibilidad === v ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{
+              flex: 1, padding: '9px 0', borderRadius: 10, border: 'none',
+              background: filtros.disponibilidad === v ? 'linear-gradient(135deg, #9B1B1B, #C62828)' : C.surfaceAlt2,
+              color: filtros.disponibilidad === v ? '#fff' : C.textSub,
+              fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+              boxShadow: filtros.disponibilidad === v ? '0 3px 12px rgba(198,40,40,0.25)' : 'none',
+              transition: 'all 0.2s',
+            }}>
             {l}
           </button>
         ))}
       </div>
 
-      {/* Botón nueva categoría */}
+      {/* Boton nueva categoria */}
       <button onClick={() => setShowCatForm(true)}
-        style={{ width: '100%', padding: '11px', borderRadius: 12, border: '1.5px dashed #FFCDD2', background: '#FFEBEE', color: '#C62828', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 }}>
-        <i className="fas fa-tags"></i>Nueva Categoría
+        style={{ width: '100%', padding: '11px', borderRadius: 12, border: '1.5px dashed #F9A82580', background: '#FFF8E1', color: '#F57F17', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 }}>
+        <i className="fas fa-tags"></i>Nueva Categoria
       </button>
 
       {/* Lista */}
@@ -377,7 +427,7 @@ const ProductosManagement = () => {
       <Sheet open={showForm} onClose={() => setShowForm(false)} title={editing ? `Editar: ${editing.nombre}` : 'Nuevo Producto'}
         footer={
           <button onClick={handleSubmit} disabled={saving}
-            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: saving ? 'none' : '0 4px 18px rgba(198,40,40,0.35)' }}>
             <i className={saving ? 'fas fa-circle-notch fa-spin' : editing ? 'fas fa-save' : 'fas fa-plus'}></i>
             {saving ? 'Guardando...' : editing ? 'Actualizar Producto' : 'Crear Producto'}
           </button>
@@ -391,7 +441,7 @@ const ProductosManagement = () => {
             <input style={{ ...inputSt, paddingLeft: 36 }} type="number" inputMode="decimal" step="0.01" min="0" placeholder="0.00" value={formData.precio} onChange={e => setFormData(f => ({ ...f, precio: e.target.value }))} />
           </div>
         </Field>
-        <Field label="Categoría *">
+        <Field label="Categoria *">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {categorias.map(c => {
               const active = formData.categoria_id === String(c.id);
@@ -405,8 +455,8 @@ const ProductosManagement = () => {
             })}
           </div>
         </Field>
-        <Field label="Descripción (opcional)">
-          <textarea style={{ ...inputSt, minHeight: 80, resize: 'vertical', lineHeight: 1.5 }} placeholder="Descripción del producto..."
+        <Field label="Descripcion (opcional)">
+          <textarea style={{ ...inputSt, minHeight: 80, resize: 'vertical', lineHeight: 1.5 }} placeholder="Descripcion del producto..."
             value={formData.descripcion} onChange={e => setFormData(f => ({ ...f, descripcion: e.target.value }))} />
         </Field>
         <Field label="Disponibilidad">
@@ -416,19 +466,19 @@ const ProductosManagement = () => {
         </Field>
       </Sheet>
 
-      <Sheet open={showCatForm} onClose={() => setShowCatForm(false)} title="Nueva Categoría"
+      <Sheet open={showCatForm} onClose={() => setShowCatForm(false)} title="Nueva Categoria"
         footer={
           <button onClick={handleCrearCategoria} disabled={saving}
-            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #F57F17, #F9A825)', color: saving ? '#fff' : '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: saving ? 'none' : '0 4px 18px rgba(249,168,37,0.35)' }}>
             <i className={saving ? 'fas fa-circle-notch fa-spin' : 'fas fa-tags'}></i>
-            {saving ? 'Guardando...' : 'Crear Categoría'}
+            {saving ? 'Guardando...' : 'Crear Categoria'}
           </button>
         }>
         <Field label="Nombre *">
           <input style={inputSt} type="text" placeholder="Ej: Bebidas, Platos Principales..." value={catForm.nombre} onChange={e => setCatForm(f => ({ ...f, nombre: e.target.value }))} />
         </Field>
-        <Field label="Descripción (opcional)">
-          <textarea style={{ ...inputSt, minHeight: 70, resize: 'vertical' }} placeholder="Descripción opcional..." value={catForm.descripcion} onChange={e => setCatForm(f => ({ ...f, descripcion: e.target.value }))} />
+        <Field label="Descripcion (opcional)">
+          <textarea style={{ ...inputSt, minHeight: 70, resize: 'vertical' }} placeholder="Descripcion opcional..." value={catForm.descripcion} onChange={e => setCatForm(f => ({ ...f, descripcion: e.target.value }))} />
         </Field>
       </Sheet>
     </div>

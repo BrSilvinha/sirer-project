@@ -57,7 +57,7 @@ const MesaSheet = ({ mesa, onClose, onStatus, onEdit, onDelete, saving }) => {
 
           <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: 1, marginBottom: 12 }}>CONFIGURACIÓN</div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onEdit} style={{ flex: 1, padding: '14px', borderRadius: 14, border: `1.5px solid ${C.border}`, background: C.surfaceAlt, color: C.textSub, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={onEdit} style={{ flex: 1, padding: '14px', borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, #C62828, #EF5350)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 16px rgba(198,40,40,0.3)' }}>
               <i className="fas fa-pen" style={{ fontSize: 13 }}></i>Editar mesa
             </button>
             <button onClick={() => onDelete(mesa)} disabled={mesa.estado !== 'libre'}
@@ -107,7 +107,7 @@ const FormSheet = ({ open, onClose, editing, formData, setFormData, onSubmit, sa
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
               {[2, 4, 6, 8, 10, 12].map(n => (
                 <button key={n} type="button" onClick={() => setFormData(f => ({ ...f, capacidad: n }))}
-                  style={{ padding: '16px 0', borderRadius: 14, border: `2px solid ${formData.capacidad === n ? '#C62828' : C.border}`, background: formData.capacidad === n ? '#FFEBEE' : C.surfaceAlt, color: formData.capacidad === n ? '#9B1B1B' : C.textSub, fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ padding: '16px 0', borderRadius: 14, border: `2px solid ${formData.capacidad === n ? '#C62828' : C.border}`, background: formData.capacidad === n ? '#FFEBEE' : C.surfaceAlt, color: formData.capacidad === n ? '#9B1B1B' : C.textSub, fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit', boxShadow: formData.capacidad === n ? '0 2px 8px rgba(198,40,40,0.15)' : 'none', transition: 'all 0.15s ease' }}>
                   {n}
                 </button>
               ))}
@@ -115,7 +115,7 @@ const FormSheet = ({ open, onClose, editing, formData, setFormData, onSubmit, sa
           </div>
 
           <button onClick={onSubmit} disabled={saving || !formData.numero}
-            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: (saving || !formData.numero) ? C.surfaceAlt2 : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: (saving || !formData.numero) ? C.textMuted : '#fff', fontWeight: 800, fontSize: 16, cursor: (saving || !formData.numero) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: (saving || !formData.numero) ? C.surfaceAlt2 : 'linear-gradient(135deg, #C62828, #EF5350)', color: (saving || !formData.numero) ? C.textMuted : '#fff', fontWeight: 800, fontSize: 16, cursor: (saving || !formData.numero) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16, boxShadow: (saving || !formData.numero) ? 'none' : '0 6px 20px rgba(198,40,40,0.35)', transition: 'all 0.2s ease' }}>
             <i className={saving ? 'fas fa-circle-notch fa-spin' : editing ? 'fas fa-save' : 'fas fa-plus'}></i>
             {saving ? 'Guardando...' : editing ? 'Actualizar Mesa' : 'Crear Mesa'}
           </button>
@@ -136,24 +136,31 @@ const MesaCard = ({ mesa, onTap }) => {
       onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
       onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
       style={{
-        background: C.surface, borderRadius: 20, padding: '20px 16px',
-        boxShadow: pressed ? '0 2px 8px rgba(0,0,0,0.08)' : '0 4px 18px rgba(0,0,0,0.07)',
-        cursor: 'pointer', transform: pressed ? 'scale(0.97)' : 'scale(1)',
-        transition: 'transform 0.12s ease, box-shadow 0.12s ease', textAlign: 'center',
-        border: `2px solid ${pressed ? est.color + '40' : C.borderLight}`,
+        background: `linear-gradient(160deg, ${C.surface} 0%, ${est.light}44 100%)`,
+        borderRadius: 22, padding: '22px 16px',
+        boxShadow: pressed
+          ? `0 2px 8px rgba(0,0,0,0.06), inset 0 0 0 2px ${est.color}30`
+          : `0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)`,
+        cursor: 'pointer',
+        transform: pressed ? 'scale(0.95)' : 'scale(1)',
+        transition: 'transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.18s ease',
+        textAlign: 'center',
+        border: `1.5px solid ${pressed ? est.color + '50' : est.color + '18'}`,
+        position: 'relative', overflow: 'hidden',
       }}
     >
-      <div style={{ width: 70, height: 70, borderRadius: '50%', background: `linear-gradient(145deg, ${est.color}, ${est.color}cc)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: `0 6px 20px ${est.color}45` }}>
+      <div style={{ position: 'absolute', top: -20, right: -20, width: 70, height: 70, borderRadius: '50%', background: `${est.color}08`, pointerEvents: 'none' }} />
+      <div style={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(145deg, ${est.color}, ${est.color}bb)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', boxShadow: `0 8px 24px ${est.color}40`, transition: 'box-shadow 0.18s ease' }}>
         <span style={{ fontWeight: 900, fontSize: 28, color: '#fff', lineHeight: 1 }}>{mesa.numero}</span>
       </div>
-      <div style={{ fontWeight: 800, fontSize: 14, color: C.text, marginBottom: 6 }}>Mesa {mesa.numero}</div>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: est.light, color: est.color, borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>
+      <div style={{ fontWeight: 800, fontSize: 15, color: C.text, marginBottom: 8 }}>Mesa {mesa.numero}</div>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: est.light, color: est.color, borderRadius: 20, padding: '5px 12px', fontSize: 11, fontWeight: 700, marginBottom: 8, border: `1px solid ${est.color}25` }}>
         <i className={`fas ${est.icon}`} style={{ fontSize: 10 }}></i>{est.label}
       </div>
       <div style={{ fontSize: 12, color: C.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
         <i className="fas fa-users" style={{ fontSize: 11 }}></i>{mesa.capacidad} pers.
       </div>
-      <div style={{ marginTop: 10, fontSize: 10, color: C.textMuted, fontWeight: 600 }}>Toca para gestionar</div>
+      <div style={{ marginTop: 10, fontSize: 10, color: C.textMuted, fontWeight: 600, opacity: 0.7 }}>Toca para gestionar</div>
     </div>
   );
 };
@@ -167,6 +174,7 @@ const MesasManagement = () => {
   const [showForm,    setShowForm]    = useState(false);
   const [editingMesa, setEditingMesa] = useState(null);
   const [formData,    setFormData]    = useState({ numero: '', capacidad: 4 });
+  const [refreshing,  setRefreshing]  = useState(false);
 
   const fetchMesas = useCallback(async () => {
     try {
@@ -175,6 +183,16 @@ const MesasManagement = () => {
     } catch { toast.error('Error al cargar mesas'); }
     finally { setLoading(false); }
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const r = await mesasService.getAll();
+      setMesas(r.data.data || []);
+      toast.success('Mesas actualizadas');
+    } catch { toast.error('Error al actualizar'); }
+    finally { setRefreshing(false); }
+  };
 
   useEffect(() => {
     fetchMesas();
@@ -224,20 +242,42 @@ const MesasManagement = () => {
 
   return (
     <div style={{ paddingBottom: 100 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, padding: '4px 0' }}>
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: C.text, letterSpacing: -0.3 }}>
+            Gestión de Mesas
+          </div>
+          <div style={{ fontSize: 12, color: C.textMuted, fontWeight: 500, marginTop: 2 }}>
+            Administra las mesas del local
+          </div>
+        </div>
+        <button onClick={handleRefresh} disabled={refreshing}
+          style={{ width: 42, height: 42, borderRadius: 14, border: `1.5px solid ${C.borderLight}`, background: C.surface, cursor: refreshing ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'all 0.15s ease' }}>
+          <i className={`fas fa-arrows-rotate ${refreshing ? 'fa-spin' : ''}`} style={{ fontSize: 15, color: '#C62828' }}></i>
+        </button>
+      </div>
+
       {/* Stats */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 22 }}>
         {[
           { label: 'Total',  value: mesas.length, color: '#C62828', icon: 'fa-table-cells'  },
           { label: 'Libres', value: libres,        color: '#16a34a', icon: 'fa-circle-check' },
           { label: 'Ocup.',  value: ocupadas,      color: '#dc2626', icon: 'fa-users'        },
           { label: 'Cuenta', value: cuenta,        color: '#d97706', icon: 'fa-receipt'      },
         ].map(s => (
-          <div key={s.label} style={{ flex: 1, background: C.surface, borderRadius: 16, padding: '14px 8px', textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', border: `1px solid ${C.borderLight}` }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: `${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+          <div key={s.label} style={{
+            flex: 1, background: C.surface, borderRadius: 20, padding: '14px 6px',
+            textAlign: 'center', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            border: `2px solid ${s.color}20`,
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${s.color}, ${s.color}88)`, borderRadius: '20px 20px 0 0' }} />
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: `${s.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '4px auto 8px' }}>
               <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: 14 }}></i>
             </div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: C.text, lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: C.text, lineHeight: 1 }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: s.color, fontWeight: 700, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -247,8 +287,8 @@ const MesasManagement = () => {
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 80 }}><Spin /></div>
       ) : mesas.length === 0 ? (
         <div style={{ textAlign: 'center', paddingTop: 80 }}>
-          <div style={{ width: 80, height: 80, borderRadius: 24, background: C.surfaceAlt2, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-            <i className="fas fa-table-cells" style={{ fontSize: 34, color: C.textMuted }}></i>
+          <div style={{ width: 80, height: 80, borderRadius: 24, background: '#FFEBEE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+            <i className="fas fa-table-cells" style={{ fontSize: 34, color: '#C62828' }}></i>
           </div>
           <div style={{ fontSize: 17, fontWeight: 700, color: C.textSub }}>Sin mesas registradas</div>
           <div style={{ fontSize: 13, color: C.textMuted, marginTop: 6 }}>Toca el botón <strong>+</strong> para agregar la primera</div>
@@ -258,7 +298,7 @@ const MesasManagement = () => {
           <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 14 }}>
             {mesas.length} MESA{mesas.length !== 1 ? 'S' : ''} · toca cualquiera para gestionar
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
             {mesas.map(m => <MesaCard key={m.id} mesa={m} onTap={() => setSelected(m)} />)}
           </div>
         </>
@@ -266,7 +306,7 @@ const MesasManagement = () => {
 
       {/* FAB */}
       <button onClick={openNew}
-        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(198,40,40,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #C62828, #EF5350)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(198,40,40,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <i className="fas fa-plus" style={{ fontSize: 22 }}></i>
       </button>
 

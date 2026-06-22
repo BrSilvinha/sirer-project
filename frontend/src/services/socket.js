@@ -17,13 +17,13 @@ class SocketService {
     // 🔌 Conectar al servidor Socket.io
     connect(token, user) {
         if (this.socket?.connected) {
-            console.log('🔌 Ya conectado a Socket.io');
+            void('🔌 Ya conectado a Socket.io');
             return this.socket;
         }
 
         this.user = user;
         
-        console.log(`🔄 Conectando a Socket.io como ${user.nombre} (${user.rol})...`);
+        void(`🔄 Conectando a Socket.io como ${user.nombre} (${user.rol})...`);
 
         this.socket = io(this.serverUrl, {
             auth: { token },
@@ -45,7 +45,7 @@ class SocketService {
         this.socket.on('connect', () => {
             this.connected = true;
             this.reconnectAttempts = 0;
-            console.log(`✅ Conectado a Socket.io - ID: ${this.socket.id}`);
+            void(`✅ Conectado a Socket.io - ID: ${this.socket.id}`);
             
             // Unirse a la sala del rol
             this.joinRole(this.user.rol);
@@ -59,7 +59,7 @@ class SocketService {
         // Evento de desconexión
         this.socket.on('disconnect', (reason) => {
             this.connected = false;
-            console.log(`❌ Desconectado de Socket.io: ${reason}`);
+            void(`❌ Desconectado de Socket.io: ${reason}`);
             
             if (reason === 'io server disconnect') {
                 // Desconexión del servidor, reconectar manualmente
@@ -70,12 +70,12 @@ class SocketService {
         // Eventos de reconexión
         this.socket.on('reconnect_attempt', (attemptNumber) => {
             this.reconnectAttempts = attemptNumber;
-            console.log(`🔄 Intento de reconexión ${attemptNumber}/${this.maxReconnectAttempts}`);
+            void(`🔄 Intento de reconexión ${attemptNumber}/${this.maxReconnectAttempts}`);
         });
 
         this.socket.on('reconnect', (attemptNumber) => {
             this.connected = true;
-            console.log(`✅ Reconectado después de ${attemptNumber} intentos`);
+            void(`✅ Reconectado después de ${attemptNumber} intentos`);
             toast.success('🔌 Reconectado al sistema', { duration: 3000 });
         });
 
@@ -119,7 +119,7 @@ class SocketService {
     setupMozoEvents() {
         // Pedido listo para entregar
         this.socket.on('pedido-listo', (data) => {
-            console.log('🔔 Pedido listo para entregar:', data);
+            void('🔔 Pedido listo para entregar:', data);
             
             // Notificación sonora + visual
             this.playNotificationSound();
@@ -137,7 +137,7 @@ class SocketService {
 
         // Pedido disponible para cualquier mozo
         this.socket.on('pedido-disponible-para-entregar', (data) => {
-            console.log('📋 Pedido disponible para entregar:', data);
+            void('📋 Pedido disponible para entregar:', data);
             
             toast(
                 `📋 Mesa ${data.mesa} tiene un pedido listo`,
@@ -150,7 +150,7 @@ class SocketService {
 
         // Cambio en disponibilidad de productos
         this.socket.on('producto-disponibilidad-actualizada', (data) => {
-            console.log('🥘 Producto actualizado:', data);
+            void('🥘 Producto actualizado:', data);
             
             const mensaje = data.disponible ? 
                 `✅ ${data.productoNombre} ya está disponible` :
@@ -169,19 +169,19 @@ class SocketService {
     setupAdminEvents() {
         // Estadísticas de conexión
         this.socket.on('connection-stats', (data) => {
-            console.log('📊 Stats de conexión:', data);
+            void('📊 Stats de conexión:', data);
             this.triggerCallback('connection-stats', data);
         });
 
         // Venta realizada
         this.socket.on('venta-realizada', (data) => {
-            console.log('💰 Venta realizada:', data);
+            void('💰 Venta realizada:', data);
             this.triggerCallback('venta-realizada', data);
         });
 
         // Inventario actualizado
         this.socket.on('inventario-actualizado', (data) => {
-            console.log('📦 Inventario actualizado:', data);
+            void('📦 Inventario actualizado:', data);
             this.triggerCallback('inventario-actualizado', data);
         });
     }
@@ -190,25 +190,25 @@ class SocketService {
     setupGeneralEvents() {
         // Mesa liberada
         this.socket.on('mesa-liberada', (data) => {
-            console.log('🏠 Mesa liberada:', data);
+            void('🏠 Mesa liberada:', data);
             this.triggerCallback('mesa-liberada', data);
         });
 
         // Estado de mesa actualizado
         this.socket.on('mesa-estado-actualizada', (data) => {
-            console.log('🏠 Mesa actualizada:', data);
+            void('🏠 Mesa actualizada:', data);
             this.triggerCallback('mesa-estado-actualizada', data);
         });
 
         // Estado de pedido actualizado
         this.socket.on('pedido-estado-actualizado', (data) => {
-            console.log('📋 Pedido actualizado:', data);
+            void('📋 Pedido actualizado:', data);
             this.triggerCallback('pedido-estado-actualizado', data);
         });
 
         // Mensaje del administrador
         this.socket.on('admin-mensaje', (data) => {
-            console.log('📢 Mensaje del admin:', data);
+            void('📢 Mensaje del admin:', data);
             
             const toastConfig = {
                 duration: 8000,
@@ -227,7 +227,7 @@ class SocketService {
 
         // Pong response
         this.socket.on('pong', (data) => {
-            console.log('🏓 Pong recibido:', data.timestamp);
+            void('🏓 Pong recibido:', data.timestamp);
         });
     }
 
@@ -252,7 +252,7 @@ class SocketService {
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.3);
         } catch (error) {
-            console.log('🔇 No se pudo reproducir sonido:', error.message);
+            void('🔇 No se pudo reproducir sonido:', error.message);
         }
     }
 
@@ -260,7 +260,7 @@ class SocketService {
     joinRole(role) {
         if (this.socket?.connected) {
             this.socket.emit('join-room', role);
-            console.log(`🏠 Unido a sala: ${role}`);
+            void(`🏠 Unido a sala: ${role}`);
         }
     }
 
@@ -268,9 +268,9 @@ class SocketService {
     emit(event, data) {
         if (this.socket?.connected) {
             this.socket.emit(event, data);
-            console.log(`📤 Evento emitido: ${event}`, data);
+            void(`📤 Evento emitido: ${event}`, data);
         } else {
-            console.warn('⚠️ Socket no conectado, evento no enviado:', event);
+            void('⚠️ Socket no conectado, evento no enviado:', event);
         }
     }
 
@@ -343,7 +343,7 @@ class SocketService {
     // 🔌 Desconectar
     disconnect() {
         if (this.socket) {
-            console.log('🔌 Desconectando Socket.io...');
+            void('🔌 Desconectando Socket.io...');
             this.socket.disconnect();
             this.socket = null;
             this.connected = false;
