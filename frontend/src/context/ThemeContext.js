@@ -1,31 +1,31 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export const LIGHT = {
-  bg:          '#f8fafc',
+  bg:          '#FFF8F0',
   surface:     '#ffffff',
-  surfaceAlt:  '#f8fafc',
-  surfaceAlt2: '#f1f5f9',
-  text:        '#0f172a',
-  textSub:     '#475569',
-  textMuted:   '#94a3b8',
-  border:      '#e2e8f0',
-  borderLight: '#f1f5f9',
-  inputBg:     '#f8fafc',
-  overlay:     'rgba(15,23,42,.65)',
+  surfaceAlt:  '#FFF8F0',
+  surfaceAlt2: '#FBE9E7',
+  text:        '#2C1810',
+  textSub:     '#5D4037',
+  textMuted:   '#8D6E63',
+  border:      '#D7CCC8',
+  borderLight: '#EFEBE9',
+  inputBg:     '#FFF8F0',
+  overlay:     'rgba(44,24,16,.65)',
 };
 
 export const DARK = {
-  bg:          '#0f172a',
-  surface:     '#1e293b',
-  surfaceAlt:  '#1e293b',
-  surfaceAlt2: '#334155',
-  text:        '#f1f5f9',
-  textSub:     '#94a3b8',
-  textMuted:   '#64748b',
-  border:      '#334155',
-  borderLight: '#1e293b',
-  inputBg:     '#1e293b',
-  overlay:     'rgba(2,6,23,.8)',
+  bg:          '#1A0E0A',
+  surface:     '#2C1810',
+  surfaceAlt:  '#2C1810',
+  surfaceAlt2: '#4E342E',
+  text:        '#EFEBE9',
+  textSub:     '#BCAAA4',
+  textMuted:   '#8D6E63',
+  border:      '#4E342E',
+  borderLight: '#2C1810',
+  inputBg:     '#2C1810',
+  overlay:     'rgba(26,14,10,.8)',
 };
 
 const ThemeCtx = createContext(null);

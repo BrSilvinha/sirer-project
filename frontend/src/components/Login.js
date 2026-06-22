@@ -48,13 +48,16 @@ const Login = () => {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a' }}>
-        <div style={{ width: 44, height: 44, border: '4px solid #1e293b', borderTop: '4px solid #6366f1', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1A0E0A' }}>
+        <div style={{ width: 44, height: 44, border: '4px solid #2C1810', borderTop: '4px solid #F9A825', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
 
   const canSubmit = credential && password && !submitting;
+
+  const focusRed = '#C62828';
+  const focusRedRgba = 'rgba(198,40,40,0.12)';
 
   const wrapSt = {
     position: 'relative', display: 'flex', alignItems: 'center',
@@ -81,54 +84,54 @@ const Login = () => {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'inherit' }}>
 
-        {/* Panel izquierdo — branding (siempre oscuro) */}
+        {/* Panel izquierdo — branding El Chavo */}
         <div style={{
-          width: '44%', background: '#0f172a',
+          width: '44%', background: 'linear-gradient(170deg, #1A0E0A 0%, #2C1810 50%, #3E2723 100%)',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           padding: '60px 48px', position: 'relative', overflow: 'hidden',
         }}>
-          <div style={{ position: 'absolute', top: -100, right: -100, width: 320, height: 320, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.1)' }} />
-          <div style={{ position: 'absolute', top: -50,  right: -50,  width: 200, height: 200, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.08)', background: 'rgba(99,102,241,0.03)' }} />
-          <div style={{ position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.07)' }} />
-          <div style={{ position: 'absolute', bottom: -30, left: -30, width: 140, height: 140, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.06)', background: 'rgba(99,102,241,0.03)' }} />
+          <div style={{ position: 'absolute', top: -100, right: -100, width: 320, height: 320, borderRadius: '50%', border: '1px solid rgba(249,168,37,0.1)' }} />
+          <div style={{ position: 'absolute', top: -50,  right: -50,  width: 200, height: 200, borderRadius: '50%', border: '1px solid rgba(249,168,37,0.08)', background: 'rgba(249,168,37,0.03)' }} />
+          <div style={{ position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: '50%', border: '1px solid rgba(198,40,40,0.1)' }} />
+          <div style={{ position: 'absolute', bottom: -30, left: -30, width: 140, height: 140, borderRadius: '50%', border: '1px solid rgba(198,40,40,0.08)', background: 'rgba(198,40,40,0.04)' }} />
 
           <div style={{
-            width: 90, height: 90, borderRadius: 26,
-            background: 'linear-gradient(145deg, #4f46e5, #818cf8)',
+            width: 100, height: 100, borderRadius: 28,
+            background: 'linear-gradient(145deg, #C62828, #EF5350)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 28, boxShadow: '0 16px 48px rgba(99,102,241,0.5)',
+            marginBottom: 28, boxShadow: '0 16px 48px rgba(198,40,40,0.5)',
           }}>
-            <i className="fas fa-utensils" style={{ fontSize: 36, color: '#fff' }}></i>
+            <i className="fas fa-drumstick-bite" style={{ fontSize: 42, color: '#F9A825' }}></i>
           </div>
 
-          <h1 style={{ fontWeight: 900, fontSize: 40, color: '#fff', letterSpacing: 4, margin: 0 }}>SIRER</h1>
-          <p style={{ color: '#64748b', fontSize: 15, marginTop: 12, fontWeight: 500, letterSpacing: 0.5, textAlign: 'center' }}>
-            Sistema de Gestión de Restaurante
+          <h1 style={{ fontWeight: 900, fontSize: 44, color: '#F9A825', letterSpacing: 3, margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>El Chavo</h1>
+          <p style={{ color: '#BCAAA4', fontSize: 16, marginTop: 8, fontWeight: 600, letterSpacing: 1.5, textAlign: 'center', textTransform: 'uppercase' }}>
+            Pollería y Parrilla
           </p>
 
-          <div style={{ width: 48, height: 3, background: '#6366f1', borderRadius: 2, margin: '28px 0' }} />
+          <div style={{ width: 48, height: 3, background: 'linear-gradient(90deg, #C62828, #F9A825)', borderRadius: 2, margin: '28px 0' }} />
 
           {[
-            { icon: 'fa-table',     text: 'Control de mesas en tiempo real' },
-            { icon: 'fa-utensils',  text: 'Gestión de pedidos por mesa'       },
-            { icon: 'fa-chart-bar', text: 'Reportes y estadísticas'           },
+            { icon: 'fa-fire',       text: 'Pollos a la brasa y parrillas' },
+            { icon: 'fa-table',      text: 'Control de mesas en tiempo real' },
+            { icon: 'fa-chart-bar',  text: 'Reportes y estadísticas'       },
           ].map(f => (
             <div key={f.icon} style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, width: '100%', maxWidth: 280 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: 'rgba(99,102,241,0.15)',
-                border: '1px solid rgba(99,102,241,0.2)',
+                background: 'rgba(249,168,37,0.12)',
+                border: '1px solid rgba(249,168,37,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <i className={`fas ${f.icon}`} style={{ color: '#818cf8', fontSize: 14 }}></i>
+                <i className={`fas ${f.icon}`} style={{ color: '#F9A825', fontSize: 14 }}></i>
               </div>
-              <span style={{ color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>{f.text}</span>
+              <span style={{ color: '#BCAAA4', fontSize: 13, fontWeight: 500 }}>{f.text}</span>
             </div>
           ))}
 
-          <div style={{ position: 'absolute', bottom: 24, fontSize: 12, color: '#334155' }}>
-            © 2025 SIRER · Todos los derechos reservados
+          <div style={{ position: 'absolute', bottom: 24, fontSize: 12, color: '#4E342E' }}>
+            © 2025 El Chavo · Todos los derechos reservados
           </div>
         </div>
 
@@ -145,9 +148,9 @@ const Login = () => {
 
             {error && (
               <div style={{
-                background: '#fef2f2', border: '1.5px solid #fecaca',
+                background: '#FFEBEE', border: '1.5px solid #FFCDD2',
                 borderRadius: 12, padding: '12px 16px',
-                color: '#dc2626', fontSize: 13, fontWeight: 600,
+                color: '#C62828', fontSize: 13, fontWeight: 600,
                 marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10,
               }}>
                 <i className="fas fa-exclamation-circle"></i>
@@ -158,9 +161,9 @@ const Login = () => {
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: 20 }}>
                 <label style={labelSt}>DNI o Correo electrónico</label>
-                <div style={{ ...wrapSt, borderColor: focused === 'cred' ? '#6366f1' : C.border, boxShadow: focused === 'cred' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+                <div style={{ ...wrapSt, borderColor: focused === 'cred' ? focusRed : C.border, boxShadow: focused === 'cred' ? `0 0 0 3px ${focusRedRgba}` : 'none' }}>
                   <div style={iconBoxSt}>
-                    <i className="fas fa-id-card" style={{ color: focused === 'cred' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
+                    <i className="fas fa-id-card" style={{ color: focused === 'cred' ? focusRed : C.textMuted, fontSize: 15 }}></i>
                   </div>
                   <input
                     type="text"
@@ -182,9 +185,9 @@ const Login = () => {
 
               <div style={{ marginBottom: 32 }}>
                 <label style={labelSt}>Contraseña</label>
-                <div style={{ ...wrapSt, borderColor: focused === 'pass' ? '#6366f1' : C.border, boxShadow: focused === 'pass' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+                <div style={{ ...wrapSt, borderColor: focused === 'pass' ? focusRed : C.border, boxShadow: focused === 'pass' ? `0 0 0 3px ${focusRedRgba}` : 'none' }}>
                   <div style={iconBoxSt}>
-                    <i className="fas fa-lock" style={{ color: focused === 'pass' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
+                    <i className="fas fa-lock" style={{ color: focused === 'pass' ? focusRed : C.textMuted, fontSize: 15 }}></i>
                   </div>
                   <input
                     type={showPass ? 'text' : 'password'}
@@ -219,19 +222,19 @@ const Login = () => {
 
   /* ────────── MÓVIL ────────── */
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0f172a', fontFamily: 'inherit' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(170deg, #1A0E0A, #2C1810)', fontFamily: 'inherit' }}>
 
-      {/* Hero (siempre oscuro) */}
-      <div style={{ flex: '0 0 auto', padding: '70px 32px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -100, right: -100, width: 280, height: 280, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.1)' }} />
-        <div style={{ position: 'absolute', top: -60,  right: -60,  width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.08)', background: 'rgba(99,102,241,0.04)' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: -80, width: 200, height: 200, borderRadius: '50%', border: '1px solid rgba(99,102,241,0.07)' }} />
+      {/* Hero branding El Chavo */}
+      <div style={{ flex: '0 0 auto', padding: '60px 32px 48px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -100, right: -100, width: 280, height: 280, borderRadius: '50%', border: '1px solid rgba(249,168,37,0.1)' }} />
+        <div style={{ position: 'absolute', top: -60,  right: -60,  width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(249,168,37,0.08)', background: 'rgba(249,168,37,0.04)' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: -80, width: 200, height: 200, borderRadius: '50%', border: '1px solid rgba(198,40,40,0.1)' }} />
 
-        <div style={{ width: 76, height: 76, borderRadius: 22, background: 'linear-gradient(145deg, #4f46e5, #818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 22, boxShadow: '0 12px 40px rgba(99,102,241,0.5)' }}>
-          <i className="fas fa-utensils" style={{ fontSize: 30, color: '#fff' }}></i>
+        <div style={{ width: 84, height: 84, borderRadius: 24, background: 'linear-gradient(145deg, #C62828, #EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, boxShadow: '0 12px 40px rgba(198,40,40,0.5)' }}>
+          <i className="fas fa-drumstick-bite" style={{ fontSize: 36, color: '#F9A825' }}></i>
         </div>
-        <h1 style={{ fontWeight: 900, fontSize: 32, color: '#fff', letterSpacing: 3, margin: 0 }}>SIRER</h1>
-        <p style={{ color: '#475569', fontSize: 13, marginTop: 8, fontWeight: 500, letterSpacing: 0.5 }}>Sistema de Gestión de Restaurante</p>
+        <h1 style={{ fontWeight: 900, fontSize: 36, color: '#F9A825', letterSpacing: 2, margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>El Chavo</h1>
+        <p style={{ color: '#8D6E63', fontSize: 14, marginTop: 6, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>Pollería y Parrilla</p>
       </div>
 
       {/* Card formulario */}
@@ -241,7 +244,7 @@ const Login = () => {
         <p style={{ color: C.textMuted, fontSize: 14, margin: '0 0 28px' }}>Ingresa tus credenciales para continuar</p>
 
         {error && (
-          <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 12, padding: '11px 14px', color: '#dc2626', fontSize: 13, fontWeight: 600, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ background: '#FFEBEE', border: '1.5px solid #FFCDD2', borderRadius: 12, padding: '11px 14px', color: '#C62828', fontSize: 13, fontWeight: 600, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
             <i className="fas fa-exclamation-circle"></i>
             {error}
           </div>
@@ -250,9 +253,9 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
             <label style={labelSt}>DNI o Correo electrónico</label>
-            <div style={{ ...wrapSt, borderColor: focused === 'cred' ? '#6366f1' : C.border, boxShadow: focused === 'cred' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+            <div style={{ ...wrapSt, borderColor: focused === 'cred' ? focusRed : C.border, boxShadow: focused === 'cred' ? `0 0 0 3px ${focusRedRgba}` : 'none' }}>
               <div style={iconBoxSt}>
-                <i className="fas fa-id-card" style={{ color: focused === 'cred' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
+                <i className="fas fa-id-card" style={{ color: focused === 'cred' ? focusRed : C.textMuted, fontSize: 15 }}></i>
               </div>
               <input
                 type="text"
@@ -275,9 +278,9 @@ const Login = () => {
 
           <div style={{ marginBottom: 32 }}>
             <label style={labelSt}>Contraseña</label>
-            <div style={{ ...wrapSt, borderColor: focused === 'pass' ? '#6366f1' : C.border, boxShadow: focused === 'pass' ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none' }}>
+            <div style={{ ...wrapSt, borderColor: focused === 'pass' ? focusRed : C.border, boxShadow: focused === 'pass' ? `0 0 0 3px ${focusRedRgba}` : 'none' }}>
               <div style={iconBoxSt}>
-                <i className="fas fa-lock" style={{ color: focused === 'pass' ? '#6366f1' : C.textMuted, fontSize: 15 }}></i>
+                <i className="fas fa-lock" style={{ color: focused === 'pass' ? focusRed : C.textMuted, fontSize: 15 }}></i>
               </div>
               <input
                 type={showPass ? 'text' : 'password'}
@@ -306,7 +309,7 @@ const Login = () => {
         </form>
 
         <div style={{ textAlign: 'center', marginTop: 32, color: C.textMuted, fontSize: 12 }}>
-          © 2025 SIRER · Todos los derechos reservados
+          © 2025 El Chavo · Todos los derechos reservados
         </div>
       </div>
     </div>
@@ -336,14 +339,14 @@ const btnSt = {
 };
 
 const btnActiveSt = {
-  background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+  background: 'linear-gradient(135deg, #C62828, #EF5350)',
   color: '#fff',
-  boxShadow: '0 8px 24px rgba(99,102,241,0.4)',
+  boxShadow: '0 8px 24px rgba(198,40,40,0.4)',
 };
 
 const btnDisabledSt = {
-  background: '#e2e8f0',
-  color: '#94a3b8',
+  background: '#D7CCC8',
+  color: '#8D6E63',
   cursor: 'not-allowed',
   boxShadow: 'none',
 };

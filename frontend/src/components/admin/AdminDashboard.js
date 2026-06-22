@@ -17,7 +17,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 
 const Spin = () => {
   const { C } = useTheme();
-  return <div style={{ width: 40, height: 40, border: `3px solid ${C.surfaceAlt2}`, borderTop: '3px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />;
+  return <div style={{ width: 40, height: 40, border: `3px solid ${C.surfaceAlt2}`, borderTop: '3px solid #C62828', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />;
 };
 
 const StatCard = ({ label, value, sub, icon, color, bg }) => {
@@ -119,8 +119,8 @@ const AdminHome = () => {
     datasets: [{
       label: 'Pedidos',
       data: (dash?.pedidos_por_estado || []).map(p => parseInt(p.cantidad)),
-      backgroundColor: ['rgba(99,102,241,.5)', 'rgba(245,158,11,.5)', 'rgba(22,163,74,.5)', 'rgba(59,130,246,.5)', 'rgba(139,92,246,.5)'],
-      borderColor:     ['#6366f1', '#f59e0b', '#16a34a', '#3b82f6', '#8b5cf6'],
+      backgroundColor: ['rgba(198,40,40,.5)', 'rgba(245,158,11,.5)', 'rgba(22,163,74,.5)', 'rgba(59,130,246,.5)', 'rgba(139,92,246,.5)'],
+      borderColor:     ['#C62828', '#f59e0b', '#16a34a', '#3b82f6', '#8b5cf6'],
       borderWidth: 2, borderRadius: 6,
     }],
   };
@@ -139,7 +139,7 @@ const AdminHome = () => {
               {new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
-          <button onClick={fetch} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: 12, color: '#6366f1', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={fetch} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', background: '#FFEBEE', border: '1.5px solid #FFCDD2', borderRadius: 12, color: '#C62828', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
             <i className="fas fa-rotate-right" style={{ fontSize: 12 }} />Actualizar
           </button>
         </div>
@@ -148,7 +148,7 @@ const AdminHome = () => {
       {/* Stats grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 14, marginBottom: 24 }}>
         <StatCard label="Ventas hoy"  value={`S/${ventas.toFixed(0)}`}  icon="fa-dollar-sign" color="#16a34a" bg="#f0fdf4" />
-        <StatCard label="Pedidos hoy" value={pedidos}                    icon="fa-receipt"     color="#6366f1" bg="#eef2ff" />
+        <StatCard label="Pedidos hoy" value={pedidos}                    icon="fa-receipt"     color="#C62828" bg="#FFEBEE" />
         <StatCard label="Promedio"    value={`S/${prom.toFixed(0)}`}     icon="fa-chart-line"  color="#d97706" bg="#fffbeb" />
         <StatCard label="Ocupación"   value={`${ocup}%`}                 icon="fa-table"       color="#0ea5e9" bg="#f0f9ff"
           sub={`${mesas?.ocupadas || 0} de ${mesas?.total || 0} mesas`} />
@@ -156,7 +156,7 @@ const AdminHome = () => {
 
       {/* Charts row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 24 }}>
-        <SectionCard title="Estado de Mesas" icon="fa-table" iconColor="#6366f1">
+        <SectionCard title="Estado de Mesas" icon="fa-table" iconColor="#C62828">
           <div style={{ padding: 16, height: 220 }}>
             {(mesas?.total || 0) > 0
               ? <Doughnut data={mesasChart} options={chartOpts} />
@@ -204,8 +204,8 @@ const AdminHome = () => {
             <div style={{ padding: '8px 0' }}>
               {dash.mozos_activos.map((m, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < dash.mozos_activos.length - 1 ? `1px solid ${C.borderLight}` : 'none' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#eef2ff', border: '1.5px solid #c7d2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <i className="fas fa-user-tie" style={{ color: '#6366f1', fontSize: 14 }} />
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FFEBEE', border: '1.5px solid #FFCDD2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <i className="fas fa-user-tie" style={{ color: '#C62828', fontSize: 14 }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

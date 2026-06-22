@@ -9,24 +9,25 @@ import MozoDashboard from '../mozo/MozoDashboard';
    DESIGN TOKENS  (fuente de verdad única)
 ───────────────────────────────────────── */
 const T = {
-  primary:   '#6366f1',
-  primaryDk: '#4f46e5',
-  primaryBg: '#eef2ff',
-  dark:      '#0f172a',
-  dark2:     '#1e293b',
-  dark3:     '#334155',
-  muted:     '#94a3b8',
-  bg:        '#f8fafc',
-  border:    '#e2e8f0',
-  text:      '#0f172a',
+  primary:   '#C62828',
+  primaryDk: '#9B1B1B',
+  primaryBg: '#FFEBEE',
+  dark:      '#1A0E0A',
+  dark2:     '#2C1810',
+  dark3:     '#4E342E',
+  muted:     '#8D6E63',
+  bg:        '#FFF8F0',
+  border:    '#D7CCC8',
+  text:      '#2C1810',
+  accent:    '#F9A825',
 };
 
 /* ─────────────────────────────────────────
    CONFIG DE ROLES
 ───────────────────────────────────────── */
 const ROL_CFG = {
-  administrador: { label: 'Administrador', icon: 'fa-crown',    color: '#818cf8' },
-  mozo:          { label: 'Mozo',          icon: 'fa-user-tie', color: '#38bdf8' },
+  administrador: { label: 'Administrador', icon: 'fa-crown',    color: '#F9A825' },
+  mozo:          { label: 'Mozo',          icon: 'fa-user-tie', color: '#EF5350' },
 };
 
 const NAV = {
@@ -89,12 +90,12 @@ const TopBarDesktop = ({ user, logout, navItems, location }) => {
     }}>
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 32, flexShrink: 0 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#4f46e5,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <i className="fas fa-utensils" style={{ color: '#fff', fontSize: 14 }} />
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#C62828,#EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className="fas fa-drumstick-bite" style={{ color: '#F9A825', fontSize: 14 }} />
         </div>
         <div>
-          <div style={{ fontWeight: 900, fontSize: 17, color: '#fff', letterSpacing: 1, lineHeight: 1 }}>SIRER</div>
-          <div style={{ fontSize: 9, color: T.muted, letterSpacing: 0.4 }}>Sistema de Gestión</div>
+          <div style={{ fontWeight: 900, fontSize: 17, color: '#F9A825', letterSpacing: 1, lineHeight: 1 }}>EL CHAVO</div>
+          <div style={{ fontSize: 9, color: T.muted, letterSpacing: 0.4 }}>Pollería y Parrilla</div>
         </div>
       </div>
 
@@ -137,9 +138,9 @@ const TopBarDesktop = ({ user, logout, navItems, location }) => {
         <div style={{ width: 1, height: 28, background: T.dark3 }} />
         <button onClick={toggle} title={isDark ? 'Modo día' : 'Modo noche'} style={{
           width: 36, height: 36, borderRadius: 10,
-          background: isDark ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.08)',
-          border: `1px solid ${isDark ? 'rgba(251,191,36,.3)' : 'rgba(255,255,255,.15)'}`,
-          color: isDark ? '#fbbf24' : '#94a3b8',
+          background: isDark ? 'rgba(249,168,37,.15)' : 'rgba(255,255,255,.08)',
+          border: `1px solid ${isDark ? 'rgba(249,168,37,.3)' : 'rgba(255,255,255,.15)'}`,
+          color: isDark ? '#F9A825' : '#94a3b8',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, flexShrink: 0,
         }}>
@@ -177,11 +178,11 @@ const TopBarMobile = ({ user, logout }) => {
     }}>
       {/* Logo */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg,#4f46e5,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <i className="fas fa-utensils" style={{ color: '#fff', fontSize: 13 }} />
+        <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg,#C62828,#EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <i className="fas fa-drumstick-bite" style={{ color: '#F9A825', fontSize: 13 }} />
         </div>
         <div>
-          <div style={{ fontWeight: 900, fontSize: 16, color: '#fff', letterSpacing: 0.8, lineHeight: 1 }}>SIRER</div>
+          <div style={{ fontWeight: 900, fontSize: 16, color: '#F9A825', letterSpacing: 0.8, lineHeight: 1 }}>EL CHAVO</div>
           <div style={{ fontSize: 10, color: rol.color, fontWeight: 600 }}>{rol.label}</div>
         </div>
       </div>
@@ -191,7 +192,7 @@ const TopBarMobile = ({ user, logout }) => {
         <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${rol.color}20`, border: `1.5px solid ${rol.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <span style={{ fontSize: 11, fontWeight: 900, color: rol.color }}>{initials}</span>
         </div>
-        <button onClick={toggle} title={isDark ? 'Modo día' : 'Modo noche'} style={{ width: 32, height: 32, borderRadius: 9, background: isDark ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.08)', border: `1px solid ${isDark ? 'rgba(251,191,36,.3)' : 'rgba(255,255,255,.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: isDark ? '#fbbf24' : '#94a3b8', flexShrink: 0, fontSize: 13 }}>
+        <button onClick={toggle} title={isDark ? 'Modo día' : 'Modo noche'} style={{ width: 32, height: 32, borderRadius: 9, background: isDark ? 'rgba(249,168,37,.15)' : 'rgba(255,255,255,.08)', border: `1px solid ${isDark ? 'rgba(249,168,37,.3)' : 'rgba(255,255,255,.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: isDark ? '#F9A825' : '#94a3b8', flexShrink: 0, fontSize: 13 }}>
           <i className={`fas ${isDark ? 'fa-sun' : 'fa-moon'}`} />
         </button>
         <button onClick={logout} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(239,68,68,.15)', border: '1px solid rgba(239,68,68,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#f87171', flexShrink: 0 }}>

@@ -11,7 +11,7 @@ const CSS = `
 `;
 
 const ESTADO = {
-  nuevo:     { label:'Nuevo',      color:'#6366f1', bg:'#eef2ff', icon:'fa-plus-circle'  },
+  nuevo:     { label:'Nuevo',      color:'#C62828', bg:'#FFEBEE', icon:'fa-plus-circle'  },
   preparado: { label:'Listo',      color:'#16a34a', bg:'#f0fdf4', icon:'fa-check-circle' },
   entregado: { label:'Entregado',  color:'#0ea5e9', bg:'#f0f9ff', icon:'fa-handshake'    },
   pagado:    { label:'Pagado',     color:'#64748b', bg:'#f8fafc', icon:'fa-receipt'       },
@@ -34,7 +34,7 @@ const tiempoDesde = (fecha) => {
 
 /* ── Spinner ── */
 const Spin = () => (
-  <div style={{ width: 36, height: 36, border: '3px solid #eef2ff', borderTop: '3px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
+  <div style={{ width: 36, height: 36, border: '3px solid #FFEBEE', borderTop: '3px solid #C62828', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
 );
 
 /* ══════════════════════════════════════════
@@ -139,16 +139,16 @@ const PedidoDetalles = () => {
 
         {/* ── Agregar productos ── */}
         <button onClick={() => navigate(`/dashboard/mozo/pedidos/${pedido.mesa?.id || pedido.Mesa?.id}`)}
-          style={{ width: '100%', padding: '13px 0', background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: 14, color: '#6366f1', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', marginBottom: 20 }}>
+          style={{ width: '100%', padding: '13px 0', background: '#FFEBEE', border: '1.5px solid #FFCDD2', borderRadius: 14, color: '#C62828', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', marginBottom: 20 }}>
           <i className="fas fa-plus" />Agregar más productos
         </button>
 
         {/* ── Lista de productos ── */}
         <div style={{ background: C.surface, borderRadius: 20, border: `1.5px solid ${C.border}`, overflow: 'hidden', marginBottom: 16 }}>
           <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.borderLight}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-utensils" style={{ color: '#6366f1', fontSize: 14 }} />
+            <i className="fas fa-utensils" style={{ color: '#C62828', fontSize: 14 }} />
             <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>Productos</span>
-            <span style={{ marginLeft: 'auto', background: '#eef2ff', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>{detalles.length} ítem{detalles.length !== 1 ? 's' : ''}</span>
+            <span style={{ marginLeft: 'auto', background: '#FFEBEE', color: '#C62828', borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>{detalles.length} ítem{detalles.length !== 1 ? 's' : ''}</span>
           </div>
           {detalles.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '32px 16px', color: '#94a3b8' }}>
@@ -159,7 +159,7 @@ const PedidoDetalles = () => {
             <div>
               {detalles.map((d, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < detalles.length - 1 ? `1px solid ${C.borderLight}` : 'none' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900, fontSize: 14, color: '#6366f1' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFEBEE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900, fontSize: 14, color: '#C62828' }}>
                     {d.cantidad}×
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -196,7 +196,7 @@ const PedidoDetalles = () => {
             ].map(r => (
               <div key={r.label} style={{ background: C.surfaceAlt, borderRadius: 12, padding: '10px 12px' }}>
                 <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 700, letterSpacing: 0.6, marginBottom: 4 }}>
-                  <i className={`fas ${r.icon}`} style={{ marginRight: 5, color: '#6366f1' }} />{r.label.toUpperCase()}
+                  <i className={`fas ${r.icon}`} style={{ marginRight: 5, color: '#C62828' }} />{r.label.toUpperCase()}
                 </div>
                 <div style={{ fontWeight: 700, fontSize: 13, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.value}</div>
               </div>

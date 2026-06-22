@@ -11,7 +11,7 @@ const ESTADO = {
 
 const Spin = () => {
   const { C } = useTheme();
-  return <div style={{ width: 44, height: 44, border: `4px solid ${C.surfaceAlt2}`, borderTop: '4px solid #6366f1', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />;
+  return <div style={{ width: 44, height: 44, border: `4px solid ${C.surfaceAlt2}`, borderTop: '4px solid #C62828', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />;
 };
 
 const MesaSheet = ({ mesa, onClose, onStatus, onEdit, onDelete, saving }) => {
@@ -29,7 +29,7 @@ const MesaSheet = ({ mesa, onClose, onStatus, onEdit, onDelete, saving }) => {
           <div style={{ width: 88, height: 88, borderRadius: '50%', background: est.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', boxShadow: `0 8px 28px ${est.color}55` }}>
             <span style={{ fontWeight: 900, fontSize: 36, color: '#fff', lineHeight: 1 }}>{mesa.numero}</span>
           </div>
-          <div style={{ fontWeight: 800, fontSize: 20, color: '#0f172a' }}>Mesa {mesa.numero}</div>
+          <div style={{ fontWeight: 800, fontSize: 20, color: '#2C1810' }}>Mesa {mesa.numero}</div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: est.color, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700, marginTop: 8 }}>
             <i className={`fas ${est.icon}`} style={{ fontSize: 11 }}></i>{est.label}
           </div>
@@ -107,7 +107,7 @@ const FormSheet = ({ open, onClose, editing, formData, setFormData, onSubmit, sa
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
               {[2, 4, 6, 8, 10, 12].map(n => (
                 <button key={n} type="button" onClick={() => setFormData(f => ({ ...f, capacidad: n }))}
-                  style={{ padding: '16px 0', borderRadius: 14, border: `2px solid ${formData.capacidad === n ? '#6366f1' : C.border}`, background: formData.capacidad === n ? '#eef2ff' : C.surfaceAlt, color: formData.capacidad === n ? '#4f46e5' : C.textSub, fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ padding: '16px 0', borderRadius: 14, border: `2px solid ${formData.capacidad === n ? '#C62828' : C.border}`, background: formData.capacidad === n ? '#FFEBEE' : C.surfaceAlt, color: formData.capacidad === n ? '#9B1B1B' : C.textSub, fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
                   {n}
                 </button>
               ))}
@@ -115,7 +115,7 @@ const FormSheet = ({ open, onClose, editing, formData, setFormData, onSubmit, sa
           </div>
 
           <button onClick={onSubmit} disabled={saving || !formData.numero}
-            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: (saving || !formData.numero) ? C.surfaceAlt2 : 'linear-gradient(135deg, #4f46e5, #6366f1)', color: (saving || !formData.numero) ? C.textMuted : '#fff', fontWeight: 800, fontSize: 16, cursor: (saving || !formData.numero) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: (saving || !formData.numero) ? C.surfaceAlt2 : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: (saving || !formData.numero) ? C.textMuted : '#fff', fontWeight: 800, fontSize: 16, cursor: (saving || !formData.numero) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
             <i className={saving ? 'fas fa-circle-notch fa-spin' : editing ? 'fas fa-save' : 'fas fa-plus'}></i>
             {saving ? 'Guardando...' : editing ? 'Actualizar Mesa' : 'Crear Mesa'}
           </button>
@@ -227,7 +227,7 @@ const MesasManagement = () => {
       {/* Stats */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         {[
-          { label: 'Total',  value: mesas.length, color: '#6366f1', icon: 'fa-table-cells'  },
+          { label: 'Total',  value: mesas.length, color: '#C62828', icon: 'fa-table-cells'  },
           { label: 'Libres', value: libres,        color: '#16a34a', icon: 'fa-circle-check' },
           { label: 'Ocup.',  value: ocupadas,      color: '#dc2626', icon: 'fa-users'        },
           { label: 'Cuenta', value: cuenta,        color: '#d97706', icon: 'fa-receipt'      },
@@ -266,7 +266,7 @@ const MesasManagement = () => {
 
       {/* FAB */}
       <button onClick={openNew}
-        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(99,102,241,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(198,40,40,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <i className="fas fa-plus" style={{ fontSize: 22 }}></i>
       </button>
 

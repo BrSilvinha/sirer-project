@@ -14,11 +14,11 @@ ChartJS.register(
     PointElement, Title, Tooltip, Legend, ArcElement, Filler
 );
 
-const A       = '#6366f1';
-const SDARK   = '#0f172a';
-const SDARK2  = '#1e293b';
-const SDARK3  = '#334155';
-const BAR_COLORS = ['#6366f1','#16a34a','#f59e0b','#0ea5e9','#ec4899','#8b5cf6','#14b8a6','#dc2626'];
+const A       = '#C62828';
+const SDARK   = '#1A0E0A';
+const SDARK2  = '#2C1810';
+const SDARK3  = '#4E342E';
+const BAR_COLORS = ['#C62828','#16a34a','#f59e0b','#0ea5e9','#ec4899','#8b5cf6','#14b8a6','#dc2626'];
 
 const useIsDesktop = () => {
     const [desk, setDesk] = useState(() => window.innerWidth >= 768);
@@ -108,7 +108,7 @@ const useReportes = () => {
         else if (tab === 'productos' && reporteProductos) { headers = '<tr><th>#</th><th>Producto</th><th>Cantidad</th><th>Ingresos</th></tr>'; reporteProductos.productos?.forEach((p, i) => { rows += `<tr><td>${i+1}</td><td>${p.producto?.nombre}</td><td>${p.total_vendido}</td><td>S/${p.ingresos_totales}</td></tr>`; }); }
         else if (tab === 'mozos' && reporteMozos) { headers = '<tr><th>#</th><th>Mozo</th><th>Pedidos</th><th>Ventas</th><th>Promedio</th></tr>'; reporteMozos.mozos?.forEach((m, i) => { rows += `<tr><td>${i+1}</td><td>${m.mozo?.nombre}</td><td>${m.total_pedidos}</td><td>S/${m.total_ventas}</td><td>S/${m.promedio_por_pedido}</td></tr>`; }); }
         else if (tab === 'mesas' && reporteMesas) { headers = '<tr><th>Mesa</th><th>Cap.</th><th>Pedidos</th><th>Ingresos</th><th>Promedio</th></tr>'; reporteMesas.mesas?.forEach(m => { rows += `<tr><td>Mesa ${m.mesa?.numero}</td><td>${m.mesa?.capacidad}</td><td>${m.total_pedidos}</td><td>S/${m.ingresos_totales}</td><td>S/${m.promedio_por_pedido}</td></tr>`; }); }
-        const html = `<html><head><title>SIRER - ${tab}</title><style>body{font-family:Arial,sans-serif;margin:20px}h1{color:#6366f1;margin-bottom:4px}p{color:#64748b;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:9px 12px;text-align:left}th{background:#f1f5f9;font-weight:700}</style></head><body><h1>SIRER — ${tab.charAt(0).toUpperCase()+tab.slice(1)}</h1><p>Período: ${periodo} · Generado: ${new Date().toLocaleString()}</p><table><thead>${headers}</thead><tbody>${rows}</tbody></table></body></html>`;
+        const html = `<html><head><title>SIRER - ${tab}</title><style>body{font-family:Arial,sans-serif;margin:20px}h1{color:#C62828;margin-bottom:4px}p{color:#64748b;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:9px 12px;text-align:left}th{background:#f1f5f9;font-weight:700}</style></head><body><h1>SIRER — ${tab.charAt(0).toUpperCase()+tab.slice(1)}</h1><p>Período: ${periodo} · Generado: ${new Date().toLocaleString()}</p><table><thead>${headers}</thead><tbody>${rows}</tbody></table></body></html>`;
         const w = window.open('', '_blank');
         w.document.write(html); w.document.close();
         setTimeout(() => w.print(), 500);
@@ -176,7 +176,7 @@ const MobileRankRow = ({ pos, name, sub, ingresos, maxIngresos, extra }) => {
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#16a34a', flexShrink: 0 }}>{fmt(ingresos)}</div>
             </div>
             <div style={{ height: 4, background: C.surfaceAlt2, borderRadius: 4, overflow: 'hidden', marginLeft: 42 }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${A},#818cf8)`, borderRadius: 4, transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)' }} />
+                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${A},#EF5350)`, borderRadius: 4, transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)' }} />
             </div>
             {extra && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4, marginLeft: 42 }}>{extra}</div>}
         </div>
@@ -464,7 +464,7 @@ const ProgressBar = ({ name, value, max, color, sub }) => {
                 <span style={{ fontWeight: 800, color: color || '#16a34a', flexShrink: 0, marginLeft: 8 }}>{fmt(value)}</span>
             </div>
             <div style={{ height: 7, background: C.surfaceAlt2, borderRadius: 6, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: color ? `linear-gradient(90deg,${color},${color}99)` : `linear-gradient(90deg,${A},#818cf8)`, borderRadius: 6, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
+                <div style={{ height: '100%', width: `${pct}%`, background: color ? `linear-gradient(90deg,${color},${color}99)` : `linear-gradient(90deg,${A},#EF5350)`, borderRadius: 6, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
             </div>
         </div>
     );
@@ -566,7 +566,7 @@ const DesktopLayout = ({ data }) => {
             <div style={{ width: 272, flexShrink: 0, background: SDARK, display: 'flex', flexDirection: 'column', position: 'sticky', top: 58, height: 'calc(100vh - 58px)', overflowY: 'auto' }}>
                 <div style={{ padding: '22px 18px 16px', borderBottom: `1px solid ${SDARK2}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 14, background: 'linear-gradient(135deg,#4f46e5,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 14px ${A}60` }}>
+                        <div style={{ width: 42, height: 42, borderRadius: 14, background: 'linear-gradient(135deg,#9B1B1B,#EF5350)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 14px ${A}60` }}>
                             <i className="fas fa-chart-bar" style={{ color: '#fff', fontSize: 18 }} />
                         </div>
                         <div>
@@ -598,7 +598,7 @@ const DesktopLayout = ({ data }) => {
                         ))}
                     </div>
                     <button onClick={fetchReportes} disabled={loading}
-                        style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', cursor: 'pointer', background: loading ? SDARK3 : `linear-gradient(135deg,#4f46e5,#818cf8)`, color: '#fff', fontWeight: 700, fontSize: 13, boxShadow: loading ? 'none' : `0 4px 14px ${A}50`, transition: 'all 0.2s' }}>
+                        style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', cursor: 'pointer', background: loading ? SDARK3 : `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', fontWeight: 700, fontSize: 13, boxShadow: loading ? 'none' : `0 4px 14px ${A}50`, transition: 'all 0.2s' }}>
                         <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-sync-alt'}`} style={{ marginRight: 8 }} />
                         Actualizar datos
                     </button>

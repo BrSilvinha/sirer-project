@@ -27,50 +27,50 @@ function App() {
                     duration: 4000,
                     style: {
                         background: '#fff',
-                        color: '#2C1810', // --menu-dark
+                        color: '#2C1810',
                         fontSize: '14px',
                         borderRadius: '12px',
-                        boxShadow: '0 6px 20px rgba(218, 165, 32, 0.15)',
-                        border: '2px solid rgba(218, 165, 32, 0.2)'
+                        boxShadow: '0 6px 20px rgba(198, 40, 40, 0.15)',
+                        border: '2px solid rgba(198, 40, 40, 0.2)'
                     },
                     success: {
                         style: {
-                            background: 'linear-gradient(135deg, #32CD32, #228B22)', // Verde del menú
+                            background: 'linear-gradient(135deg, #16a34a, #15803d)',
                             color: 'white',
-                            border: '2px solid #32CD32'
+                            border: '2px solid #16a34a'
                         },
                         iconTheme: {
                             primary: 'white',
-                            secondary: '#32CD32',
+                            secondary: '#16a34a',
                         },
                     },
                     error: {
                         style: {
-                            background: 'linear-gradient(135deg, #C2185B, #880E4F)', // Purple del menú
+                            background: 'linear-gradient(135deg, #C62828, #9B1B1B)',
                             color: 'white',
-                            border: '2px solid #C2185B'
+                            border: '2px solid #C62828'
                         },
                         iconTheme: {
                             primary: 'white',
-                            secondary: '#C2185B',
+                            secondary: '#C62828',
                         },
                     },
                     loading: {
                         style: {
-                            background: 'linear-gradient(135deg, #DAA520, #C2185B)', // Gradiente dorado-purple
+                            background: 'linear-gradient(135deg, #F9A825, #E65100)',
                             color: 'white',
-                            border: '2px solid #DAA520'
+                            border: '2px solid #F9A825'
                         },
                     },
                     warning: {
                         style: {
-                            background: 'linear-gradient(135deg, #FF8C00, #DAA520)', // Naranja-dorado
+                            background: 'linear-gradient(135deg, #E65100, #F9A825)',
                             color: 'white',
-                            border: '2px solid #FF8C00'
+                            border: '2px solid #E65100'
                         },
                         iconTheme: {
                             primary: 'white',
-                            secondary: '#FF8C00',
+                            secondary: '#E65100',
                         },
                     },
                 }}

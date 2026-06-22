@@ -4,10 +4,10 @@ import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const ROL = {
-  administrador: { label: 'Admin', color: '#6366f1', bg: '#eef2ff', icon: 'fa-crown'    },
+  administrador: { label: 'Admin', color: '#C62828', bg: '#FFEBEE', icon: 'fa-crown'    },
   mozo:          { label: 'Mozo',  color: '#0ea5e9', bg: '#f0f9ff', icon: 'fa-user-tie' },
 };
-const A        = '#6366f1';
+const A        = '#C62828';
 const PAGE_SIZE = 20;
 
 const useIsDesktop = () => {
@@ -280,7 +280,7 @@ const UserDetailSheet = ({ usuario, onClose, onEdit, onPassword, onToggle }) => 
   if (!usuario) return null;
   const r = ROL[usuario.rol] || { label: usuario.rol, color: '#64748b', bg: '#f1f5f9', icon: 'fa-user' };
   const actions = [
-    { label: 'Editar usuario',     icon: 'fa-pen',        color: A,        bg: '#eef2ff', fn: onEdit     },
+    { label: 'Editar usuario',     icon: 'fa-pen',        color: A,        bg: '#FFEBEE', fn: onEdit     },
     { label: 'Cambiar contraseña', icon: 'fa-key',        color: '#f59e0b', bg: '#fffbeb', fn: onPassword },
     { label: usuario.activo ? 'Desactivar usuario' : 'Activar usuario',
       icon:  usuario.activo ? 'fa-user-slash' : 'fa-user-check',
@@ -461,7 +461,7 @@ const MobileLayout = ({ d }) => {
       </div>
 
       {/* FAB */}
-      <button onClick={d.openNew} style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg,#4f46e5,#818cf8)`, color: '#fff', border: 'none', boxShadow: `0 4px 20px ${A}55`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <button onClick={d.openNew} style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', border: 'none', boxShadow: `0 4px 20px ${A}55`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <i className="fas fa-plus" style={{ fontSize: 20 }} />
       </button>
 
@@ -469,7 +469,7 @@ const MobileLayout = ({ d }) => {
 
       <Sheet open={d.showForm} onClose={() => d.setShowForm(false)} title={d.editing ? 'Editar Usuario' : 'Nuevo Usuario'}
         footer={
-          <button onClick={d.handleSubmit} disabled={d.saving} style={{ width: '100%', padding: 15, background: d.saving ? '#94a3b8' : `linear-gradient(135deg,#4f46e5,#818cf8)`, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <button onClick={d.handleSubmit} disabled={d.saving} style={{ width: '100%', padding: 15, background: d.saving ? '#94a3b8' : `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {d.saving ? <><i className="fas fa-spinner fa-spin" />Guardando...</> : d.editing ? <><i className="fas fa-save" />Actualizar</> : <><i className="fas fa-user-plus" />Crear Usuario</>}
           </button>
         }>
@@ -543,8 +543,8 @@ const TableRow = ({ usuario, onEdit, onPassword, onToggle }) => {
       <td style={{ padding: '14px 20px', verticalAlign: 'middle' }}>
         <div style={{ display: 'flex', gap: 6, opacity: hov ? 1 : 0.4, transition: 'opacity 0.15s' }}>
           <button onClick={() => onEdit(usuario)} title="Editar"
-            style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer', background: '#eef2ff', color: A, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            onMouseEnter={e => e.currentTarget.style.background='#e0e7ff'} onMouseLeave={e => e.currentTarget.style.background='#eef2ff'}>
+            style={{ width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer', background: '#FFEBEE', color: A, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onMouseEnter={e => e.currentTarget.style.background='#e0e7ff'} onMouseLeave={e => e.currentTarget.style.background='#FFEBEE'}>
             <i className="fas fa-pen" />
           </button>
           <button onClick={() => onPassword(usuario)} title="Cambiar contraseña"
@@ -596,7 +596,7 @@ const DesktopLayout = ({ d }) => {
             <i className={`fas ${d.loading ? 'fa-spinner fa-spin' : 'fa-sync-alt'}`} />Actualizar
           </button>
           <button onClick={d.openNew}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,#4f46e5,#818cf8)`, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: `0 4px 14px ${A}40` }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: `0 4px 14px ${A}40` }}>
             <i className="fas fa-user-plus" />Nuevo Usuario
           </button>
         </div>
@@ -608,7 +608,7 @@ const DesktopLayout = ({ d }) => {
           { label: 'Total usuarios',   value: d.stats.total,   color: A,        icon: 'fa-users',        sub: 'registrados'      },
           { label: 'Usuarios activos', value: d.stats.activos, color: '#22c55e', icon: 'fa-circle-check', sub: 'con acceso'        },
           { label: 'Mozos',            value: d.stats.mozos,   color: '#0ea5e9', icon: 'fa-user-tie',     sub: 'en sala'           },
-          { label: 'Admins',           value: d.stats.staff,   color: '#818cf8', icon: 'fa-crown',        sub: 'administradores'   },
+          { label: 'Admins',           value: d.stats.staff,   color: '#EF5350', icon: 'fa-crown',        sub: 'administradores'   },
         ].map(s => (
           <div key={s.label}
             style={{ background: C.surface, borderRadius: 20, padding: '20px 22px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', position: 'relative', overflow: 'hidden', border: `1px solid ${C.borderLight}`, cursor: 'default' }}
@@ -726,7 +726,7 @@ const DesktopLayout = ({ d }) => {
       <Modal open={d.showForm} onClose={() => d.setShowForm(false)} title={d.editing ? 'Editar Usuario' : 'Nuevo Usuario'}
         footer={
           <button onClick={d.handleSubmit} disabled={d.saving}
-            style={{ width: '100%', padding: 14, background: d.saving ? '#94a3b8' : `linear-gradient(135deg,#4f46e5,#818cf8)`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: d.saving ? 'none' : `0 4px 14px ${A}40` }}>
+            style={{ width: '100%', padding: 14, background: d.saving ? '#94a3b8' : `linear-gradient(135deg,#9B1B1B,#EF5350)`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: d.saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: d.saving ? 'none' : `0 4px 14px ${A}40` }}>
             {d.saving ? <><i className="fas fa-spinner fa-spin" />Guardando...</> : d.editing ? <><i className="fas fa-save" />Actualizar Usuario</> : <><i className="fas fa-user-plus" />Crear Usuario</>}
           </button>
         }>

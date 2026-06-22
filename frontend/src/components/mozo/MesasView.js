@@ -79,8 +79,8 @@ const useMesas = () => {
 };
 
 /* ── Spinner ── */
-const Spin = ({ size=36, color='#6366f1' }) => (
-  <div style={{ width:size, height:size, border:`3px solid #eef2ff`, borderTop:`3px solid ${color}`, borderRadius:'50%', animation:'spin .75s linear infinite', flexShrink:0 }} />
+const Spin = ({ size=36, color='#C62828' }) => (
+  <div style={{ width:size, height:size, border:`3px solid #FFEBEE`, borderTop:`3px solid ${color}`, borderRadius:'50%', animation:'spin .75s linear infinite', flexShrink:0 }} />
 );
 
 /* ════════════════════════════════════════
@@ -300,7 +300,7 @@ const CobroPanel = ({ mesa, onClose, onPagado, isModal=false }) => {
                 <div style={{ width:28, height:28, borderRadius:8, background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#64748b' }}>{p.cantidad}×</div>
                 <span style={{ fontSize:14, color:'#374151', fontWeight:500 }}>{p.producto?.nombre||p.nombre}</span>
               </div>
-              <span style={{ fontWeight:800, fontSize:14, color:'#0f172a' }}>S/ {parseFloat(p.subtotal).toFixed(2)}</span>
+              <span style={{ fontWeight:800, fontSize:14, color:'#2C1810' }}>S/ {parseFloat(p.subtotal).toFixed(2)}</span>
             </div>
           ))}
         </div>
@@ -400,7 +400,7 @@ const MobileLayout = ({ mesas, stats, loading, fetchMesas }) => {
         {FILTROS.map(f=>{
           const active=filtro===f.key;
           return (
-            <button key={f.key} onClick={()=>setFiltro(f.key)} style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:20, flexShrink:0, background:active?(f.e?f.e.gradient:'#0f172a'):'#fff', color:active?'#fff':'#64748b', border:active?'none':'1.5px solid #e2e8f0', fontWeight:700, fontSize:13, cursor:'pointer', boxShadow:active?'0 3px 10px rgba(0,0,0,.15)':'none', fontFamily:'inherit', transition:'all .15s' }}>
+            <button key={f.key} onClick={()=>setFiltro(f.key)} style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:20, flexShrink:0, background:active?(f.e?f.e.gradient:'#2C1810'):'#fff', color:active?'#fff':'#64748b', border:active?'none':'1.5px solid #e2e8f0', fontWeight:700, fontSize:13, cursor:'pointer', boxShadow:active?'0 3px 10px rgba(0,0,0,.15)':'none', fontFamily:'inherit', transition:'all .15s' }}>
               {f.e&&<i className={`fas ${f.e.icon}`} style={{ fontSize:11 }} />}{f.label}
               <span style={{ background:active?'rgba(255,255,255,.3)':'#f1f5f9', color:active?'#fff':'#94a3b8', borderRadius:20, padding:'1px 7px', fontSize:11, fontWeight:800 }}>{f.count}</span>
             </button>
@@ -545,7 +545,7 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
   return (
     <div style={{ display:'flex', minHeight:'calc(100vh - 58px)', background:C.bg }}>
       {/* ── Sidebar ── */}
-      <aside style={{ width:260, flexShrink:0, background:'#0f172a', display:'flex', flexDirection:'column', padding:'24px 16px', gap:6 }}>
+      <aside style={{ width:260, flexShrink:0, background:'#2C1810', display:'flex', flexDirection:'column', padding:'24px 16px', gap:6 }}>
         {/* Header sidebar */}
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:11, color:'#475569', fontWeight:700, letterSpacing:1.2, marginBottom:12 }}>GESTIÓN DE MESAS</div>
@@ -560,7 +560,7 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
             { label:'Libres',   value:stats?.libres??0,            color:'#22c55e', bg:'rgba(34,197,94,.12)'  },
             { label:'Ocupadas', value:stats?.ocupadas??0,          color:'#ef4444', bg:'rgba(239,68,68,.12)'  },
             { label:'Cuenta',   value:stats?.cuenta_solicitada??0, color:'#f59e0b', bg:'rgba(245,158,11,.12)' },
-            { label:'Total',    value:mesas.length,                color:'#818cf8', bg:'rgba(129,140,248,.12)'},
+            { label:'Total',    value:mesas.length,                color:'#EF5350', bg:'rgba(129,140,248,.12)'},
           ].map(s=>(
             <div key={s.label} style={{ background:s.bg, borderRadius:12, padding:'10px 8px', textAlign:'center', border:`1px solid ${s.color}25` }}>
               <div style={{ fontSize:22, fontWeight:900, color:s.color, lineHeight:1 }}>{s.value}</div>
@@ -576,9 +576,9 @@ const DesktopLayout = ({ mesas, stats, loading, fetchMesas }) => {
           const e=EST[f.key];
           return (
             <button key={f.key} onClick={()=>setFiltro(f.key)}
-              style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 14px', borderRadius:12, background:active?'#6366f1':'transparent', color:active?'#fff':'#64748b', border:'none', cursor:'pointer', fontWeight:active?700:500, fontSize:14, transition:'all .15s', textAlign:'left', fontFamily:'inherit', width:'100%', boxShadow:active?'0 2px 8px rgba(99,102,241,.4)':'none' }}
-              onMouseEnter={ev=>ev.currentTarget.style.background=active?'#6366f1':'#1e293b'}
-              onMouseLeave={ev=>ev.currentTarget.style.background=active?'#6366f1':'transparent'}
+              style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 14px', borderRadius:12, background:active?'#C62828':'transparent', color:active?'#fff':'#64748b', border:'none', cursor:'pointer', fontWeight:active?700:500, fontSize:14, transition:'all .15s', textAlign:'left', fontFamily:'inherit', width:'100%', boxShadow:active?'0 2px 8px rgba(198,40,40,.4)':'none' }}
+              onMouseEnter={ev=>ev.currentTarget.style.background=active?'#C62828':'#1e293b'}
+              onMouseLeave={ev=>ev.currentTarget.style.background=active?'#C62828':'transparent'}
             >
               <div style={{ width:32, height:32, borderRadius:10, background:active?'rgba(255,255,255,.2)':e?e.light:'#1e293b', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 <i className={`fas ${f.icon}`} style={{ fontSize:13, color:active?'#fff':e?e.color:'#64748b' }} />

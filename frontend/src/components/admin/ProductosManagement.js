@@ -3,14 +3,14 @@ import { productosService, categoriasService } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
-const CAT_COLORS = ['#6366f1','#16a34a','#dc2626','#f59e0b','#0ea5e9','#8b5cf6','#ec4899','#14b8a6'];
+const CAT_COLORS = ['#C62828','#16a34a','#dc2626','#f59e0b','#0ea5e9','#8b5cf6','#ec4899','#14b8a6'];
 const catColor   = (id) => CAT_COLORS[(id ?? 0) % CAT_COLORS.length];
 const catLight   = (id) => catColor(id) + '18';
 const PAGE_SIZE  = 20;
 
 const Spin = () => {
   const { C } = useTheme();
-  return <div style={{ width: 44, height: 44, border: `4px solid ${C.surfaceAlt2}`, borderTop: '4px solid #6366f1', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />;
+  return <div style={{ width: 44, height: 44, border: `4px solid ${C.surfaceAlt2}`, borderTop: '4px solid #C62828', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />;
 };
 
 const Toggle = ({ value, onChange }) => (
@@ -72,7 +72,7 @@ const ProductoSheet = ({ producto, onClose, onEdit, onDelete, onToggle }) => {
           <div style={{ width: 72, height: 72, borderRadius: 20, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', boxShadow: `0 8px 24px ${color}55` }}>
             <i className="fas fa-utensils" style={{ fontSize: 28, color: '#fff' }}></i>
           </div>
-          <div style={{ fontWeight: 900, fontSize: 20, color: '#0f172a', marginBottom: 6 }}>{producto.nombre}</div>
+          <div style={{ fontWeight: 900, fontSize: 20, color: '#2C1810', marginBottom: 6 }}>{producto.nombre}</div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: color, color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
             <i className="fas fa-tag" style={{ fontSize: 10 }}></i>
             {producto.categoria?.nombre || 'Sin categoría'}
@@ -282,7 +282,7 @@ const ProductosManagement = () => {
       {/* Stats */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         {[
-          { label: 'Total',       value: total,            color: '#6366f1', icon: 'fa-utensils'     },
+          { label: 'Total',       value: total,            color: '#C62828', icon: 'fa-utensils'     },
           { label: 'Disponibles', value: disponibles,       color: '#16a34a', icon: 'fa-circle-check' },
           { label: 'Agotados',    value: agotados,          color: '#ef4444', icon: 'fa-ban'          },
           { label: 'Categorías',  value: categorias.length, color: '#f59e0b', icon: 'fa-tags'         },
@@ -327,7 +327,7 @@ const ProductosManagement = () => {
       <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
         {[['todos','Todos'],['disponibles','Disponibles'],['agotados','Agotados']].map(([v, l]) => (
           <button key={v} onClick={() => setFiltros(f => ({ ...f, disponibilidad: v }))}
-            style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', background: filtros.disponibilidad === v ? '#6366f1' : C.surfaceAlt2, color: filtros.disponibilidad === v ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', background: filtros.disponibilidad === v ? '#C62828' : C.surfaceAlt2, color: filtros.disponibilidad === v ? '#fff' : C.textSub, fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
             {l}
           </button>
         ))}
@@ -335,7 +335,7 @@ const ProductosManagement = () => {
 
       {/* Botón nueva categoría */}
       <button onClick={() => setShowCatForm(true)}
-        style={{ width: '100%', padding: '11px', borderRadius: 12, border: '1.5px dashed #c7d2fe', background: '#eef2ff', color: '#6366f1', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 }}>
+        style={{ width: '100%', padding: '11px', borderRadius: 12, border: '1.5px dashed #FFCDD2', background: '#FFEBEE', color: '#C62828', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 }}>
         <i className="fas fa-tags"></i>Nueva Categoría
       </button>
 
@@ -368,7 +368,7 @@ const ProductosManagement = () => {
 
       {/* FAB */}
       <button onClick={openNew}
-        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(99,102,241,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        style={{ position: 'fixed', bottom: 86, right: 20, zIndex: 900, width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', border: 'none', boxShadow: '0 6px 28px rgba(198,40,40,0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <i className="fas fa-plus" style={{ fontSize: 22 }}></i>
       </button>
 
@@ -377,7 +377,7 @@ const ProductosManagement = () => {
       <Sheet open={showForm} onClose={() => setShowForm(false)} title={editing ? `Editar: ${editing.nombre}` : 'Nuevo Producto'}
         footer={
           <button onClick={handleSubmit} disabled={saving}
-            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             <i className={saving ? 'fas fa-circle-notch fa-spin' : editing ? 'fas fa-save' : 'fas fa-plus'}></i>
             {saving ? 'Guardando...' : editing ? 'Actualizar Producto' : 'Crear Producto'}
           </button>
@@ -419,7 +419,7 @@ const ProductosManagement = () => {
       <Sheet open={showCatForm} onClose={() => setShowCatForm(false)} title="Nueva Categoría"
         footer={
           <button onClick={handleCrearCategoria} disabled={saving}
-            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            style={{ width: '100%', padding: 16, border: 'none', borderRadius: 14, background: saving ? '#94a3b8' : 'linear-gradient(135deg, #9B1B1B, #C62828)', color: '#fff', fontWeight: 800, fontSize: 16, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             <i className={saving ? 'fas fa-circle-notch fa-spin' : 'fas fa-tags'}></i>
             {saving ? 'Guardando...' : 'Crear Categoría'}
           </button>

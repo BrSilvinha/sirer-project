@@ -287,7 +287,7 @@ const MobileLayout = ({ d }) => {
       <div style={{ display:'flex', background:'#f1f5f9', borderRadius:14, padding:4, marginBottom:12, gap:4 }}>
         {PERIODOS.map(p=>{
           const active=d.filtroPeriodo===p.value;
-          return <button key={p.value} onClick={()=>d.setFiltroPeriodo(p.value)} style={{ flex:1, padding:'9px 0', background:active?'#fff':'transparent', color:active?'#0f172a':'#94a3b8', border:'none', borderRadius:10, fontWeight:active?800:600, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:5, boxShadow:active?'0 2px 8px rgba(0,0,0,.1)':'none', transition:'all .15s', fontFamily:'inherit' }}>
+          return <button key={p.value} onClick={()=>d.setFiltroPeriodo(p.value)} style={{ flex:1, padding:'9px 0', background:active?'#fff':'transparent', color:active?'#2C1810':'#94a3b8', border:'none', borderRadius:10, fontWeight:active?800:600, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:5, boxShadow:active?'0 2px 8px rgba(0,0,0,.1)':'none', transition:'all .15s', fontFamily:'inherit' }}>
             <i className={`fas ${p.icon}`} style={{ fontSize:11 }} />{p.label}
           </button>;
         })}
@@ -297,7 +297,7 @@ const MobileLayout = ({ d }) => {
         {ESTADOS_FILTRO.map(ef=>{
           const active=d.filtroEstado===ef.value;
           const est=ESTADO[ef.value];
-          return <button key={ef.value} onClick={()=>d.setFiltroEstado(ef.value)} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 13px', borderRadius:20, flexShrink:0, background:active?(est?.gradient||'#0f172a'):'#fff', color:active?'#fff':'#64748b', border:active?'none':'1.5px solid #e2e8f0', fontWeight:700, fontSize:12, cursor:'pointer', boxShadow:active?'0 3px 10px rgba(0,0,0,.18)':'none', transition:'all .15s', fontFamily:'inherit' }}>
+          return <button key={ef.value} onClick={()=>d.setFiltroEstado(ef.value)} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 13px', borderRadius:20, flexShrink:0, background:active?(est?.gradient||'#2C1810'):'#fff', color:active?'#fff':'#64748b', border:active?'none':'1.5px solid #e2e8f0', fontWeight:700, fontSize:12, cursor:'pointer', boxShadow:active?'0 3px 10px rgba(0,0,0,.18)':'none', transition:'all .15s', fontFamily:'inherit' }}>
             <i className={`fas ${ef.icon}`} style={{ fontSize:10 }} />{ef.label}
           </button>;
         })}
@@ -344,7 +344,7 @@ const Modal = ({ open, onClose, title, subtitle, children, width=540 }) => {
         <div style={{ background:'#fff', borderRadius:24, width:'100%', maxWidth:width, maxHeight:'85vh', display:'flex', flexDirection:'column', boxShadow:'0 24px 64px rgba(0,0,0,.22)', animation:'modalIn .25s ease' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'22px 24px', borderBottom:'1px solid #f1f5f9' }}>
             <div>
-              <div style={{ fontWeight:800, fontSize:20, color:'#0f172a' }}>{title}</div>
+              <div style={{ fontWeight:800, fontSize:20, color:'#2C1810' }}>{title}</div>
               {subtitle&&<div style={{ fontSize:13, color:'#94a3b8', marginTop:2 }}>{subtitle}</div>}
             </div>
             <button onClick={onClose} style={{ width:38, height:38, borderRadius:'50%', background:'#f1f5f9', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b' }}><i className="fas fa-times" /></button>
@@ -365,7 +365,7 @@ const DesktopLayout = ({ d }) => {
     { value:'todos',  label:'Todo',   icon:'fa-history' },
   ];
   const ESTADOS_FILTRO=[
-    { value:'todos',  label:'Todos los pedidos', icon:'fa-list',        color:'#0f172a' },
+    { value:'todos',  label:'Todos los pedidos', icon:'fa-list',        color:'#2C1810' },
     { value:'pagado', label:'Solo pagados',       icon:'fa-credit-card', color:'#7c3aed' },
   ];
 
@@ -375,7 +375,7 @@ const DesktopLayout = ({ d }) => {
   return (
     <div style={{ display:'flex', minHeight:'calc(100vh - 58px)', background:'#f1f5f9' }}>
       {/* ── Sidebar ── */}
-      <aside style={{ width:260, flexShrink:0, background:'#0f172a', display:'flex', flexDirection:'column', padding:'24px 16px', overflowY:'auto' }}>
+      <aside style={{ width:260, flexShrink:0, background:'#2C1810', display:'flex', flexDirection:'column', padding:'24px 16px', overflowY:'auto' }}>
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:11, color:'#475569', fontWeight:700, letterSpacing:1.2, marginBottom:12 }}>HISTORIAL DE PEDIDOS</div>
           <button onClick={d.fetchPedidos} style={{ width:'100%', padding:'10px 14px', background:'#1e293b', border:'1px solid #334155', borderRadius:12, color:'#94a3b8', fontWeight:600, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', gap:8, fontFamily:'inherit' }}>
@@ -404,7 +404,7 @@ const DesktopLayout = ({ d }) => {
             const active=d.filtroPeriodo===p.value;
             return (
               <button key={p.value} onClick={()=>d.setFiltroPeriodo(p.value)}
-                style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'11px 14px', borderRadius:12, background:active?'#6366f1':'transparent', color:active?'#fff':'#64748b', border:'none', cursor:'pointer', fontWeight:active?700:500, fontSize:14, marginBottom:4, textAlign:'left', fontFamily:'inherit', boxShadow:active?'0 2px 8px rgba(99,102,241,.4)':'none', transition:'all .15s' }}
+                style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'11px 14px', borderRadius:12, background:active?'#C62828':'transparent', color:active?'#fff':'#64748b', border:'none', cursor:'pointer', fontWeight:active?700:500, fontSize:14, marginBottom:4, textAlign:'left', fontFamily:'inherit', boxShadow:active?'0 2px 8px rgba(198,40,40,.4)':'none', transition:'all .15s' }}
                 onMouseEnter={ev=>{if(!active)ev.currentTarget.style.background='#1e293b';}}
                 onMouseLeave={ev=>{if(!active)ev.currentTarget.style.background='transparent';}}
               >
@@ -421,7 +421,7 @@ const DesktopLayout = ({ d }) => {
           const est=ESTADO[ef.value];
           return (
             <button key={ef.value} onClick={()=>d.setFiltroEstado(ef.value)}
-              style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'11px 14px', borderRadius:12, background:active?'#6366f1':'transparent', color:active?'#fff':'#64748b', border:'none', cursor:'pointer', fontWeight:active?700:500, fontSize:14, marginBottom:4, textAlign:'left', fontFamily:'inherit', boxShadow:active?'0 2px 8px rgba(99,102,241,.4)':'none', transition:'all .15s' }}
+              style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'11px 14px', borderRadius:12, background:active?'#C62828':'transparent', color:active?'#fff':'#64748b', border:'none', cursor:'pointer', fontWeight:active?700:500, fontSize:14, marginBottom:4, textAlign:'left', fontFamily:'inherit', boxShadow:active?'0 2px 8px rgba(198,40,40,.4)':'none', transition:'all .15s' }}
               onMouseEnter={ev=>{if(!active)ev.currentTarget.style.background='#1e293b';}}
               onMouseLeave={ev=>{if(!active)ev.currentTarget.style.background='transparent';}}
             >
@@ -439,7 +439,7 @@ const DesktopLayout = ({ d }) => {
         {/* Header */}
         <div style={{ background:'#fff', borderBottom:'1px solid #e2e8f0', padding:'20px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
           <div>
-            <h1 style={{ fontWeight:900, fontSize:24, color:'#0f172a', margin:0 }}>Historial de Pedidos</h1>
+            <h1 style={{ fontWeight:900, fontSize:24, color:'#2C1810', margin:0 }}>Historial de Pedidos</h1>
             <p style={{ color:'#64748b', fontSize:13, margin:'4px 0 0', display:'flex', alignItems:'center', gap:6 }}>
               <i className="fas fa-list" style={{ fontSize:11 }} />
               {d.pedidos.length} pedido{d.pedidos.length!==1?'s':''} · {d.filtroPeriodo==='hoy'?'Hoy':d.filtroPeriodo==='semana'?'Última semana':'Todo el tiempo'}
@@ -490,7 +490,7 @@ const DesktopLayout = ({ d }) => {
                     onMouseLeave={ev=>ev.currentTarget.style.background=esListo?'#f0fdf4':idx%2===0?'#fff':'#fafafa'}
                   >
                     <div style={{ fontWeight:800, color:'#64748b', fontSize:14 }}>#{p.id}</div>
-                    <div style={{ fontWeight:700, color:'#0f172a', fontSize:14, display:'flex', alignItems:'center', gap:6 }}>
+                    <div style={{ fontWeight:700, color:'#2C1810', fontSize:14, display:'flex', alignItems:'center', gap:6 }}>
                       <i className="fas fa-table" style={{ color:'#94a3b8', fontSize:12 }} />Mesa {p.mesa?.numero}
                     </div>
                     <div style={{ display:'flex', alignItems:'center' }}>

@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', flexDirection: 'column', gap: 16 }}>
         <style>{`@keyframes spin { to{transform:rotate(360deg)} }`}</style>
-        <div style={{ width: 48, height: 48, border: '4px solid #eef2ff', borderTop: '4px solid #6366f1', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
+        <div style={{ width: 48, height: 48, border: '4px solid #FFEBEE', borderTop: '4px solid #C62828', borderRadius: '50%', animation: 'spin .75s linear infinite' }} />
         <div style={{ fontWeight: 700, color: '#94a3b8', fontSize: 15 }}>Verificando acceso...</div>
       </div>
     );
@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#fffbeb', border: '2px solid #fde68a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
             <i className="fas fa-lock" style={{ fontSize: 28, color: '#d97706' }} />
           </div>
-          <h3 style={{ fontWeight: 900, fontSize: 20, color: '#0f172a', margin: '0 0 8px' }}>Acceso Denegado</h3>
+          <h3 style={{ fontWeight: 900, fontSize: 20, color: '#2C1810', margin: '0 0 8px' }}>Acceso Denegado</h3>
           <p style={{ color: '#64748b', fontSize: 14, margin: '0 0 24px', lineHeight: 1.6 }}>
             No tienes permisos para acceder a esta sección.
           </p>
